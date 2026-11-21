@@ -682,9 +682,10 @@ const renderGameSheet=()=>{
 const openGame=id=>{gameId=id;$("gsheet").classList.add("on");$("gsheet").setAttribute("aria-hidden","false");renderGameSheet();$("gClose").focus();const g=gById(id);if(g&&(!sums[id]||g.state==="in"))pullSum(g).then(()=>{if(gameId===id)renderGameSheet()});if(g&&g.state==="in"&&!liveOdds[id])pullLive(g).then(()=>{if(gameId===id)renderGameSheet()})};
 const closeGame=()=>{gameId=null;$("gsheet").classList.remove("on");$("gsheet").setAttribute("aria-hidden","true")};
 /* ---- live in-game plays: model fair line vs the live market ---- */
-const liveOdds={},preOdds={};let LP={};
+const liveOdds={},preOdds={},liveHist={};let LP={};
+const STALE_PTS={NFL:10,CFB:10,NBA:14,CBB:12,NHL:2};
 const PER={NFL:[4,900],CFB:[4,900],NBA:[4,720],CBB:[2,1200],NHL:[3,1200]};
-const coreUrl=(g,prov)=>{const[sp,lp]=BASE[g.lg].split("/");return`https://sports.core.api.espn.com/v2/sports/${sp}/leagues/${lp}/events/${encodeURIComponent(g.id)}/competitions/${encodeURIComponent(g.id)}/odds/${prov}`};
+const coreUrl=(g,prov)=>{const[sp,lp]=BASE[g.lg].split("/");return`https://sports.core.api.espn.com/v2/sports/${sp}/leagues/${lp}/events/${encodeURIComponent(g.id)}/competitions/${encodeURIComponent(g.id)}/odds/${prov}?lang=en&region=us&_=${Date.now()}`};
 const am=x=>x?num(x.american??x.alternateDisplayValue):null;
 const readOdds=o=>({at:Date.now(),spreadHome:num(o.spread),total:num(o.overUnder),details:o.details||"",
   homeSp:am(o.homeTeamOdds?.current?.spread)??num(o.homeTeamOdds?.spreadOdds),awaySp:am(o.awayTeamOdds?.current?.spread)??num(o.awayTeamOdds?.spreadOdds),
@@ -692,7 +693,8 @@ const readOdds=o=>({at:Date.now(),spreadHome:num(o.spread),total:num(o.overUnder
   mlHome:am(o.homeTeamOdds?.current?.moneyLine)??num(o.homeTeamOdds?.moneyLine),mlAway:am(o.awayTeamOdds?.current?.moneyLine)??num(o.awayTeamOdds?.moneyLine)});
 const pullLive=async g=>{
   try{if(!preOdds[g.id]){const r=await fetch(coreUrl(g,100),{cache:"no-store"});preOdds[g.id]=r.ok?readOdds(await r.json()):{none:true}}}catch(e){}
-  try{const r=await fetch(coreUrl(g,200),{cache:"no-store"});liveOdds[g.id]=r.ok?readOdds(await r.json()):{none:true,at:Date.now()}}catch(e){if(!liveOdds[g.id])liveOdds[g.id]={none:true,at:Date.now()}}};
+  try{const r=await fetch(coreUrl(g,200),{cache:"no-store"});liveOdds[g.id]=r.ok?readOdds(await r.json()):{none:true,at:Date.now()}}catch(e){if(!liveOdds[g.id])liveOdds[g.id]={none:true,at:Date.now()}}
+  const o=liveOdds[g.id];if(o&&!o.none){const sig=`${o.spreadHome}|${o.total}|${o.mlHome}|${o.mlAway}`,cur=(+g.away.score||0)+(+g.home.score||0),h=liveHist[g.id];if(!h||h.sig!==sig)liveHist[g.id]={sig,score:cur}}};
 const clockSec=c=>{c=String(c??"0");if(c.includes(":")){const[m,s]=c.split(":");return(+m||0)*60+(+s||0)}return+c||0};
 const fracDone=g=>{const[n,len]=PER[g.lg]||[4,900],p=+g.period||1,d=String(g.detail||"");
   if(p>n)return .97;if(/half/i.test(d)&&n!==2)return .5;if(/^end of/i.test(d))return Math.min(.97,p/n);
@@ -714,7 +716,13 @@ const liveModel=g=>{
   if(L.mlHome!=null&&Math.abs(L.mlHome)<=400)add("ml","home",`${g.home.abbr} moneyline`,null,pw,L.mlHome);
   if(L.mlAway!=null&&Math.abs(L.mlAway)<=400)add("ml","away",`${g.away.abbr} moneyline`,null,1-pw,L.mlAway);
   out.sort((a,b)=>b.ev-a.ev);
-  return{f,projT,projM,L,T0,S0,cands:out,plays:out.filter(x=>x.strength).slice(0,3)}};
+  /* guard against frozen or delayed lines: ESPN's live odds carry no timestamp */
+  const h=liveHist[g.id],moved=h?cur-h.score:0;
+  const why=f>.88?"late":h&&moved>=(STALE_PTS[g.lg]||10)?"frozen":(P&&L.total===P.total&&L.spreadHome===P.spreadHome&&f>.2)?"pregame":null;
+  const sane=x=>x.ev<=.2&&(x.mk==="ml"?Math.abs(x.p-1/dec(x.price))<.2:x.p>=.3&&x.p<=.72);
+  const outliers=out.filter(x=>x.strength&&!sane(x)).length;
+  const plays=why?[]:out.filter(x=>x.strength&&sane(x)).slice(0,3);
+  return{f,projT,projM,L,T0,S0,cands:why?[]:out.filter(sane),plays,stale:why||(outliers&&!plays.length?"outlier":null)}};
 const spTxtH=(g,h)=>h==null?"—":h<0?`${g.home.abbr} ${r1(h)}`:h>0?`${g.away.abbr} ${r1(-h)}`:"PK";
 const pr=o=>o==null?"":`${o>0?"+":""}${o}`;
 const lpRow=p=>`<div class="gpc lvp"><span class="st ${p.strength}">${p.strength}</span><b>${esc(p.label)} <small style="color:var(--soft)">${esc(pr(p.price))}</small><br><small style="color:var(--soft);font-weight:500">${Math.round(p.p*100)}% to win · ${(p.ev*100).toFixed(1)}% expected value</small></b><button class="add sm" data-addlive="${esc(p.k)}" aria-pressed="${onSlip(p.k)}" aria-label="Add ${esc(p.label)} to slip">${onSlip(p.k)?"✓":"+"}</button></div>`;
@@ -727,8 +735,8 @@ const liveSection=g=>{if(g.state!=="in")return"";const m=liveModel(g);
   <tr><td>Total</td><td class="num">${L.total??"—"} <span style="color:var(--soft)">o${esc(pr(L.over))} u${esc(pr(L.under))}</span></td><td class="num">${r1(m.projT)}</td><td class="num">${m.T0}</td></tr>
   <tr><td>Moneyline</td><td class="num">${esc(g.away.abbr)} ${esc(pr(L.mlAway))} / ${esc(g.home.abbr)} ${esc(pr(L.mlHome))}</td><td class="num">${esc(g.home.abbr)} ${Math.round(Phi(m.projM/Math.max(.5,(SD[g.lg]||{spread:12}).spread*Math.sqrt(1-m.f)))*100)}%</td><td></td></tr>
   </tbody></table></div>
-  ${m.plays.length?`<div class="gp" style="margin-top:8px">${m.plays.map(lpRow).join("")}</div>`:`<p class="tipbox card" style="margin-top:8px">No live edge right now: the market is close to the model.${b?` Closest: <b>${esc(b.label)} ${esc(pr(b.price))}</b> at ${(b.ev*100).toFixed(1)}% expected value (needs 3%+).`:""}</p>`}
-  <p class="fine" style="margin:8px 0 0">${Math.round(m.f*100)}% of the game played. The model starts from the pregame line, blends in the scoring pace so far, and projects the rest of the game from the current score. Estimates, not guarantees. Live lines are DraftKings via ESPN, updated ${Math.max(0,Math.round((Date.now()-L.at)/1000))}s ago.</p>`};
+  ${m.plays.length?`<div class="gp" style="margin-top:8px">${m.plays.map(lpRow).join("")}</div>`:m.stale?`<p class="tipbox card" style="margin-top:8px">${{late:"No live plays this late in the game: books suspend and move lines too fast to trust.",frozen:"The live line hasn't moved while the score has, so it's likely suspended or delayed. No plays until it updates.",pregame:"The live line still matches the pregame line, so it hasn't been updated yet. No plays until it does.",outlier:"The live line is too far from the game state to be current, so it's likely delayed. No plays until it updates."}[m.stale]}</p>`:`<p class="tipbox card" style="margin-top:8px">No live edge right now: the market is close to the model.${b?` Closest: <b>${esc(b.label)} ${esc(pr(b.price))}</b> at ${(b.ev*100).toFixed(1)}% expected value (needs 3%+).`:""}</p>`}
+  <p class="fine" style="margin:8px 0 0">${Math.round(m.f*100)}% of the game played. The model starts from the pregame line, blends in the scoring pace so far, and projects the rest of the game from the current score. Estimates, not guarantees. Live lines are DraftKings via ESPN, checked ${Math.max(0,Math.round((Date.now()-L.at)/1000))}s ago; ESPN can lag the book by a few minutes, so confirm the price in your sportsbook before betting.</p>`};
 const liveChip=g=>{if(g.state!=="in")return"";const m=liveModel(g);if(!m||!m.plays||!m.plays.length)return"";return`<div style="font-size:12px;font-weight:800;color:#12a46a;letter-spacing:.05em">LIVE PLAY</div>${lpRow(m.plays[0])}`};
 const liveTag=g=>{if(g.state!=="in")return"";const m=liveModel(g);return m&&m.plays&&m.plays.length?`<div class="sgl lvt">⚡ ${esc(m.plays[0].label)} ${esc(pr(m.plays[0].price))}</div>`:""};
 const renderLivePlays=()=>{const el=$("livePlays");if(!el)return;const xs=[];
