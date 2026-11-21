@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-21T02:05:20Z",
+    "updatedAt":  "2026-11-21T03:16:09Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -466,15 +466,24 @@
                         "why":  "78% of spread money on Iowa St from 42% of bets.",
                         "loggedAfterStart":  true,
                         "hash":  "6ac10b523f818d012570c8888ad11cfb2c5e95a262de569bb4bb1b927a7ebef9",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "ISU",
+                                      "as":  17,
+                                      "home":  "UCF",
+                                      "hs":  48
+                                  },
+                        "actual":  -31,
+                        "diff":  -29.5,
                         "units":  null,
-                        "close":  null,
-                        "clv":  null,
+                        "close":  {
+                                      "spread":  1.5,
+                                      "total":  50.5,
+                                      "details":  "ISU -1.5"
+                                  },
+                        "clv":  3.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T03:16:05Z"
                     },
                     {
                         "id":  "L014",
@@ -966,15 +975,24 @@
                         "why":  "Total down 6. 88% of total money on the Under from far fewer tickets.",
                         "loggedAfterStart":  true,
                         "hash":  "8e3fee20bc9693b6324cb0dd997134a1da5d690835f953e3c7fa6c1cecfbf1c0",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "ISU",
+                                      "as":  17,
+                                      "home":  "UCF",
+                                      "hs":  48
+                                  },
+                        "actual":  65,
+                        "diff":  -16.5,
                         "units":  null,
-                        "close":  null,
-                        "clv":  null,
+                        "close":  {
+                                      "spread":  1.5,
+                                      "total":  50.5,
+                                      "details":  "ISU -1.5"
+                                  },
+                        "clv":  -2.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T03:16:06Z"
                     },
                     {
                         "id":  "L028",
@@ -1112,9 +1130,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  7.5,
+                                      "spread":  8.5,
                                       "total":  46.5,
-                                      "details":  "UTAH -7.5"
+                                      "details":  "UTAH -8.5"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -1430,19 +1448,24 @@
                         "why":  "70% of total money on the Under from 33% of tickets: the widest gap on the college hoops board.",
                         "loggedAfterStart":  false,
                         "hash":  "4894ff4262d0e61d65325e15d6c12a77d96d39d9ecb3ccdfa22e22e25904d24f",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "CAM",
+                                      "as":  80,
+                                      "home":  "KSU",
+                                      "hs":  70
+                                  },
+                        "actual":  150,
+                        "diff":  6.5,
                         "units":  null,
                         "close":  {
                                       "spread":  -15.5,
                                       "total":  154.5,
                                       "details":  "KSU -15.5"
                                   },
-                        "clv":  null,
+                        "clv":  2.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T03:16:07Z"
                     },
                     {
                         "id":  "L041",
@@ -1466,19 +1489,24 @@
                         "why":  "65% of total money on the Under from 31% of tickets.",
                         "loggedAfterStart":  false,
                         "hash":  "62a0308e5d9011aafc0c776add0dd8db6fe0c15efa9d7a6b59ae35df628ab356",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "LEM",
+                                      "as":  64,
+                                      "home":  "MIZ",
+                                      "hs":  91
+                                  },
+                        "actual":  155,
+                        "diff":  0.5,
                         "units":  null,
                         "close":  {
                                       "spread":  -34.5,
                                       "total":  154.5,
                                       "details":  "MIZ -34.5"
                                   },
-                        "clv":  null,
+                        "clv":  1.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T03:16:07Z"
                     },
                     {
                         "id":  "P001",
@@ -1574,11 +1602,16 @@
                         "why":  "15.3 a game over his last 10.",
                         "loggedAfterStart":  true,
                         "hash":  "21438f5e2b0aa3bcd72d5ba36a5bc40f98ba3b463d04d4df2a9757a32b6f785e",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "ORL",
+                                      "as":  113,
+                                      "home":  "BKN",
+                                      "hs":  111
+                                  },
+                        "actual":  4,
+                        "diff":  -6.5,
+                        "units":  -1,
                         "close":  {
                                       "spread":  6.5,
                                       "total":  224.5,
@@ -1586,7 +1619,7 @@
                                   },
                         "clv":  null,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T03:16:08Z"
                     },
                     {
                         "id":  "P004",
@@ -1610,15 +1643,24 @@
                         "why":  "27.2 a game over his last 10.",
                         "loggedAfterStart":  true,
                         "hash":  "33ed5136bacf539653587ff8e489024ebfbcec30653881c9d085ecce20aa9e0d",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
-                        "close":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "CHA",
+                                      "as":  97,
+                                      "home":  "ATL",
+                                      "hs":  111
+                                  },
+                        "actual":  23,
+                        "diff":  0.5,
+                        "units":  0.94,
+                        "close":  {
+                                      "spread":  -7.5,
+                                      "total":  219.5,
+                                      "details":  "ATL -7.5"
+                                  },
                         "clv":  null,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T03:16:08Z"
                     },
                     {
                         "id":  "P005",
@@ -1678,11 +1720,16 @@
                         "why":  "Over in 8 of last 10.",
                         "loggedAfterStart":  true,
                         "hash":  "c2eaf0d95c10d98978f659cab86578f6a604989c3b6cb5e0b419e4016eb334ba",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "ORL",
+                                      "as":  113,
+                                      "home":  "BKN",
+                                      "hs":  111
+                                  },
+                        "actual":  6,
+                        "diff":  -5.5,
+                        "units":  -1,
                         "close":  {
                                       "spread":  6.5,
                                       "total":  224.5,
@@ -1690,7 +1737,7 @@
                                   },
                         "clv":  null,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T03:16:08Z"
                     },
                     {
                         "id":  "P007",
@@ -1714,10 +1761,15 @@
                         "why":  "Over in only 4 of 13 this season.",
                         "loggedAfterStart":  true,
                         "hash":  "7864966550a02afefa588b2744215b745c14680d2e4b59294a87495802bec783",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "IND",
+                                      "as":  119,
+                                      "home":  "CLE",
+                                      "hs":  128
+                                  },
+                        "actual":  8,
+                        "diff":  1.5,
                         "units":  null,
                         "close":  {
                                       "spread":  -6.5,
@@ -1726,7 +1778,7 @@
                                   },
                         "clv":  null,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T03:16:09Z"
                     },
                     {
                         "id":  "P008",
