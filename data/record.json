@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-21T04:25:41Z",
+    "updatedAt":  "2026-11-21T05:25:59Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -548,19 +548,24 @@
                         "why":  null,
                         "loggedAfterStart":  false,
                         "hash":  "62d56f6c832e6623547cc8b1764d5a4600d16557ae6f11b9e21d540ad4ce200d",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "ORE",
+                                      "as":  45,
+                                      "home":  "MSU",
+                                      "hs":  7
+                                  },
+                        "actual":  38,
+                        "diff":  20.5,
                         "units":  null,
                         "close":  {
                                       "spread":  17.5,
                                       "total":  42.5,
                                       "details":  "ORE -17.5"
                                   },
-                        "clv":  null,
+                        "clv":  0.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T05:25:56Z"
                     },
                     {
                         "id":  "L016",
@@ -668,7 +673,7 @@
                         "units":  null,
                         "close":  {
                                       "spread":  14.5,
-                                      "total":  51.5,
+                                      "total":  50.5,
                                       "details":  "UGA -14.5"
                                   },
                         "clv":  null,
@@ -1073,9 +1078,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  3.5,
+                                      "spread":  3.0,
                                       "total":  41.5,
-                                      "details":  "OSU -3.5"
+                                      "details":  "OSU -3"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -1709,11 +1714,16 @@
                         "why":  "Over in 8 of last 10.",
                         "loggedAfterStart":  false,
                         "hash":  "3f4209d86b6940ce2dc51b468fc80494389dde65a4fe68d174372a3afd26dade",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "SAC",
+                                      "as":  104,
+                                      "home":  "LAL",
+                                      "hs":  106
+                                  },
+                        "actual":  7,
+                        "diff":  -3.5,
+                        "units":  -1,
                         "close":  {
                                       "spread":  -14.5,
                                       "total":  229.5,
@@ -1721,7 +1731,7 @@
                                   },
                         "clv":  null,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T05:25:58Z"
                     },
                     {
                         "id":  "P006",
@@ -1827,11 +1837,16 @@
                         "why":  "26+ in 4 of last 5.",
                         "loggedAfterStart":  false,
                         "hash":  "77a88420e59c6dafa721c968623e7061b3ed0c46972ec3be3288718ef80dbb0a",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "SAC",
+                                      "as":  104,
+                                      "home":  "LAL",
+                                      "hs":  106
+                                  },
+                        "actual":  18,
+                        "diff":  -5.5,
+                        "units":  -1,
                         "close":  {
                                       "spread":  -14.5,
                                       "total":  229.5,
@@ -1839,7 +1854,7 @@
                                   },
                         "clv":  null,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T05:25:58Z"
                     },
                     {
                         "id":  "P009",
@@ -1863,11 +1878,16 @@
                         "why":  "Over in 7 of last 10.",
                         "loggedAfterStart":  false,
                         "hash":  "b4a6cc9f572aded896cbca62478d4244ca111e0e1efe10285b8abe5f631cac5a",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "SAC",
+                                      "as":  104,
+                                      "home":  "LAL",
+                                      "hs":  106
+                                  },
+                        "actual":  5,
+                        "diff":  -2.5,
+                        "units":  -1,
                         "close":  {
                                       "spread":  -14.5,
                                       "total":  229.5,
@@ -1875,7 +1895,7 @@
                                   },
                         "clv":  null,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T05:25:58Z"
                     },
                     {
                         "id":  "P010",
