@@ -6,7 +6,7 @@ compatibility_date = "2025-09-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "closer-data"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "4bf93db3-ecb2-49fc-8b23-3e1bcd64c9af"
 migrations_dir = "migrations"
 
 # Every 30 minutes: games + odds snapshot when due. 10:15 UTC daily: re-check recent final scores.
