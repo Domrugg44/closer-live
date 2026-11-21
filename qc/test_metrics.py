@@ -10,7 +10,16 @@ import pytest
 sys.path.insert(0, os.path.dirname(__file__))
 import metrics as M  # noqa: E402
 from baselines import Baselines, season_to_date_diffs  # noqa: E402
-from evaluate import SEP, gate_a, js_str, verify_chain  # noqa: E402
+from evaluate import SEP, gate_a, js_str, verify_chain, verify_explanations  # noqa: E402
+
+
+def test_explanations_must_add_up():
+    import json
+    ok = {"id": 1, "probability": 1 / (1 + math.exp(-0.5)), "base_logit": 0.2, "contributions_json": json.dumps([{"logit": 0.3}])}
+    bad = {"id": 2, "probability": 0.9, "base_logit": 0.2, "contributions_json": json.dumps([{"logit": 0.3}])}
+    old = {"id": 3, "probability": 0.6, "base_logit": None}
+    assert verify_explanations([ok, old]) == []
+    assert len(verify_explanations([bad])) == 1
 
 
 def test_log_loss_and_brier_known_values():

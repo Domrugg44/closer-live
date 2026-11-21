@@ -6,6 +6,7 @@ import { bdlGames, oddsMoneylines } from "./providers.js";
 import { scopeOf, registerModel, submitPredictions, readPredictions, readChain, readResults, recordQc, listModels, gradePredictions, backfillStep, budgetStatus } from "./predictions.js";
 import { runQualityChecks, qualityStatus } from "./quality.js";
 import { gameContext, seasonContext } from "./context.js";
+import { publicExplanation } from "./explain.js";
 
 const nowIso = () => new Date().toISOString();
 const etDate = (offsetDays = 0, from = Date.now()) =>
@@ -176,6 +177,7 @@ async function handle(req, env) {
   if (url.pathname === "/budget") { const r = await budgetStatus(env); return json(env, r.body, r.status); }
   if (url.pathname === "/quality") { const r = await qualityStatus(env); return json(env, r.body, r.status); }
   if (url.pathname === "/nba/context") { const r = await gameContext(env, url); return json(env, r.body, r.status); }
+  if (url.pathname === "/explain") { const r = await publicExplanation(env, url); return json(env, r.body, r.status); }
   if (url.pathname === "/" || url.pathname === "/health") {
     const runs = (await env.DB.prepare("SELECT job, started_at, finished_at, ok, rows_written, credits_used, credits_remaining, note FROM ingestion_runs ORDER BY id DESC LIMIT 20").all()).results;
     const count = async (t) => (await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${t}`).first()).n;

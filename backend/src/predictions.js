@@ -3,6 +3,7 @@
 // the database triggers in migrations/0002_predictions.sql; this code only routes requests to them.
 import { bdlSeasonPage } from "./providers.js";
 import { liveGameGuard } from "./quality.js";
+import { buildExplanation } from "./explain.js";
 
 const nowIso = () => new Date().toISOString();
 const SEP = "\u001f";
@@ -79,18 +80,31 @@ export async function submitPredictions(env, body) {
       const problem = await liveGameGuard(env, p.game_id);
       if (problem) { results.push({ game_id: p.game_id, ok: false, error: `refused by data safeguard: ${problem}` }); continue; }
     }
-    const inputsJson = canon(p.inputs), inputsHash = await sha256(inputsJson);
+    // M3: every prediction must carry a valid explanation (contributions add up; evidence verified)
+    const ex = await buildExplanation(env, { gameId: p.game_id, probability: prob, explanation: p.explanation, nowIso: createdAt });
+    if (ex.error) { results.push({ game_id: p.game_id, ok: false, error: `explanation refused: ${ex.error}` }); continue; }
+    const explanationRecord = { method: "additive_logit", base_logit: ex.base, contributions: ex.contributions, reasons: ex.reasons, evidence: ex.evidence, quality_stamp: ex.stamp, game_start_at_prediction: ex.gameStart };
+    const explanationHash = await sha256(canon(explanationRecord));
+    // fold the explanation's fingerprint into the inputs, so the prediction chain also covers the explanation
+    const inputsJson = canon({ ...p.inputs, _explanation_hash: explanationHash }), inputsHash = await sha256(inputsJson);
     const px = kind === "live" ? await priceAt(env, p.game_id, p.side, createdAt) : null;
     const last = await env.DB.prepare("SELECT hash FROM predictions ORDER BY id DESC LIMIT 1").first();
     const prev = last ? last.hash : "";
     const locked = [model_version_id, kind, p.game_id, p.market || "moneyline", p.side, prob, inputsHash, px ? px.price : null, px ? px.book : null, px ? px.captured_at : null, mv.status, createdAt];
     const hash = await sha256(prev + SEP + locked.map((v) => (v == null ? "" : String(v))).join(SEP));
     try {
-      await env.DB.prepare(
-        `INSERT INTO predictions (model_version_id, kind, game_id, market, side, probability, inputs_json, inputs_hash, market_price, market_book, market_captured_at, model_status_at_time, created_at, prev_hash, hash)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-      ).bind(model_version_id, kind, p.game_id, p.market || "moneyline", p.side, prob, inputsJson, inputsHash, px ? px.price : null, px ? px.book : null, px ? px.captured_at : null, mv.status, createdAt, prev, hash).run();
-      results.push({ game_id: p.game_id, ok: true, hash, market_price: px ? px.price : null });
+      // prediction and explanation are written together: both or neither
+      await env.DB.batch([
+        env.DB.prepare(
+          `INSERT INTO predictions (model_version_id, kind, game_id, market, side, probability, inputs_json, inputs_hash, market_price, market_book, market_captured_at, model_status_at_time, created_at, prev_hash, hash)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+        ).bind(model_version_id, kind, p.game_id, p.market || "moneyline", p.side, prob, inputsJson, inputsHash, px ? px.price : null, px ? px.book : null, px ? px.captured_at : null, mv.status, createdAt, prev, hash),
+        env.DB.prepare(
+          `INSERT INTO prediction_explanations (prediction_id, method, base_logit, contributions_json, reasons_json, evidence_json, quality_stamp_json, game_start_at_prediction, explanation_hash, created_at)
+           SELECT id, 'additive_logit', ?, ?, ?, ?, ?, ?, ?, ? FROM predictions WHERE hash = ?`
+        ).bind(ex.base, JSON.stringify(ex.contributions), JSON.stringify(ex.reasons), JSON.stringify(ex.evidence), JSON.stringify(ex.stamp), ex.gameStart, explanationHash, createdAt, hash),
+      ]);
+      results.push({ game_id: p.game_id, ok: true, hash, market_price: px ? px.price : null, reasons: ex.reasons });
     } catch (e) {
       results.push({ game_id: p.game_id, ok: false, error: dbError(e) });
     }
@@ -107,8 +121,10 @@ export async function readPredictions(env, url) {
   const rows = (await env.DB.prepare(
     `SELECT p.id, p.model_version_id, p.kind, p.game_id, p.market, p.side, p.probability, p.inputs_json, p.inputs_hash,
             p.market_price, p.market_book, p.market_captured_at, p.model_status_at_time, p.created_at, p.prev_hash, p.hash,
-            g.start_time, g.season, o.outcome, o.brier, o.log_loss, o.closing_price, o.closing_no_vig, o.graded_at
+            g.start_time, g.season, o.outcome, o.brier, o.log_loss, o.closing_price, o.closing_no_vig, o.graded_at,
+            e.base_logit, e.contributions_json, e.explanation_hash, s.result AS settlement
      FROM predictions p JOIN games g ON g.id = p.game_id LEFT JOIN prediction_outcomes o ON o.prediction_id = p.id
+     LEFT JOIN prediction_explanations e ON e.prediction_id = p.id LEFT JOIN prediction_settlements s ON s.prediction_id = p.id
      WHERE p.model_version_id = ? AND (? IS NULL OR p.kind = ?) ORDER BY p.id`
   ).bind(mv, kind, kind).all()).results;
   return { status: 200, body: { model_version_id: mv, predictions: rows } };
@@ -153,13 +169,55 @@ export async function listModels(env) {
 
 /* ---------------- scheduled: grade predictions from final scores ---------------- */
 const american = (o) => (o > 0 ? 100 / (o + 100) : -o / (-o + 100));
+// M3 settlement: decide win / loss / void, or send to review. Runs before scoring.
+//   void   : game postponed / canceled / abandoned, or rescheduled > 12 h from the time predicted for
+//   review : final score implausible (e.g. an NBA tie), or no final score 36 h after start
+//   win/loss: clean final score (the database re-checks it against the stored score)
+async function settlePredictions(env) {
+  const now = Date.now(), at = nowIso();
+  const open = (await env.DB.prepare(
+    `SELECT p.id, p.side, p.created_at, g.status, g.start_time, e.game_start_at_prediction AS start_pred,
+            r.home_score, r.away_score
+     FROM predictions p JOIN games g ON g.id = p.game_id
+     LEFT JOIN prediction_explanations e ON e.prediction_id = p.id
+     LEFT JOIN game_results r ON r.game_id = p.game_id
+     LEFT JOIN prediction_settlements s ON s.prediction_id = p.id
+     WHERE s.prediction_id IS NULL AND (r.game_id IS NOT NULL OR g.status IN ('postponed','canceled','abandoned') OR g.start_time < ?
+       OR (e.game_start_at_prediction IS NOT NULL AND abs(julianday(g.start_time) - julianday(e.game_start_at_prediction)) * 24 > 12)) LIMIT 200`
+  ).bind(new Date(now).toISOString()).all()).results;
+  let settled = 0, reviews = 0;
+  for (const p of open) {
+    const settle = (result, reason, hs = null, as = null) => env.DB.prepare(
+      "INSERT INTO prediction_settlements (prediction_id, result, reason, home_score, away_score, settled_by, settled_at) VALUES (?,?,?,?,?,'auto',?) ON CONFLICT(prediction_id) DO NOTHING"
+    ).bind(p.id, result, reason, hs, as, at).run();
+    const review = (issue) => env.DB.prepare("INSERT INTO settlement_reviews (prediction_id, issue, opened_at) VALUES (?,?,?) ON CONFLICT(prediction_id, issue) DO NOTHING").bind(p.id, issue, at).run();
+    try {
+      if (["postponed", "canceled", "abandoned"].includes(p.status)) { await settle("void", `game ${p.status}`); settled++; continue; }
+      if (p.start_pred && Math.abs(Date.parse(p.start_time) - Date.parse(p.start_pred)) > 12 * 3600e3) {
+        await settle("void", `game rescheduled from ${p.start_pred} to ${p.start_time}`); settled++; continue;
+      }
+      if (p.home_score != null) {
+        const bad = p.home_score === p.away_score || Math.min(p.home_score, p.away_score) < 50 || Math.max(p.home_score, p.away_score) > 200;
+        if (bad) { const r = await review(`implausible final score ${p.away_score}-${p.home_score}`); reviews += (r.meta && r.meta.changes) || 0; continue; }
+        const won = p.side === "home" ? p.home_score > p.away_score : p.away_score > p.home_score;
+        await settle(won ? "win" : "loss", "final score", p.home_score, p.away_score); settled++; continue;
+      }
+      if (now - Date.parse(p.start_time) > 36 * 3600e3) { const r = await review("no final score 36 hours after start"); reviews += (r.meta && r.meta.changes) || 0; }
+    } catch (e) { /* leave for the next run */ }
+  }
+  return { settled, reviews };
+}
+
 export async function gradePredictions(env, startRun, endRun) {
+  const sres = await settlePredictions(env);
+  // score (Brier, log loss, closing line) only real wins and losses; voids and reviews are excluded
   const pending = (await env.DB.prepare(
     `SELECT p.id, p.side, p.probability, g.start_time, g.odds_event_id FROM predictions p
      JOIN games g ON g.id = p.game_id JOIN game_results r ON r.game_id = p.game_id
+     JOIN prediction_settlements s ON s.prediction_id = p.id AND s.result IN ('win','loss')
      LEFT JOIN prediction_outcomes o ON o.prediction_id = p.id WHERE o.prediction_id IS NULL LIMIT 200`
   ).all()).results;
-  if (!pending.length) return;
+  if (!pending.length && !sres.settled && !sres.reviews) return;
   const id = await startRun(env, "grade");
   let rows = 0, errors = 0;
   for (const p of pending) {
@@ -185,7 +243,7 @@ export async function gradePredictions(env, startRun, endRun) {
       rows++;
     } catch (e) { errors++; }
   }
-  await endRun(env, id, { ok: errors === 0, rows, note: `${rows} graded${errors ? `, ${errors} failed` : ""}` });
+  await endRun(env, id, { ok: errors === 0, rows, note: `${sres.settled} settled, ${sres.reviews} sent to review, ${rows} scored${errors ? `, ${errors} failed` : ""}` });
 }
 
 /* ---------------- scheduled: free history backfill (balldontlie), a few pages per run ---------------- */

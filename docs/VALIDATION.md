@@ -87,6 +87,25 @@ QC re-evaluates every night on new outcomes. Over the most recent **200 games**,
 for review if its log loss is worse than B2 or its ECE is above **0.07**. QC can only **flag** it;
 demotion or rejection is a CEO decision. Every status change is permanent and recorded.
 
+## 8a. Explanations and settlement (M3)
+
+- **Every prediction must carry an explanation**: a starting point plus contributions on the log-odds scale that add up exactly to the probability (the server refuses anything else; QC re-checks). Each contribution belongs to a factor group: baseline, team strength, home court, rest & schedule, travel, recent form, market, other.
+- **Evidence** links (`results_through`, `game_result`, `odds_snapshot`, `context`, `schedule`) are verified by the server: each must exist and predate the prediction. The server records each link's age.
+- The **data-quality stamp** (game status, last confirmation, active quality warnings and failures) and the plain-English **reasons** are written by the server, not the model.
+- The explanation's fingerprint is folded into the prediction's inputs, so the prediction chain covers it. Explanations are permanent.
+- **Public view** (`/explain?prediction_id=N`): factor groups and their effect in percentage points, data used and its age, the quality stamp, the settlement. It never shows raw factors or parameters.
+- **Settlement** (every 30 minutes and nightly):
+
+  | Situation | Settled as |
+  |---|---|
+  | Game postponed, canceled or abandoned | void |
+  | Game rescheduled by more than 12 h from the time predicted for | void |
+  | Clean final score | win or loss (the database re-checks it against the stored score) |
+  | Implausible score (e.g. an NBA tie) | pending review |
+  | No final score 36 h after start | pending review |
+
+  Only win and loss count in metrics. The CEO resolves reviews with `tools/resolve-review.ps1`; the database requires the manual settlement to cite the review and to match the score. Settlements and reviews are permanent.
+
 ## 9. Approval process (in order)
 
 1. The pipeline registers version `model@x.y.z` (Experimental) and submits backtest predictions.

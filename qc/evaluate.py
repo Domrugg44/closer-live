@@ -59,6 +59,20 @@ def verify_chain(preds: list[dict]) -> list[str]:
     return problems
 
 
+def verify_explanations(preds: list[dict]) -> list[str]:
+    """Every explanation must add up to its prediction: sigmoid(base + sum of contributions) == probability."""
+    import json as _json
+    import math as _math
+    problems = []
+    for p in preds:
+        if p.get("base_logit") is None:
+            continue  # logged before explanations existed
+        z = p["base_logit"] + sum(c["logit"] for c in _json.loads(p["contributions_json"]))
+        if abs(1 / (1 + _math.exp(-z)) - p["probability"]) > 1e-6:
+            problems.append(f"prediction {p['id']}: explanation does not add up to its probability")
+    return problems
+
+
 class Api:
     def __init__(self, base: str, token: str):
         self.base, self.s = base.rstrip("/"), requests.Session()
@@ -155,6 +169,11 @@ def main() -> int:
             report.append("Rejected: no further evaluation.")
             continue
         detail = api.get("/admin/predictions", model_version_id=mv["id"])["predictions"]
+        bad_expl = verify_explanations(detail)
+        report.append(f"Explanations: {sum(1 for p in detail if p.get('base_logit') is not None)} checked, " + ("all add up ✅" if not bad_expl else f"**{len(bad_expl)} inconsistent ❌**"))
+        if bad_expl:
+            exit_code = 1
+            report += [f"- {x}" for x in bad_expl[:10]]
         cutoff = mv.get("trained_through")
         graded = {k: [p for p in detail if p["kind"] == k and p["outcome"] is not None] for k in ("backtest", "live")}
         stage = "backtest" if mv["status"] == "experimental" else ("forward" if mv["status"] == "testing" else "monitor")

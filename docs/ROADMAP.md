@@ -11,7 +11,7 @@ confidence ranges and "not enough history yet" below 30 cases).
 |---|---|---|
 | M1 | Data validation and freshness safeguards (11 automated checks, `/quality` page, alerts, live-prediction guard) | ✅ done 2026-11-21 |
 | M2 | Historical dataset 2021–2026 (free backfill) + free derived context: rest, back-to-backs, travel | ✅ built 2026-11-21; backfill finishing (about 18 h) |
-| M3 | Explainable prediction record + settlement states (win/loss/push/void, pending review) | next |
+| M3 | Explainable prediction record + settlement states (win/loss/push/void, pending review) | ✅ done 2026-11-21 |
 | M4 | Baseline model v1: transparent rating model, tuned on 2021–2023, holdout 2024–2025 | |
 | M5 | "Similar predictions" track record, computed by QC | |
 | M6 | Market comparison, closing line value, QC value gate; licensed score cross-check (The Odds API scores, within the free plan) | |
