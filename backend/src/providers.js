@@ -20,6 +20,16 @@ export async function bdlGames(env, dates) {
   return out;
 }
 
+// balldontlie: one page (up to 100) of a past season's games, for the free history backfill.
+export async function bdlSeasonPage(env, season, cursor) {
+  if (env.MOCK === "1") return mockSeasonPage(season, cursor);
+  const qs = `seasons[]=${encodeURIComponent(season)}&per_page=100` + (cursor ? "&cursor=" + encodeURIComponent(cursor) : "");
+  const r = await fetch("https://api.balldontlie.io/v1/games?" + qs, { headers: { Authorization: env.BDL_API_KEY } });
+  if (!r.ok) throw new Error(`balldontlie HTTP ${r.status}`);
+  const j = await r.json();
+  return { data: j.data || [], next_cursor: (j.meta && j.meta.next_cursor) || null };
+}
+
 // The Odds API: NBA moneylines (h2h) from US books. Costs 1 credit per call (1 market x 1 region).
 export async function oddsMoneylines(env) {
   if (env.MOCK === "1") return mockOdds();
@@ -53,6 +63,17 @@ function mockBdlGames() {
     g(990002, s.live, T.lap, T.tst, "in_progress", "2nd Qtr", 51, 48),
     g(990003, s.final, T.mck, T.lap, "final", "Final", 112, 104),
   ];
+}
+function mockSeasonPage(season, cursor) {
+  // 3 fictional finished games per page, 2 pages per season
+  const page = cursor ? 2 : 1, base = Date.UTC(season, 10, 1) + (page - 1) * 3 * 864e5;
+  const pairs = [[T.tst, T.mck], [T.mck, T.lap], [T.lap, T.tst]];
+  const data = pairs.map(([home, away], i) => {
+    const start = new Date(base + i * 864e5);
+    return { id: 800000 + season * 10 + page * 3 + i, date: etDay(start), datetime: start.toISOString(), season, status: "Final", status_state: "final", period: 4, time: "Final", postseason: false,
+      home_team_score: 100 + i * 3, visitor_team_score: 98 + page * 2, home_team: home, visitor_team: away };
+  });
+  return { data, next_cursor: page === 1 ? "mock-cursor-2" : null };
 }
 function mockOdds() {
   const s = mockStarts();

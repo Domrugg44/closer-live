@@ -1,0 +1,30 @@
+name: Independent QC
+
+# Nightly, after the collector grades predictions (10:15 UTC). Uses the QC token, which is separate
+# from the model pipeline's token. Records evaluations; never changes a model's status.
+on:
+  schedule:
+    - cron: "0 11 * * *"
+  workflow_dispatch:
+  push:
+    paths: ["qc/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  qc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r qc/requirements.txt
+      - name: Unit tests
+        run: python -m pytest qc -q
+      - name: Evaluate models
+        if: github.event_name != 'push'
+        env:
+          CLOSER_QC_TOKEN: ${{ secrets.CLOSER_QC_TOKEN }}
+        run: python qc/evaluate.py

@@ -1,0 +1,7 @@
+# Local testing only. Copy to .dev.vars (git-ignored) and fill with random throwaway values.
+# Production values are Cloudflare secrets (npx wrangler secret put NAME) and never live in files.
+PREDICTION_WRITE_TOKEN=
+QC_TOKEN=
+# Real provider keys are only needed when testing without MOCK=1:
+# ODDS_API_KEY=
+# BDL_API_KEY=

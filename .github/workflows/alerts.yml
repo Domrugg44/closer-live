@@ -1,0 +1,42 @@
+name: Budget and health alerts
+
+# Reads the collector's public /budget page once a day. If it reports any alert, opens (or comments on)
+# a GitHub issue labeled closer-alert, and GitHub emails the repository owner. See docs/FINANCE.md.
+on:
+  schedule:
+    - cron: "0 14 * * *"
+  workflow_dispatch:
+    inputs:
+      test_alert:
+        description: "Send a test alert to confirm email delivery"
+        type: boolean
+        default: false
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check budget and collector health
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TEST_ALERT: ${{ inputs.test_alert }}
+        run: |
+          set -euo pipefail
+          budget=$(curl -fsS --max-time 30 https://closer-data.closer-data.workers.dev/budget || echo '{"alerts":["Status page unreachable: the collector may be down"]}')
+          alerts=$(echo "$budget" | jq -r '.alerts[]?')
+          if [ "${TEST_ALERT:-false}" = "true" ]; then alerts="Test alert: this confirms alert emails reach you. You can close this issue."; fi
+          {
+            echo "## Closer budget and health"
+            echo '```json'; echo "$budget" | jq '{budget_usd_per_month, paid_total_usd, odds_api, failed_runs_24h, last_collector_run}'; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ -z "$alerts" ]; then echo "No alerts." >> "$GITHUB_STEP_SUMMARY"; exit 0; fi
+          gh label create closer-alert --repo "$REPO" --color D93F0B --description "Budget or health alert" 2>/dev/null || true
+          body=$(printf "**Closer alert** (%s UTC)\n\n%s\n\nStatus page: https://closer-data.closer-data.workers.dev/budget\n" "$(date -u +'%Y-%m-%d %H:%M')" "$(echo "$alerts" | sed 's/^/- /')")
+          open=$(gh issue list --repo "$REPO" --label closer-alert --state open --json number --jq '.[0].number // empty')
+          if [ -n "$open" ]; then gh issue comment "$open" --repo "$REPO" --body "$body"
+          else gh issue create --repo "$REPO" --title "Closer alert: needs attention" --label closer-alert --body "$body" --assignee "${{ github.repository_owner }}"; fi

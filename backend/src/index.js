@@ -1,7 +1,9 @@
 // Closer data collector (Cloudflare Worker).
 // Scheduled jobs save NBA games, moneyline price history and final scores to the D1 database.
-// The fetch handler serves read-only JSON for the website. Nothing here predicts anything yet.
+// The fetch handler serves read-only JSON for the website, plus token-protected /admin routes
+// for the model pipeline and QC (see predictions.js and docs/VALIDATION.md).
 import { bdlGames, oddsMoneylines } from "./providers.js";
+import { scopeOf, registerModel, submitPredictions, readPredictions, readChain, readResults, recordQc, listModels, gradePredictions, backfillStep, budgetStatus } from "./predictions.js";
 
 const nowIso = () => new Date().toISOString();
 const etDate = (offsetDays = 0, from = Date.now()) =>
@@ -125,12 +127,16 @@ async function snapshotOdds(env, why) {
 /* ---------- schedules (see wrangler.toml) ---------- */
 async function runCron(cron, env) {
   if (cron === "15 10 * * *") {
-    // nightly: re-read the last three days so late final scores are captured
+    // nightly: re-read the last three days so late final scores are captured, then grade predictions
     await syncGames(env, [etDate(-3), etDate(-2), etDate(-1)]);
+    await gradePredictions(env, startRun, endRun);
     return;
   }
-  // every 30 minutes: refresh yesterday, today and tomorrow, then take an odds snapshot if one is due
+  // every 30 minutes: refresh yesterday, today and tomorrow, grade finished predictions,
+  // advance the free history backfill, then take an odds snapshot if one is due
   await syncGames(env, [etDate(-1), etDate(0), etDate(1)]);
+  await gradePredictions(env, startRun, endRun);
+  await backfillStep(env, startRun, endRun);
   const due = await oddsDue(env);
   if (!due.due) return;
   const budget = await oddsBudget(env);
@@ -151,7 +157,10 @@ function json(env, body, status = 200) {
 }
 async function handle(req, env) {
   const url = new URL(req.url);
+  if (url.pathname.startsWith("/admin/")) return handleAdmin(req, env, url);
   if (req.method !== "GET") return json(env, { error: "read-only" }, 405);
+  if (url.pathname === "/models") { const r = await listModels(env); return json(env, r.body, r.status); }
+  if (url.pathname === "/budget") { const r = await budgetStatus(env); return json(env, r.body, r.status); }
   if (url.pathname === "/" || url.pathname === "/health") {
     const runs = (await env.DB.prepare("SELECT job, started_at, finished_at, ok, rows_written, credits_used, credits_remaining, note FROM ingestion_runs ORDER BY id DESC LIMIT 20").all()).results;
     const count = async (t) => (await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${t}`).first()).n;
@@ -185,6 +194,31 @@ async function handle(req, env) {
     return json(env, { game_id: gid, snapshots: rows });
   }
   return json(env, { error: "not found" }, 404);
+}
+
+/* ---------- token-protected routes: model pipeline ("model") and QC ("qc") ---------- */
+async function handleAdmin(req, env, url) {
+  const scope = scopeOf(req, env);
+  const send = (r) => new Response(JSON.stringify(r.body, null, 1), { status: r.status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
+  if (!scope) return send({ status: 401, body: { error: "missing or invalid token" } });
+  const body = req.method === "POST" ? await req.json().catch(() => null) : null;
+  const route = `${req.method} ${url.pathname}`;
+  const allow = {
+    "POST /admin/models": ["model"],
+    "POST /admin/predictions": ["model"],
+    "GET /admin/predictions": ["model", "qc"],
+    "GET /admin/chain": ["qc"],
+    "GET /admin/results": ["model", "qc"],
+    "POST /admin/qc/evaluations": ["qc"],
+  }[route];
+  if (!allow) return send({ status: 404, body: { error: "not found" } });
+  if (!allow.includes(scope)) return send({ status: 403, body: { error: `the ${scope} token can't do ${route}` } });
+  if (route === "POST /admin/models") return send(await registerModel(env, body));
+  if (route === "POST /admin/predictions") return send(await submitPredictions(env, body));
+  if (route === "GET /admin/predictions") return send(await readPredictions(env, url));
+  if (route === "GET /admin/chain") return send(await readChain(env));
+  if (route === "GET /admin/results") return send(await readResults(env));
+  return send(await recordQc(env, body));
 }
 
 export default {

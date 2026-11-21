@@ -1,2 +1,27 @@
 ﻿# local scratch
 *.tmp
+
+# secrets and local settings: never commit
+.env
+.env.*
+!.env.example
+.dev.vars
+*.pem
+*.key
+*.p12
+secrets/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node / Cloudflare local state
+node_modules/
+.wrangler/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

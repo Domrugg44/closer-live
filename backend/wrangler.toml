@@ -19,3 +19,7 @@ MOCK = "0"
 ALLOWED_ORIGIN = "https://domrugg44.github.io"
 ODDS_DAILY_MAX = "12"
 ODDS_MIN_REMAINING = "25"
+ODDS_PLAN_CREDITS = "500"
+# Financial controls (docs/FINANCE.md). Paid services must be listed here, with CEO approval, before use.
+MONTHLY_BUDGET_USD = "50"
+PAID_SERVICES_JSON = "[]"
