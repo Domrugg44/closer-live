@@ -274,7 +274,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
   <div class="wrap">
     <div class="bar">
       <div class="logo"><svg viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="14" fill="#fff"/><path d="M9 16l4 4 8-10" fill="none" stroke="#ff4d2e" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Closer</div>
-      <div class="chipd" id="today">Fri Nov 20</div>
+      <div class="chipd" id="today" aria-live="off"></div>
     </div>
     <div class="lgs" role="group" aria-label="League" id="lgs"></div>
     <div class="sb" id="sb" aria-label="Scores and schedule"><div class="sbe">Loading scores…</div></div>
@@ -419,6 +419,8 @@ let filter="All",view="picks",slip=[],chartI=null,hoverX=null,lines={},live=fals
 try{slip=JSON.parse(localStorage.getItem("closer-slip")||"[]")}catch(e){slip=[]}
 const save=()=>{try{localStorage.setItem("closer-slip",JSON.stringify(slip))}catch(e){}};
 const $=id=>document.getElementById(id);
+// header date chip: the viewer's own local date, kept current (rolls over at midnight)
+const setToday=()=>{const el=$("today");if(!el)return;const n=new Date();el.textContent=n.toLocaleDateString([],{weekday:"short"})+" "+n.toLocaleDateString([],{month:"short",day:"numeric"})};setToday();setInterval(setToday,60000);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const inL=l=>filter==="All"||l===filter;
 const pkey=i=>"g"+i,prkey=i=>"p"+i;
