@@ -4,6 +4,7 @@
 // for the model pipeline and QC (see predictions.js and docs/VALIDATION.md).
 import { bdlGames, oddsMoneylines } from "./providers.js";
 import { scopeOf, registerModel, submitPredictions, readPredictions, readChain, readResults, recordQc, listModels, gradePredictions, backfillStep, budgetStatus } from "./predictions.js";
+import { runQualityChecks, qualityStatus } from "./quality.js";
 
 const nowIso = () => new Date().toISOString();
 const etDate = (offsetDays = 0, from = Date.now()) =>
@@ -130,6 +131,7 @@ async function runCron(cron, env) {
     // nightly: re-read the last three days so late final scores are captured, then grade predictions
     await syncGames(env, [etDate(-3), etDate(-2), etDate(-1)]);
     await gradePredictions(env, startRun, endRun);
+    await runQualityChecks(env, startRun, endRun);
     return;
   }
   // every 30 minutes: refresh yesterday, today and tomorrow, grade finished predictions,
@@ -137,6 +139,7 @@ async function runCron(cron, env) {
   await syncGames(env, [etDate(-1), etDate(0), etDate(1)]);
   await gradePredictions(env, startRun, endRun);
   await backfillStep(env, startRun, endRun);
+  await runQualityChecks(env, startRun, endRun);
   const due = await oddsDue(env);
   if (!due.due) return;
   const budget = await oddsBudget(env);
@@ -161,6 +164,7 @@ async function handle(req, env) {
   if (req.method !== "GET") return json(env, { error: "read-only" }, 405);
   if (url.pathname === "/models") { const r = await listModels(env); return json(env, r.body, r.status); }
   if (url.pathname === "/budget") { const r = await budgetStatus(env); return json(env, r.body, r.status); }
+  if (url.pathname === "/quality") { const r = await qualityStatus(env); return json(env, r.body, r.status); }
   if (url.pathname === "/" || url.pathname === "/health") {
     const runs = (await env.DB.prepare("SELECT job, started_at, finished_at, ok, rows_written, credits_used, credits_remaining, note FROM ingestion_runs ORDER BY id DESC LIMIT 20").all()).results;
     const count = async (t) => (await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${t}`).first()).n;

@@ -1,0 +1,133 @@
+// M1: automated data validation and freshness checks (run every collector cycle).
+// Each check is a query that returns the rows that are wrong. Results go to data_quality
+// (latest) and data_quality_events (permanent log of status changes). See docs/DATA.md.
+
+const iso = (ms) => new Date(ms).toISOString();
+const H = 3600e3, MIN = 60e3;
+
+// Each check: name, severity when it finds problems, plain description, and a query builder.
+export const CHECKS = [
+  {
+    name: "result_overdue", severity: "fail",
+    description: "Games that started more than 5 hours ago (last 7 days) without a final score, and not postponed or canceled",
+    q: (now) => [`SELECT g.id, g.start_time, g.status, h.abbr || ' vs ' || a.abbr AS teams FROM games g
+        JOIN teams h ON h.id = g.home_team_id JOIN teams a ON a.id = g.away_team_id
+        LEFT JOIN game_results r ON r.game_id = g.id
+        WHERE g.start_time < ? AND g.start_time > ? AND r.game_id IS NULL
+          AND COALESCE(g.status,'') NOT IN ('postponed','canceled','abandoned') LIMIT 200`, iso(now - 5 * H), iso(now - 7 * 24 * H)],
+  },
+  {
+    name: "status_stuck", severity: "warn",
+    description: "Games still marked scheduled more than 45 minutes after their start time (last 2 days)",
+    q: (now) => [`SELECT id, start_time, status FROM games WHERE status = 'scheduled' AND start_time < ? AND start_time > ? LIMIT 200`,
+      iso(now - 45 * MIN), iso(now - 48 * H)],
+  },
+  {
+    name: "postponed_or_canceled", severity: "warn",
+    description: "Games within 3 days either side that are postponed, canceled, suspended, delayed or abandoned (predictions on them must be voided or reviewed)",
+    q: (now) => [`SELECT id, start_time, status FROM games WHERE status IN ('postponed','canceled','suspended','delayed','abandoned')
+        AND start_time BETWEEN ? AND ? LIMIT 200`, iso(now - 72 * H), iso(now + 72 * H)],
+  },
+  {
+    name: "score_implausible", severity: "fail",
+    description: "Final scores that can't be right for the NBA (a tie, or a team under 50 or over 200 points)",
+    q: () => [`SELECT r.game_id, r.home_score, r.away_score FROM game_results r JOIN games g ON g.id = r.game_id WHERE g.league = 'NBA'
+        AND (r.home_score = r.away_score OR r.home_score < 50 OR r.away_score < 50 OR r.home_score > 200 OR r.away_score > 200) LIMIT 200`],
+  },
+  {
+    name: "duplicate_games", severity: "fail",
+    description: "Two different game records for the same matchup within 3 hours of each other",
+    q: () => [`SELECT a.id AS game_a, b.id AS game_b, a.start_time FROM games a JOIN games b
+        ON a.home_team_id = b.home_team_id AND a.away_team_id = b.away_team_id AND a.id < b.id
+        AND abs(julianday(a.start_time) - julianday(b.start_time)) * 24 < 3 LIMIT 200`],
+  },
+  {
+    name: "odds_missing_or_stale", severity: "warn",
+    description: "Scheduled games starting within 3 hours whose newest odds snapshot is missing or older than 7 hours",
+    q: (now) => [`SELECT g.id, g.start_time, (SELECT MAX(captured_at) FROM odds_snapshots o WHERE o.odds_event_id = g.odds_event_id) AS last_odds
+        FROM games g WHERE g.status = 'scheduled' AND g.start_time BETWEEN ? AND ?
+        AND (g.odds_event_id IS NULL OR (SELECT MAX(captured_at) FROM odds_snapshots o WHERE o.odds_event_id = g.odds_event_id) < ?) LIMIT 200`,
+      iso(now), iso(now + 3 * H), iso(now - 7 * H)],
+  },
+  {
+    name: "odds_unmatched", severity: "warn",
+    description: "Odds events seen in the last 24 hours for games in the next 2 days that couldn't be matched to a game",
+    q: (now) => [`SELECT DISTINCT o.odds_event_id, o.home_team, o.away_team, o.commence_time FROM odds_snapshots o
+        WHERE o.captured_at > ? AND o.commence_time BETWEEN ? AND ?
+        AND NOT EXISTS (SELECT 1 FROM games g WHERE g.odds_event_id = o.odds_event_id) LIMIT 200`, iso(now - 24 * H), iso(now), iso(now + 48 * H)],
+  },
+  {
+    name: "odds_price_implausible", severity: "warn",
+    description: "Prices captured in the last 24 hours that aren't valid American odds (between -100 and +100, or beyond +/-50000)",
+    q: (now) => [`SELECT id, odds_event_id, book, side, price FROM odds_snapshots WHERE captured_at > ?
+        AND ((price > -100 AND price < 100) OR price > 50000 OR price < -50000) LIMIT 200`, iso(now - 24 * H)],
+  },
+  {
+    name: "collector_heartbeat", severity: "fail",
+    description: "No successful games refresh in the last 75 minutes (data may be out of date)",
+    q: (now) => [`SELECT MAX(started_at) AS last_ok FROM ingestion_runs WHERE job = 'games' AND ok = 1 HAVING MAX(started_at) IS NULL OR MAX(started_at) < ?`, iso(now - 75 * MIN)],
+  },
+  {
+    name: "history_incomplete", severity: "warn",
+    description: "Backfilled NBA seasons with fewer than 1,230 final scores (a full regular season)",
+    q: () => [`SELECT b.season, (SELECT COUNT(*) FROM games g JOIN game_results r ON r.game_id = g.id WHERE g.season = b.season AND g.postseason = 0) AS regular_season_results
+        FROM backfill_queue b WHERE b.done = 1 AND (SELECT COUNT(*) FROM games g JOIN game_results r ON r.game_id = g.id WHERE g.season = b.season AND g.postseason = 0) < 1230`],
+  },
+  {
+    name: "start_moved_after_prediction", severity: "warn",
+    description: "Live predictions whose game was moved to start at or before the time the prediction was logged (needs review)",
+    q: () => [`SELECT p.id AS prediction_id, p.game_id, p.created_at, g.start_time FROM predictions p JOIN games g ON g.id = p.game_id
+        WHERE p.kind = 'live' AND g.start_time <= p.created_at LIMIT 200`],
+  },
+];
+
+export async function runQualityChecks(env, startRun, endRun) {
+  const now = Date.now(), at = iso(now);
+  const runId = await startRun(env, "quality");
+  let failing = 0, warning = 0;
+  try {
+    for (const c of CHECKS) {
+      const [sql, ...args] = c.q(now);
+      const rows = (await env.DB.prepare(sql).bind(...args).all()).results;
+      const status = rows.length ? c.severity : "pass";
+      if (status === "fail") failing++;
+      if (status === "warn") warning++;
+      const sample = rows.length ? JSON.stringify(rows.slice(0, 5)) : null;
+      const prev = await env.DB.prepare("SELECT status FROM data_quality WHERE check_name = ?").bind(c.name).first();
+      await env.DB.prepare(
+        `INSERT INTO data_quality (check_name, severity, status, issues, sample_json, description, checked_at) VALUES (?,?,?,?,?,?,?)
+         ON CONFLICT(check_name) DO UPDATE SET severity=excluded.severity, status=excluded.status, issues=excluded.issues,
+           sample_json=excluded.sample_json, description=excluded.description, checked_at=excluded.checked_at`
+      ).bind(c.name, c.severity, status, rows.length, sample, c.description, at).run();
+      if (!prev || prev.status !== status)
+        await env.DB.prepare("INSERT INTO data_quality_events (check_name, from_status, to_status, issues, sample_json, at) VALUES (?,?,?,?,?,?)")
+          .bind(c.name, prev ? prev.status : null, status, rows.length, sample, at).run();
+    }
+    await endRun(env, runId, { ok: true, note: `${CHECKS.length} checks: ${failing} failing, ${warning} warning` });
+  } catch (e) {
+    await endRun(env, runId, { ok: false, note: String(e.message || e).slice(0, 250) });
+  }
+}
+
+// public summary for the /quality page and the daily alert
+export async function qualityStatus(env) {
+  const rows = (await env.DB.prepare("SELECT check_name, severity, status, issues, sample_json, description, checked_at FROM data_quality ORDER BY status = 'pass', check_name").all()).results
+    .map((r) => ({ ...r, sample: r.sample_json ? JSON.parse(r.sample_json) : [], sample_json: undefined }));
+  const recent = (await env.DB.prepare("SELECT check_name, from_status, to_status, issues, at FROM data_quality_events ORDER BY id DESC LIMIT 20").all()).results;
+  const failing = rows.filter((r) => r.status === "fail").map((r) => r.check_name);
+  return { status: 200, body: { overall: failing.length ? "fail" : rows.some((r) => r.status === "warn") ? "warn" : rows.length ? "pass" : "not yet run", failing, checks: rows, recent_changes: recent } };
+}
+
+// Safeguard used before accepting a live prediction: the game must be cleanly scheduled,
+// recently confirmed by the collector, and the pipeline itself must be healthy.
+export async function liveGameGuard(env, gameId) {
+  const g = await env.DB.prepare("SELECT status, start_time, updated_at FROM games WHERE id = ?").bind(gameId).first();
+  if (!g) return "unknown game";
+  if (g.status !== "scheduled") return `game status is '${g.status || "unknown"}', not scheduled`;
+  if (Date.now() - Date.parse(g.updated_at) > 90 * MIN) return `game data is stale (last confirmed ${g.updated_at})`;
+  const hb = await env.DB.prepare("SELECT status FROM data_quality WHERE check_name = 'collector_heartbeat'").first();
+  if (hb && hb.status === "fail") return "data pipeline is not current (collector heartbeat failing)";
+  const bad = await env.DB.prepare("SELECT check_name, sample_json FROM data_quality WHERE status = 'fail' AND check_name IN ('duplicate_games')").first();
+  if (bad && bad.sample_json && new RegExp(`"game_[ab]":${gameId}[,}]`).test(bad.sample_json)) return "game has a duplicate record under review";
+  return null;
+}

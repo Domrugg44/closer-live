@@ -2,6 +2,7 @@
 // Rules that matter (no edits, no late predictions, approvals for status changes) are enforced by
 // the database triggers in migrations/0002_predictions.sql; this code only routes requests to them.
 import { bdlSeasonPage } from "./providers.js";
+import { liveGameGuard } from "./quality.js";
 
 const nowIso = () => new Date().toISOString();
 const SEP = "\u001f";
@@ -73,6 +74,10 @@ export async function submitPredictions(env, body) {
     if (!Number.isInteger(p.game_id) || !["home", "away"].includes(p.side) || !(prob > 0 && prob < 1) || p.inputs == null) {
       results.push({ game_id: p.game_id, ok: false, error: "needs integer game_id, side home|away, 0<probability<1, inputs" });
       continue;
+    }
+    if (kind === "live") {
+      const problem = await liveGameGuard(env, p.game_id);
+      if (problem) { results.push({ game_id: p.game_id, ok: false, error: `refused by data safeguard: ${problem}` }); continue; }
     }
     const inputsJson = canon(p.inputs), inputsHash = await sha256(inputsJson);
     const px = kind === "live" ? await priceAt(env, p.game_id, p.side, createdAt) : null;
@@ -251,6 +256,8 @@ export async function budgetStatus(env) {
   if (fails.n >= 2) alerts.push(`${fails.n} collector runs failed in the last 24 hours`);
   if (lastRun.t && Date.now() - Date.parse(lastRun.t) > 2 * 3600e3) alerts.push(`No collector run since ${lastRun.t}`);
   if (paidTotal > cap * 0.8) alerts.push(`Paid services ($${paidTotal}/mo) are above 80% of the $${cap} budget`);
+  const dq = (await env.DB.prepare("SELECT check_name, issues FROM data_quality WHERE status = 'fail'").all()).results;
+  if (dq.length) alerts.push(`Data quality failing: ${dq.map((r) => `${r.check_name} (${r.issues})`).join(", ")}; see /quality`);
   return { status: 200, body: {
     budget_usd_per_month: cap,
     paid_services: paid, paid_total_usd: paidTotal,

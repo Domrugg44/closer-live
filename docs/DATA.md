@@ -36,6 +36,28 @@ already prices automatically at the moment each prediction is logged.
 | The Odds API (free Starter) | NBA moneylines from US books | Allows use inside apps and websites, including commercially; no resale or redistribution of the raw feed | 500 credits/month |
 | ESPN public feed (website display only) | Live scores, box scores, DraftKings lines via ESPN | Unofficial, not licensed for commercial use | Must be replaced before the site makes money; never used for training |
 
+## Automated data quality checks (M1)
+
+They run every 30 minutes with the collector. Results are at `https://closer-data.closer-data.workers.dev/quality`, and every
+status change is logged permanently. Failures are added to the daily alert email.
+
+| Check | Severity | Catches |
+|---|---|---|
+| `result_overdue` | fail | game started more than 5 h ago (last 7 days) with no final score, and not postponed or canceled |
+| `status_stuck` | warn | still "scheduled" more than 45 min after start |
+| `postponed_or_canceled` | warn | postponed, canceled, suspended, delayed or abandoned games within ±3 days |
+| `score_implausible` | fail | NBA tie, or a score under 50 or over 200 |
+| `duplicate_games` | fail | two records for the same matchup within 3 h |
+| `odds_missing_or_stale` | warn | game within 3 h whose newest odds are missing or more than 7 h old |
+| `odds_unmatched` | warn | odds events that couldn't be matched to a game |
+| `odds_price_implausible` | warn | prices that aren't valid American odds |
+| `collector_heartbeat` | fail | no successful refresh in 75 min |
+| `history_incomplete` | warn | a backfilled season with fewer than 1,230 regular-season results |
+| `start_moved_after_prediction` | warn | a game rescheduled to start at or before a live prediction's time |
+
+**Prediction safeguard:** a live prediction is refused unless the game is `scheduled`, was confirmed by the
+collector within the last 90 minutes, the collector heartbeat is healthy, and the game isn't part of a duplicate.
+
 ## Known limitations
 - The free "closing line" is our last snapshot at least 30 minutes before tip-off (the schedule runs every 30 minutes).
 - History before 2026-11-21 has results only, no odds.
