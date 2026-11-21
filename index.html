@@ -166,6 +166,9 @@ th{color:var(--soft);font-weight:600;font-size:13px}
 .lgt{color:#fff;border-radius:6px;padding:1px 7px;font:800 11px Inter,sans-serif;letter-spacing:.04em;flex:none}
 .gs.in{color:#12a46a}
 .sg .gs.in{color:#8dffbf}
+.sgl.lvt{color:#ffd166;opacity:1;font-weight:800}
+.lvp{border-color:color-mix(in srgb,#21c46b 55%,var(--line))}
+.lvp b{line-height:1.3}
 .tv{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .star{margin-left:auto;border:0;background:var(--tint);color:var(--co);width:40px;height:40px;border-radius:12px;font-size:20px;cursor:pointer;flex:none}
 .star[aria-pressed=true]{background:var(--co);color:#fff}
@@ -273,6 +276,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 <main class="wrap">
   <section class="view on" id="v-picks">
     <div class="hero" id="hero"></div>
+    <div id="livePlays"></div>
     <div class="grid" id="grid"></div>
   </section>
   <section class="view" id="v-games">
@@ -450,7 +454,7 @@ const renderProps=()=>{
   }
   $("props").innerHTML=h||emptyBox("No props for this league yet.");
 };
-const legOf=k=>{const i=+k.slice(1);if(k[0]==="g"){const p=picks[i];return p&&{l:p[0],t:p[4],s:p[1],o:-110}}const p=props[i];return p&&{l:p[0],t:`${p[2]} ${p[12]} ${p[6]} ${pAbbr(p[5])}`,s:p[3],o:p[12]==="Over"?p[7]:-110}};
+const legOf=k=>{const it=slip.find(s=>s.k===k);if(it&&it.live)return it.live;const i=+k.slice(1);if(k[0]==="g"){const p=picks[i];return p&&{l:p[0],t:p[4],s:p[1],o:-110}}const p=props[i];return p&&{l:p[0],t:`${p[2]} ${p[12]} ${p[6]} ${pAbbr(p[5])}`,s:p[3],o:p[12]==="Over"?p[7]:-110}};
 const renderSlip=()=>{
   slip=slip.filter(s=>legOf(s.k));
   const legs=slip.map(s=>({k:s.k,...legOf(s.k)}));
@@ -626,12 +630,12 @@ const pickChips=g=>{const m=pmap[g.id];if(!m)return"";
   const gp=m.g.map(i=>{const p=picks[i],k=pkey(i);return`<div class="gpc"><span class="st ${p[7]}">${p[7]}</span><b>${esc(p[4])}</b><button class="add sm" data-add="${k}" aria-pressed="${onSlip(k)}" aria-label="Add ${esc(p[4])} to slip">${onSlip(k)?"✓":"+"}</button></div>`}).join("");
   const pp=m.p.map(i=>{const p=props[i],k=prkey(i),t=`${lastName(p[2])} ${p[12]==="Over"?"O":"U"} ${p[6]} ${pAbbr(p[5])}`;return`<div class="gpc">${p[13]?`<span class="st ${p[13]}">${p[13]}</span>`:""}<b>${esc(t)}</b><button class="add sm" data-add="${k}" aria-pressed="${onSlip(k)}" aria-label="Add ${esc(t)} to slip">${onSlip(k)?"✓":"+"}</button></div>`}).join("");
   return`<div class="gp">${gp}${pp}</div>`};
-const gCard=g=>`<article class="card gc ${g.state}"><div class="gch"><span class="lgt" style="background:${LC[g.lg]}">${g.lg}</span>${gStat(g)}${g.tv?`<span class="tv">· ${e0(g.tv)}</span>`:""}<button class="star" data-follow="${e0(g.id)}" aria-pressed="${isF(g.id)}" aria-label="${isF(g.id)?"Unfollow":"Follow"} ${e0(g.name)}">${isF(g.id)?"★":"☆"}</button></div>${tLine(g,g.away,g.home)}${tLine(g,g.home,g.away)}${g.sit&&g.sit.down?`<div class="sit">${e0(g.sit.down)}</div>`:""}${lineCells(g)}${pickChips(g)}<button class="btn gopen" data-game="${e0(g.id)}">Stats, lines &amp; injuries</button></article>`;
+const gCard=g=>`<article class="card gc ${g.state}"><div class="gch"><span class="lgt" style="background:${LC[g.lg]}">${g.lg}</span>${gStat(g)}${g.tv?`<span class="tv">· ${e0(g.tv)}</span>`:""}<button class="star" data-follow="${e0(g.id)}" aria-pressed="${isF(g.id)}" aria-label="${isF(g.id)?"Unfollow":"Follow"} ${e0(g.name)}">${isF(g.id)?"★":"☆"}</button></div>${tLine(g,g.away,g.home)}${tLine(g,g.home,g.away)}${g.sit&&g.sit.down?`<div class="sit">${e0(g.sit.down)}</div>`:""}${lineCells(g)}${pickChips(g)}${liveChip(g)}<button class="btn gopen" data-game="${e0(g.id)}">Stats, lines &amp; injuries</button></article>`;
 const groupCards=list=>LGO.map(l=>{const xs=list.filter(g=>g.lg===l);return xs.length?`<h3 class="gh">${LG[l]}<span>${xs.length} game${xs.length>1?"s":""}</span></h3><div class="ggrid">${xs.map(gCard).join("")}</div>`:""}).join("");
 const renderStrip=()=>{
   const pool=games().filter(g=>inL(g.lg)).sort(gSort);
   if(!pool.length){$("sb").innerHTML=`<div class="sbe">${feedOk===false&&!games().length?"Scores are unavailable right now.":games().length?"No games for this league on the feed.":"Loading scores…"}</div>`;return}
-  $("sb").innerHTML=pool.slice(0,80).map(g=>`<button class="sg ${g.state} ${isF(g.id)?"fol":""}" data-game="${e0(g.id)}" aria-label="${e0(g.name)}, ${e0(when(g))}"><div class="sgt"><span>${isF(g.id)?"★ ":""}${g.lg}</span>${gStat(g)}</div>${[g.away,g.home].map(t=>`<div class="sgr"><i style="background:${hex(t.color)}"></i><b>${t.rank?`<small style="opacity:.75;font-weight:600">${e0(t.rank)}</small> `:""}${e0(t.abbr)}</b>${g.state==="pre"?"":`<em class="num">${e0(t.score)}</em>`}</div>`).join("")}<div class="sgl">${g.lines&&(g.lines.details||g.lines.total)?e0([g.lines.details,g.lines.total!=null?"O/U "+g.lines.total:""].filter(Boolean).join(" · ")):pmap[g.id]?"Our pick on this game":"&nbsp;"}</div></button>`).join("");
+  $("sb").innerHTML=pool.slice(0,80).map(g=>`<button class="sg ${g.state} ${isF(g.id)?"fol":""}" data-game="${e0(g.id)}" aria-label="${e0(g.name)}, ${e0(when(g))}"><div class="sgt"><span>${isF(g.id)?"★ ":""}${g.lg}</span>${gStat(g)}</div>${[g.away,g.home].map(t=>`<div class="sgr"><i style="background:${hex(t.color)}"></i><b>${t.rank?`<small style="opacity:.75;font-weight:600">${e0(t.rank)}</small> `:""}${e0(t.abbr)}</b>${g.state==="pre"?"":`<em class="num">${e0(t.score)}</em>`}</div>`).join("")}${liveTag(g)}<div class="sgl">${g.lines&&(g.lines.details||g.lines.total)?e0([g.lines.details,g.lines.total!=null?"O/U "+g.lines.total:""].filter(Boolean).join(" · ")):pmap[g.id]?"Our pick on this game":"&nbsp;"}</div></button>`).join("");
 };
 const renderGames=()=>{
   const pool=games().filter(g=>inL(g.lg)),q=nrm(gq);
@@ -666,7 +670,8 @@ const renderGameSheet=()=>{
   ${g.sit&&(g.sit.down||g.sit.last)?`<div class="card" style="padding:10px 12px;margin-top:8px">${g.sit.down?`<div class="sit">${e0(g.sit.down)}${g.sit.red?" · Red zone":""}</div>`:""}${g.sit.last?`<div style="font-size:14px;color:var(--soft)">Last play: ${e0(g.sit.last)}</div>`:""}</div>`:""}
   <h3>Lines<small>${L&&L.book?e0(L.book)+" · ":""}open vs now</small></h3>
   ${rows.length?`<div class="scroll"><table class="cmp mv"><thead><tr><th>Market</th><th>Open</th><th>Now</th><th>Move</th></tr></thead><tbody>${rows.map(([lab,o])=>`<tr><td>${e0(lab)}</td><td class="num">${cell(o.open,o.openOdds)}</td><td class="num">${cell(o.now,o.nowOdds)}</td><td>${mv(o)}</td></tr>`).join("")}</tbody></table></div>`:lineCells(g)}
-  ${pmap[g.id]?`<h3>Our plays<small>tap + to add to your slip</small></h3>${pickChips(g)}`:""}
+  ${pmap[g.id]?`<h3>Our plays<small>pregame · tap + to add to your slip</small></h3>${pickChips(g)}`:""}
+  ${liveSection(g)}
   <h3>${g.state==="pre"?"Season stats":"Game stats"}</h3>
   ${!sums[g.id]&&!g.box?`<p class="fine" style="margin:0 0 8px">Loading stats and injuries…</p>`:""}
   ${labels.length?`<div class="scroll"><table class="cmp"><thead><tr><th></th><th>${e0(g.away.abbr)}</th><th>${e0(g.home.abbr)}</th></tr></thead><tbody>${labels.map(l=>`<tr><td>${e0(l)}</td><td class="num">${e0(A[l]??"—")}</td><td class="num">${e0(H[l]??"—")}</td></tr>`).join("")}</tbody></table></div>`:`<p class="fine" style="margin:0">Stats show up here once this game's numbers are posted.</p>`}
@@ -674,9 +679,63 @@ const renderGameSheet=()=>{
   ${inj.length?`<h3>Injury report</h3><div class="ldr">${[g.away,g.home].map(t=>{const xs=inj.filter(x=>x.abbr===t.abbr);return xs.length?`<div><h4>${e0(t.name||t.abbr)}</h4><ul>${xs.map(x=>`<li><span>${e0(x.pos)}</span><b>${e0(x.who)} · ${e0(x.st)}</b></li>`).join("")}</ul></div>`:""}).join("")}</div>`:""}
   <p class="fine" style="margin:14px 0 0">${e0(ago())}. Live games refresh every 15 seconds. Scores, stats and injuries from ESPN's public feed; lines are ${L&&L.book?e0(L.book):"sportsbook"} prices as ESPN shows them.</p>`;
 };
-const openGame=id=>{gameId=id;$("gsheet").classList.add("on");$("gsheet").setAttribute("aria-hidden","false");renderGameSheet();$("gClose").focus();const g=gById(id);if(g&&(!sums[id]||g.state==="in"))pullSum(g).then(()=>{if(gameId===id)renderGameSheet()})};
+const openGame=id=>{gameId=id;$("gsheet").classList.add("on");$("gsheet").setAttribute("aria-hidden","false");renderGameSheet();$("gClose").focus();const g=gById(id);if(g&&(!sums[id]||g.state==="in"))pullSum(g).then(()=>{if(gameId===id)renderGameSheet()});if(g&&g.state==="in"&&!liveOdds[id])pullLive(g).then(()=>{if(gameId===id)renderGameSheet()})};
 const closeGame=()=>{gameId=null;$("gsheet").classList.remove("on");$("gsheet").setAttribute("aria-hidden","true")};
-const renderFeed=()=>{renderStrip();renderGames();renderGameSheet();renderGrid();renderRecord()};
+/* ---- live in-game plays: model fair line vs the live market ---- */
+const liveOdds={},preOdds={};let LP={};
+const PER={NFL:[4,900],CFB:[4,900],NBA:[4,720],CBB:[2,1200],NHL:[3,1200]};
+const coreUrl=(g,prov)=>{const[sp,lp]=BASE[g.lg].split("/");return`https://sports.core.api.espn.com/v2/sports/${sp}/leagues/${lp}/events/${encodeURIComponent(g.id)}/competitions/${encodeURIComponent(g.id)}/odds/${prov}`};
+const am=x=>x?num(x.american??x.alternateDisplayValue):null;
+const readOdds=o=>({at:Date.now(),spreadHome:num(o.spread),total:num(o.overUnder),details:o.details||"",
+  homeSp:am(o.homeTeamOdds?.current?.spread)??num(o.homeTeamOdds?.spreadOdds),awaySp:am(o.awayTeamOdds?.current?.spread)??num(o.awayTeamOdds?.spreadOdds),
+  over:am(o.current?.over)??num(o.overOdds),under:am(o.current?.under)??num(o.underOdds),
+  mlHome:am(o.homeTeamOdds?.current?.moneyLine)??num(o.homeTeamOdds?.moneyLine),mlAway:am(o.awayTeamOdds?.current?.moneyLine)??num(o.awayTeamOdds?.moneyLine)});
+const pullLive=async g=>{
+  try{if(!preOdds[g.id]){const r=await fetch(coreUrl(g,100),{cache:"no-store"});preOdds[g.id]=r.ok?readOdds(await r.json()):{none:true}}}catch(e){}
+  try{const r=await fetch(coreUrl(g,200),{cache:"no-store"});liveOdds[g.id]=r.ok?readOdds(await r.json()):{none:true,at:Date.now()}}catch(e){if(!liveOdds[g.id])liveOdds[g.id]={none:true,at:Date.now()}}};
+const clockSec=c=>{c=String(c??"0");if(c.includes(":")){const[m,s]=c.split(":");return(+m||0)*60+(+s||0)}return+c||0};
+const fracDone=g=>{const[n,len]=PER[g.lg]||[4,900],p=+g.period||1,d=String(g.detail||"");
+  if(p>n)return .97;if(/half/i.test(d)&&n!==2)return .5;if(/^end of/i.test(d))return Math.min(.97,p/n);
+  const done=((p-1)*len+(len-Math.min(len,clockSec(g.clock))))/(n*len);return Math.min(.97,Math.max(.02,done))};
+const clampP=p=>Math.min(.97,Math.max(.03,p));
+const liveModel=g=>{
+  if(!g||g.state!=="in")return null;const L=liveOdds[g.id];if(!L||L.none)return{none:true};
+  const P=preOdds[g.id]&&!preOdds[g.id].none?preOdds[g.id]:null;
+  const T0=P&&P.total!=null?P.total:num(g.lines&&g.lines.total),S0=P&&P.spreadHome!=null?P.spreadHome:num(g.lines&&g.lines.spreadHome&&g.lines.spreadHome.now);
+  if(T0==null||S0==null)return{none:true,nopre:true};
+  const f=fracDone(g),r=1-f,as=+g.away.score||0,hs=+g.home.score||0,cur=as+hs,mar=hs-as;
+  const w=.6*f,rate=(1-w)*T0+w*(cur/f),projT=cur+r*rate,projM=mar+r*(-S0);
+  const sd=SD[g.lg]||{spread:12,total:12},sT=Math.max(.5,sd.total*Math.sqrt(r)),sM=Math.max(.5,sd.spread*Math.sqrt(r));
+  const out=[];
+  const add=(mk,side,label,line,p,price)=>{if(price==null||!isFinite(p))return;p=clampP(p);const ev=p*dec(price)-1;const x={k:`L|${g.id}|${mk}|${side}|${line??""}`,lg:g.lg,gid:g.id,game:g.name,mk,side,label,line,p,price,ev,strength:ev>=.08?"Strong":ev>=.05?"Solid":ev>=.03?"Lean":null};LP[x.k]=x;out.push(x)};
+  if(L.total!=null){const z=(L.total-projT)/sT;add("total","Over",`Over ${L.total}`,L.total,1-Phi(z),L.over);add("total","Under",`Under ${L.total}`,L.total,Phi(z),L.under)}
+  if(L.spreadHome!=null){const ph=Phi((projM+L.spreadHome)/sM);add("spread","home",`${g.home.abbr} ${sgnL(L.spreadHome)}`,L.spreadHome,ph,L.homeSp);add("spread","away",`${g.away.abbr} ${sgnL(-L.spreadHome)}`,-L.spreadHome,1-ph,L.awaySp)}
+  const pw=Phi(projM/sM);
+  if(L.mlHome!=null&&Math.abs(L.mlHome)<=400)add("ml","home",`${g.home.abbr} moneyline`,null,pw,L.mlHome);
+  if(L.mlAway!=null&&Math.abs(L.mlAway)<=400)add("ml","away",`${g.away.abbr} moneyline`,null,1-pw,L.mlAway);
+  out.sort((a,b)=>b.ev-a.ev);
+  return{f,projT,projM,L,T0,S0,cands:out,plays:out.filter(x=>x.strength).slice(0,3)}};
+const spTxtH=(g,h)=>h==null?"—":h<0?`${g.home.abbr} ${r1(h)}`:h>0?`${g.away.abbr} ${r1(-h)}`:"PK";
+const pr=o=>o==null?"":`${o>0?"+":""}${o}`;
+const lpRow=p=>`<div class="gpc lvp"><span class="st ${p.strength}">${p.strength}</span><b>${esc(p.label)} <small style="color:var(--soft)">${esc(pr(p.price))}</small><br><small style="color:var(--soft);font-weight:500">${Math.round(p.p*100)}% to win · ${(p.ev*100).toFixed(1)}% expected value</small></b><button class="add sm" data-addlive="${esc(p.k)}" aria-pressed="${onSlip(p.k)}" aria-label="Add ${esc(p.label)} to slip">${onSlip(p.k)?"✓":"+"}</button></div>`;
+const liveSection=g=>{if(g.state!=="in")return"";const m=liveModel(g);
+  if(!m||m.none)return`<h3>Live plays</h3><p class="fine" style="margin:0">${m&&m.nopre?"No pregame line to anchor the model for this game.":liveOdds[g.id]?"No live lines posted for this game right now.":"Loading live lines…"}</p>`;
+  const L=m.L,b=m.cands[0];
+  return`<h3>Live plays<small>in-game · updates every 15s</small></h3>
+  <div class="scroll"><table class="cmp"><thead><tr><th></th><th>Live market</th><th>Model fair</th><th>Pregame</th></tr></thead><tbody>
+  <tr><td>Spread</td><td class="num">${esc(spTxtH(g,L.spreadHome))} <span style="color:var(--soft)">${esc(pr(L.homeSp))}</span></td><td class="num">${esc(spTxtH(g,-m.projM))}</td><td class="num">${esc(spTxtH(g,m.S0))}</td></tr>
+  <tr><td>Total</td><td class="num">${L.total??"—"} <span style="color:var(--soft)">o${esc(pr(L.over))} u${esc(pr(L.under))}</span></td><td class="num">${r1(m.projT)}</td><td class="num">${m.T0}</td></tr>
+  <tr><td>Moneyline</td><td class="num">${esc(g.away.abbr)} ${esc(pr(L.mlAway))} / ${esc(g.home.abbr)} ${esc(pr(L.mlHome))}</td><td class="num">${esc(g.home.abbr)} ${Math.round(Phi(m.projM/Math.max(.5,(SD[g.lg]||{spread:12}).spread*Math.sqrt(1-m.f)))*100)}%</td><td></td></tr>
+  </tbody></table></div>
+  ${m.plays.length?`<div class="gp" style="margin-top:8px">${m.plays.map(lpRow).join("")}</div>`:`<p class="tipbox card" style="margin-top:8px">No live edge right now: the market is close to the model.${b?` Closest: <b>${esc(b.label)} ${esc(pr(b.price))}</b> at ${(b.ev*100).toFixed(1)}% expected value (needs 3%+).`:""}</p>`}
+  <p class="fine" style="margin:8px 0 0">${Math.round(m.f*100)}% of the game played. The model starts from the pregame line, blends in the scoring pace so far, and projects the rest of the game from the current score. Estimates, not guarantees. Live lines are DraftKings via ESPN, updated ${Math.max(0,Math.round((Date.now()-L.at)/1000))}s ago.</p>`};
+const liveChip=g=>{if(g.state!=="in")return"";const m=liveModel(g);if(!m||!m.plays||!m.plays.length)return"";return`<div style="font-size:12px;font-weight:800;color:#12a46a;letter-spacing:.05em">LIVE PLAY</div>${lpRow(m.plays[0])}`};
+const liveTag=g=>{if(g.state!=="in")return"";const m=liveModel(g);return m&&m.plays&&m.plays.length?`<div class="sgl lvt">⚡ ${esc(m.plays[0].label)} ${esc(pr(m.plays[0].price))}</div>`:""};
+const renderLivePlays=()=>{const el=$("livePlays");if(!el)return;const xs=[];
+  games().filter(g=>g.state==="in"&&inL(g.lg)).forEach(g=>{const m=liveModel(g);if(m&&m.plays)m.plays.forEach(p=>xs.push([g,p]))});
+  xs.sort((a,b)=>b[1].ev-a[1].ev);
+  el.innerHTML=xs.length?`<h3 class="gh" style="margin-top:0">Live plays<span>${xs.length} edge${xs.length>1?"s":""} right now · updates every 15s</span></h3><div class="grid">${xs.map(([g,p])=>`<article class="card tk ${p.strength}"><div class="ico" style="background:${LC[g.lg]}">${ic(g.lg)}</div><div><div class="g">${esc(g.away.abbr)} ${esc(g.away.score)} – ${esc(g.home.abbr)} ${esc(g.home.score)} · ${esc(g.detail||"Live")}</div><div class="p num">${esc(p.label)} <span style="font-size:18px;color:var(--soft)">${esc(pr(p.price))}</span></div><div class="mt"><div class="m"><i style="width:${Math.min(100,p.ev/.15*100)}%"></i></div><span class="st ${p.strength}">${p.strength}</span></div></div><div class="side"><button class="add" data-addlive="${esc(p.k)}" aria-pressed="${onSlip(p.k)}" aria-label="Add ${esc(p.label)} to slip">${onSlip(p.k)?"✓":"+"}</button><button class="ln" data-game="${esc(g.id)}">● Game</button></div><p class="why">Model gives it ${Math.round(p.p*100)}% at this price: ${(p.ev*100).toFixed(1)}% expected value. Live line, so it can move fast.</p></article>`).join("")}</div>`:"";};
+const renderFeed=()=>{renderStrip();renderGames();renderGameSheet();renderGrid();renderRecord();renderLivePlays()};
 /* direct live fetching from ESPN's public feed (allows browser requests from any site) */
 const API="https://site.api.espn.com/apis/site/v2/sports/";
 const BASE={NFL:"football/nfl",CFB:"football/college-football",NBA:"basketball/nba",CBB:"basketball/mens-college-basketball",NHL:"hockey/nhl"};
@@ -689,7 +748,7 @@ const toGame=(e,lg)=>{const c=(e.competitions||[])[0]||{},st=(e.status&&e.status
     T[t.homeAway]={id:tm.id,abbr:tm.abbreviation,name:tm.shortDisplayName,full:tm.displayName,color:tm.color,score:t.score,rec:t.records?.[0]?.summary,rank:t.curatedRank&&t.curatedRank.current<99?t.curatedRank.current:null,stats,
       leaders:(t.leaders||[]).map(l=>{const x=(l.leaders||[])[0];return x?{cat:l.shortDisplayName,who:x.athlete?.shortName,val:x.displayValue}:null}).filter(Boolean)}});
   const o=(c.odds||[])[0];
-  return{id:e.id,lg,date:e.date,name:e.shortName,state:st.state,detail:st.shortDetail,tv:(c.broadcasts||[]).flatMap(b=>b.names||[]).slice(0,2).join(" / "),venue:c.venue?.fullName,away:T.away,home:T.home,
+  return{id:e.id,lg,date:e.date,name:e.shortName,clock:e.status?.displayClock,period:e.status?.period,state:st.state,detail:st.shortDetail,tv:(c.broadcasts||[]).flatMap(b=>b.names||[]).slice(0,2).join(" / "),venue:c.venue?.fullName,away:T.away,home:T.home,
     lines:o?{book:o.provider?.name,details:o.details,total:o.overUnder,spreadHome:side(o.pointSpread,"home"),spreadAway:side(o.pointSpread,"away"),over:side(o.total,"over"),under:side(o.total,"under"),mlHome:side(o.moneyline,"home"),mlAway:side(o.moneyline,"away")}:null,
     sit:st.state==="in"&&c.situation?{down:c.situation.downDistanceText,red:c.situation.isRedZone,last:c.situation.lastPlay?.text}:null}};
 const pull=async lg=>{try{const j=await getJ(API+BASE[lg]+"/scoreboard"+(QS[lg]||""));const old=new Map(((feed[lg]&&feed[lg].games)||[]).map(g=>[g.id,g]));
@@ -702,6 +761,7 @@ let tick=0,busy=false;
 const cycle=async()=>{if(busy||document.hidden)return;busy=true;
   try{const live=new Set(games().filter(g=>g.state==="in").map(g=>g.lg));
     await Promise.all(LGO.filter(l=>!feed[l]||live.has(l)||tick%4===0).map(pull));
+    await Promise.all(games().filter(g=>g.state==="in").slice(0,40).map(pullLive));
     if(gameId){const g=gById(gameId);if(g&&(g.state==="in"||!sums[gameId]))await pullSum(g)}
     if(!games().length&&tick>0)feedOk=false;
     buildMap();renderFeed();tick++}finally{busy=false}};
@@ -709,8 +769,9 @@ cycle();setInterval(cycle,15000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)cycle()});
 setTimeout(()=>{if(feedOk===null){feedOk=false;renderFeed()}},15000);
 setInterval(()=>{const u=$("gUpd");if(games().length&&u.lastChild)u.lastChild.textContent=ago()},5000);
-const all=()=>{renderLgs();renderHero();renderGrid();renderProps();renderSlip();renderRecord();renderStrip();renderGames();renderGameSheet()};
+const all=()=>{renderLgs();renderHero();renderGrid();renderProps();renderSlip();renderRecord();renderStrip();renderGames();renderGameSheet();renderLivePlays()};
 const toggle=k=>{const j=slip.findIndex(s=>s.k===k);if(j>=0)slip.splice(j,1);else slip.push({k});save();all()};
+const toggleLive=k=>{const j=slip.findIndex(s=>s.k===k);if(j>=0)slip.splice(j,1);else{const p=LP[k];if(!p)return;slip.push({k,live:{l:p.lg,t:p.label,s:p.game+" · live line",o:p.price}})}save();all()};
 const setView=v=>{view=v;document.querySelectorAll(".seg button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===v));document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on",s.id==="v-"+v));renderSlip()};
 document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;
   if(t.dataset.f){filter=t.dataset.f;all()}
@@ -727,6 +788,7 @@ document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)r
   if(t.dataset.follow){const id=t.dataset.follow;follow=isF(id)?follow.filter(x=>x!==id):[...follow,id];saveF();renderStrip();renderGames();renderGameSheet()}
   if(t.dataset.gv){gview=t.dataset.gv;renderGames()}
   if(t.dataset.rf){rf=t.dataset.rf;renderRecord()}
+  if(t.dataset.addlive)toggleLive(t.dataset.addlive);
   if(t.id==="gClose")closeGame()});
 $("gdim").addEventListener("click",closeGame);
 document.addEventListener("input",e=>{if(e.target.id==="gq"){gq=e.target.value;renderGames()}});
