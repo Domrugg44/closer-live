@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-21T19:41:37Z",
+    "updatedAt":  "2026-11-21T20:35:05Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -815,19 +815,24 @@
                         "why":  "89% of spread money on Tulane from 31% of bets: the strongest sharp signal on the college board.",
                         "loggedAfterStart":  false,
                         "hash":  "c6440ab843272cc417770d344afce66d620eaa187f764dc2699e981de145d823",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "UNT",
+                                      "as":  24,
+                                      "home":  "TULN",
+                                      "hs":  28
+                                  },
+                        "actual":  4,
+                        "diff":  10.5,
                         "units":  null,
                         "close":  {
                                       "spread":  7.5,
                                       "total":  56.5,
                                       "details":  "UNT -7.5"
                                   },
-                        "clv":  null,
+                        "clv":  -1.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T20:35:00Z"
                     },
                     {
                         "id":  "L023",
@@ -893,9 +898,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -12.5,
+                                      "spread":  -11.5,
                                       "total":  50.5,
-                                      "details":  "LOU -12.5"
+                                      "details":  "LOU -11.5"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -1120,7 +1125,7 @@
                         "units":  null,
                         "close":  {
                                       "spread":  3.5,
-                                      "total":  36.5,
+                                      "total":  35.5,
                                       "details":  "UCLA -3.5"
                                   },
                         "clv":  null,
@@ -1257,19 +1262,24 @@
                         "why":  null,
                         "loggedAfterStart":  false,
                         "hash":  "3e9e585145ef7ded9b37541dc626b4c33dee9618ecea4174e52b46514f927f54",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "WIS",
+                                      "as":  42,
+                                      "home":  "PUR",
+                                      "hs":  10
+                                  },
+                        "actual":  52,
+                        "diff":  5.5,
                         "units":  null,
                         "close":  {
                                       "spread":  4.5,
                                       "total":  46.5,
                                       "details":  "WIS -4.5"
                                   },
-                        "clv":  null,
+                        "clv":  0.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T20:35:04Z"
                     },
                     {
                         "id":  "L035",
@@ -1329,19 +1339,24 @@
                         "why":  null,
                         "loggedAfterStart":  false,
                         "hash":  "7e217348c9421943af47846e2753fea843c0d04910f9ee152a32e111f63a4e29",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "UNT",
+                                      "as":  24,
+                                      "home":  "TULN",
+                                      "hs":  28
+                                  },
+                        "actual":  52,
+                        "diff":  3.5,
                         "units":  null,
                         "close":  {
                                       "spread":  7.5,
                                       "total":  56.5,
                                       "details":  "UNT -7.5"
                                   },
-                        "clv":  null,
+                        "clv":  -1.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T20:35:04Z"
                     },
                     {
                         "id":  "L037",
@@ -1401,19 +1416,24 @@
                         "why":  null,
                         "loggedAfterStart":  false,
                         "hash":  "256d9f88b91fc93b6e202d31256fee126ae51f4ff82c730cbe1ffd5e129c2cce",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "VAN",
+                                      "as":  27,
+                                      "home":  "FLA",
+                                      "hs":  34
+                                  },
+                        "actual":  61,
+                        "diff":  -15.5,
                         "units":  null,
                         "close":  {
                                       "spread":  -13.5,
                                       "total":  47.5,
                                       "details":  "FLA -13.5"
                                   },
-                        "clv":  null,
+                        "clv":  -2.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T20:35:04Z"
                     },
                     {
                         "id":  "L039",
