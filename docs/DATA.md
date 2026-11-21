@@ -58,6 +58,23 @@ status change is logged permanently. Failures are added to the daily alert email
 **Prediction safeguard:** a live prediction is refused unless the game is `scheduled`, was confirmed by the
 collector within the last 90 minutes, the collector heartbeat is healthy, and the game isn't part of a duplicate.
 
+## Derived game context (M2)
+
+The `game_team_context` view gives one row per team per game. Every value comes from **earlier scheduled games only** (their times and places are known in advance), never from results, so it's safe to use at prediction time.
+
+| Field | Meaning |
+|---|---|
+| `rest_days` | whole days off since the team's previous game (US Eastern dates); 0 = back-to-back |
+| `back_to_back` | 1 if the previous game was the day before |
+| `first_game_of_season` | 1 if there's no earlier game this season |
+| `games_last_7d` | games in the 7 days before this one |
+| `travel_km` | great-circle distance from the previous game's arena to this one |
+| `tz_shift_hours` | time-zone change since the previous game (+ = moved east) |
+
+Arenas (`venues`) are public facts with date ranges (the Clippers moved to Intuit Dome on 2024-08-15).
+**Verification:** `qc/check_context.py` recomputes everything independently in Python. The first run had **0 mismatches across 850 team-games**, and the nightly QC repeats it for the current season.
+**Limitation:** a game's venue is the home team's arena; neutral sites (international games, NBA Cup finals) aren't flagged yet.
+
 ## Known limitations
 - The free "closing line" is our last snapshot at least 30 minutes before tip-off (the schedule runs every 30 minutes).
 - History before 2026-11-21 has results only, no odds.

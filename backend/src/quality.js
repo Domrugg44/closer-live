@@ -74,6 +74,22 @@ export const CHECKS = [
         FROM backfill_queue b WHERE b.done = 1 AND (SELECT COUNT(*) FROM games g JOIN game_results r ON r.game_id = g.id WHERE g.season = b.season AND g.postseason = 0) < 1230`],
   },
   {
+    name: "season_schedule_gap", severity: "warn",
+    description: "Teams whose first stored game of the latest season is more than 14 days after that season's first stored game (missing early-season schedule makes rest/travel context wrong)",
+    q: () => [`WITH s AS (SELECT MAX(season) AS season FROM games WHERE league = 'NBA'),
+        first_any AS (SELECT MIN(start_time) AS t FROM games, s WHERE games.season = s.season),
+        prev_first AS (SELECT MIN(start_time) AS t FROM games, s WHERE games.season = s.season - 1),
+        season_start AS (SELECT 'ALL TEAMS' AS abbr, f.t AS first_t, p.t AS season_first FROM first_any f, prev_first p
+          WHERE p.t IS NOT NULL AND julianday(f.t) - julianday(p.t, '+1 year') > 21),
+        per_team AS (SELECT team_id, MIN(start_time) AS first_t FROM (
+          SELECT home_team_id AS team_id, start_time FROM games, s WHERE games.season = s.season
+          UNION ALL SELECT away_team_id, start_time FROM games, s WHERE games.season = s.season) GROUP BY team_id)
+        SELECT * FROM season_start
+        UNION ALL
+        SELECT t.abbr, p.first_t, f.t AS season_first FROM per_team p JOIN teams t ON t.id = p.team_id, first_any f
+        WHERE julianday(p.first_t) - julianday(f.t) > 14 LIMIT 200`],
+  },
+  {
     name: "start_moved_after_prediction", severity: "warn",
     description: "Live predictions whose game was moved to start at or before the time the prediction was logged (needs review)",
     q: () => [`SELECT p.id AS prediction_id, p.game_id, p.created_at, g.start_time FROM predictions p JOIN games g ON g.id = p.game_id

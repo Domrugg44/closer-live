@@ -28,3 +28,10 @@ jobs:
         env:
           CLOSER_QC_TOKEN: ${{ secrets.CLOSER_QC_TOKEN }}
         run: python qc/evaluate.py
+      - name: Cross-check game context (current season)
+        if: github.event_name != 'push'
+        env:
+          CLOSER_TOKEN: ${{ secrets.CLOSER_QC_TOKEN }}
+        run: |
+          season=$(python -c "import datetime as d; t=d.date.today(); print(t.year if t.month >= 8 else t.year - 1)")
+          python qc/check_context.py --season "$season"

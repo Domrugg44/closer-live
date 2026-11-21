@@ -5,6 +5,7 @@
 import { bdlGames, oddsMoneylines } from "./providers.js";
 import { scopeOf, registerModel, submitPredictions, readPredictions, readChain, readResults, recordQc, listModels, gradePredictions, backfillStep, budgetStatus } from "./predictions.js";
 import { runQualityChecks, qualityStatus } from "./quality.js";
+import { gameContext, seasonContext } from "./context.js";
 
 const nowIso = () => new Date().toISOString();
 const etDate = (offsetDays = 0, from = Date.now()) =>
@@ -103,8 +104,17 @@ async function snapshotOdds(env, why) {
     for (const ev of events) {
       const h = byName[normTeam(ev.home_team)], a = byName[normTeam(ev.away_team)];
       if (h && a) {
-        stmts.push(env.DB.prepare("UPDATE games SET odds_event_id=? WHERE odds_event_id IS NULL AND home_team_id=? AND away_team_id=? AND abs(julianday(start_time) - julianday(?)) * 24 < 12")
-          .bind(ev.id, h, a, ev.commence_time));
+        // link this odds event to at most ONE game (the closest in time), never one already linked;
+        // done on its own so a bad game record (e.g. a duplicate) can't stop prices from being saved
+        try {
+          await env.DB.prepare(
+            `UPDATE games SET odds_event_id = ? WHERE id = (
+               SELECT id FROM games WHERE odds_event_id IS NULL AND home_team_id = ? AND away_team_id = ?
+                 AND abs(julianday(start_time) - julianday(?)) * 24 < 12
+               ORDER BY abs(julianday(start_time) - julianday(?)) LIMIT 1)
+             AND NOT EXISTS (SELECT 1 FROM games WHERE odds_event_id = ?)`
+          ).bind(ev.id, h, a, ev.commence_time, ev.commence_time, ev.id).run();
+        } catch (e) { /* left unmatched; the odds_unmatched quality check reports it */ }
       }
       const live = Date.parse(ev.commence_time) <= nowMs ? 1 : 0;
       for (const b of ev.bookmakers || []) for (const m of b.markets || []) for (const o of m.outcomes || []) {
@@ -165,6 +175,7 @@ async function handle(req, env) {
   if (url.pathname === "/models") { const r = await listModels(env); return json(env, r.body, r.status); }
   if (url.pathname === "/budget") { const r = await budgetStatus(env); return json(env, r.body, r.status); }
   if (url.pathname === "/quality") { const r = await qualityStatus(env); return json(env, r.body, r.status); }
+  if (url.pathname === "/nba/context") { const r = await gameContext(env, url); return json(env, r.body, r.status); }
   if (url.pathname === "/" || url.pathname === "/health") {
     const runs = (await env.DB.prepare("SELECT job, started_at, finished_at, ok, rows_written, credits_used, credits_remaining, note FROM ingestion_runs ORDER BY id DESC LIMIT 20").all()).results;
     const count = async (t) => (await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${t}`).first()).n;
@@ -213,6 +224,7 @@ async function handleAdmin(req, env, url) {
     "GET /admin/predictions": ["model", "qc"],
     "GET /admin/chain": ["qc"],
     "GET /admin/results": ["model", "qc"],
+    "GET /admin/context": ["model", "qc"],
     "POST /admin/qc/evaluations": ["qc"],
   }[route];
   if (!allow) return send({ status: 404, body: { error: "not found" } });
@@ -222,6 +234,7 @@ async function handleAdmin(req, env, url) {
   if (route === "GET /admin/predictions") return send(await readPredictions(env, url));
   if (route === "GET /admin/chain") return send(await readChain(env));
   if (route === "GET /admin/results") return send(await readResults(env));
+  if (route === "GET /admin/context") return send(await seasonContext(env, url));
   return send(await recordQc(env, body));
 }
 

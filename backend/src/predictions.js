@@ -190,7 +190,8 @@ export async function gradePredictions(env, startRun, endRun) {
 
 /* ---------------- scheduled: free history backfill (balldontlie), a few pages per run ---------------- */
 export async function backfillStep(env, startRun, endRun, pages = 2) {
-  const q = await env.DB.prepare("SELECT season, next_cursor FROM backfill_queue WHERE done = 0 ORDER BY season LIMIT 1").first();
+  // newest season first: live predictions depend on the current season's full schedule
+  const q = await env.DB.prepare("SELECT season, next_cursor FROM backfill_queue WHERE done = 0 ORDER BY season DESC LIMIT 1").first();
   if (!q) return;
   const id = await startRun(env, "backfill");
   let cursor = q.next_cursor, rows = 0, seen = 0, done = 0;
