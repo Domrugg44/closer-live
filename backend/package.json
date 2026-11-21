@@ -1,0 +1,14 @@
+{
+  "name": "closer-data",
+  "private": true,
+  "description": "Closer data collector: NBA games, moneyline price history and final scores (Cloudflare Worker + D1)",
+  "scripts": {
+    "db:local": "wrangler d1 migrations apply closer-data --local",
+    "dev": "wrangler dev --test-scheduled --var MOCK:1",
+    "db:remote": "wrangler d1 migrations apply closer-data --remote",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.166.0"
+  }
+}
