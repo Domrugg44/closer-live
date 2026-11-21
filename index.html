@@ -6,7 +6,7 @@
 <title>Closer Live</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,600..900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..900&family=Inter:opsz,wght@14..32,400..800&display=swap" rel="stylesheet">
 <style>
 /* VOICE everyday product: a shipped sportsbook-style app, fast and confident, no clutter
    IDEA the live board of a modern betting app; every pick is a tappable ticket you can stack on a slip
@@ -14,16 +14,17 @@
    COLOUR cobalt #1838ff field, white cards, ink #0b1020, coral #ff4d2e for Strong; night #090c17
    TYPE Archivo condensed 800 for numbers and names + Inter
    LAYOUT laptop: cobalt app bar and hero, two-column ticket grid; phone: one column, slip as bottom bar */
-:root{color-scheme:light dark;--bg:light-dark(#f4f6ff,#090c17);--card:light-dark(#ffffff,#121729);--ink:light-dark(#0b1020,#eef1ff);--soft:light-dark(#5a6283,#98a0c4);--line:light-dark(#e2e6f5,#222a45);--co:#1838ff;--co2:#0f27c7;--hot:#ff4d2e;--ok:#12a46a;--tint:light-dark(#eaeeff,#1a2140)}
+:root{color-scheme:light dark;--bg:light-dark(#f4f6ff,#090c17);--card:light-dark(#ffffff,#121729);--ink:light-dark(#0b1020,#eef1ff);--soft:light-dark(#4a5274,#aab2d6);--line:light-dark(#dbe0f2,#2a3254);--co:#1838ff;--co2:#0f27c7;--hot:#ff4d2e;--ok:#12a46a;--tint:light-dark(#eaeeff,#1a2140)}
 :root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif;overflow-x:clip;padding-bottom:84px}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif;overflow-x:clip;padding-bottom:84px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-optical-sizing:auto;font-kerning:normal;font-feature-settings:"cv11","ss03"}
+.card{box-shadow:0 1px 0 rgba(10,20,60,.04),0 1px 2px rgba(10,20,60,.06)}
 .wrap{max-width:1180px;margin:0 auto;padding-inline:max(4vw,16px)}
-.num{font-family:Archivo,Inter,sans-serif;font-stretch:80%;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.num{font-family:Archivo,Inter,sans-serif;font-stretch:87%;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums lining-nums}
 .top{background:var(--co);color:#fff}
 .bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px}
-.logo{display:flex;align-items:center;gap:10px;font:900 30px/1 Archivo,sans-serif;font-stretch:78%}
+.logo{display:flex;align-items:center;gap:10px;font:900 30px/1 Archivo,sans-serif;font-stretch:84%}
 .logo svg{width:30px;height:30px}
 .chipd{font-size:14px;font-weight:600;background:rgba(255,255,255,.16);border-radius:999px;padding:6px 12px;white-space:nowrap}
 .lgs{display:flex;gap:8px;overflow-x:auto;padding-bottom:14px;scrollbar-width:none}
@@ -42,12 +43,12 @@ main{padding-top:40px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px}
 .best{display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px;align-items:center;padding:16px}
 .dial{width:150px;height:110px}
-.dial text{font-family:Archivo,sans-serif;font-stretch:80%}
+.dial text{font-family:Archivo,sans-serif;font-stretch:87%}
 .best .k{font-size:14px;color:var(--soft);font-weight:600}
-.best h2{margin:2px 0 4px;font:800 clamp(30px,4.6vw,44px)/1 Archivo,sans-serif;font-stretch:80%}
+.best h2{margin:2px 0 4px;font:800 clamp(30px,4.6vw,44px)/1 Archivo,sans-serif;font-stretch:87%}
 .best p{margin:0;color:var(--soft);font-size:15px}
 .heat{padding:16px}
-.heat h3,.sec h3{margin:0 0 10px;font:800 22px/1.1 Archivo,sans-serif;font-stretch:85%}
+.heat h3,.sec h3{margin:0 0 10px;font:800 22px/1.1 Archivo,sans-serif;font-stretch:90%}
 .hrow{display:grid;grid-template-columns:7.5em minmax(0,1fr) 3em;gap:8px;align-items:center;font-size:14px;margin:7px 0}
 .hbar{height:12px;border-radius:99px;background:var(--tint);overflow:hidden;display:flex}
 .hbar i{display:block;height:100%}
@@ -71,13 +72,13 @@ main{padding-top:40px}
 .why{grid-column:2/4;font-size:14px;color:var(--soft);margin:-4px 0 0}
 .team{margin-bottom:16px;overflow:hidden}
 .th{display:flex;align-items:center;gap:12px;padding:12px 14px;color:#fff}
-.badge{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.55);font:900 16px Archivo,sans-serif;font-stretch:80%}
-.th b{font:800 22px/1 Archivo,sans-serif;font-stretch:85%}
+.badge{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.55);font:900 16px Archivo,sans-serif;font-stretch:87%}
+.th b{font:800 22px/1 Archivo,sans-serif;font-stretch:90%}
 .th span{font-size:14px;opacity:.9}
 .th .when{margin-left:auto;font-size:14px;font-weight:600;white-space:nowrap}
 .pl{display:grid;grid-template-columns:58px minmax(0,1fr) auto 44px;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
 .ring{width:58px;height:58px}
-.ring text{font:800 15px Archivo,sans-serif;font-stretch:80%;fill:var(--ink)}
+.ring text{font:800 15px Archivo,sans-serif;font-stretch:87%;fill:var(--ink)}
 .pl .nm{font-weight:700}
 .pl .mk{font-size:14px;color:var(--soft)}
 .pl .ln2{font-size:24px;line-height:1}
@@ -120,7 +121,7 @@ th{color:var(--soft);font-weight:600;font-size:13px}
 .pane{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:min(720px,100%);max-height:92%;overflow:auto;background:var(--card);border-radius:22px 22px 0 0;padding:18px max(18px,4vw) 22px;animation:up .22s ease-out}
 @keyframes up{from{transform:translate(-50%,30px);opacity:.5}}
 @media(prefers-reduced-motion:reduce){.pane{animation:none}}
-.pane h2{margin:2px 0 0;font:800 34px/1 Archivo,sans-serif;font-stretch:80%}
+.pane h2{margin:2px 0 0;font:800 34px/1 Archivo,sans-serif;font-stretch:87%}
 .pct{display:flex;align-items:baseline;gap:10px;margin-top:8px}
 .pct b{font-size:clamp(48px,9vw,64px);line-height:1}
 .up{color:var(--ok)}.dn{color:var(--hot)}
@@ -154,7 +155,7 @@ th{color:var(--soft);font-weight:600;font-size:13px}
 .q[aria-pressed=true]{background:var(--co);border-color:var(--co);color:#fff}
 .gtool input{font:500 15px Inter,sans-serif;padding:9px 14px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);min-height:40px;flex:1 1 160px;max-width:260px}
 .gtool .live{margin-left:auto}
-.gh{font:800 22px/1.1 Archivo,sans-serif;font-stretch:85%;margin:18px 0 10px}
+.gh{font:800 22px/1.1 Archivo,sans-serif;font-stretch:90%;margin:18px 0 10px}
 .gh span{font:600 14px Inter,sans-serif;color:var(--soft);margin-left:6px}
 .tipbox{padding:14px 16px;margin:12px 0 0;color:var(--soft);font-size:15px}
 .tipbox b{color:var(--ink)}
@@ -170,7 +171,7 @@ th{color:var(--soft);font-weight:600;font-size:13px}
 .star[aria-pressed=true]{background:var(--co);color:#fff}
 .gr{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center}
 .gc.post .gr:not(.win){opacity:.6}
-.tb{display:grid;place-items:center;border-radius:10px;color:#fff;font:900 12px Archivo,sans-serif;font-stretch:80%;flex:none;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.tb{display:grid;place-items:center;border-radius:10px;color:#fff;font:900 12px Archivo,sans-serif;font-stretch:87%;flex:none;text-shadow:0 1px 2px rgba(0,0,0,.35)}
 .gn{display:flex;flex-direction:column;line-height:1.25}
 .gn b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gn small{color:var(--soft);font-weight:700;font-size:12px}
@@ -195,7 +196,7 @@ th{color:var(--soft);font-weight:600;font-size:13px}
 .gsb .tm span{font-size:13px;color:var(--soft)}
 .gsb .sc{font-size:46px;line-height:1}
 .ghs{text-align:center;font-size:14px;font-weight:700;color:var(--soft)}
-.pane h3{font:800 22px/1.1 Archivo,sans-serif;font-stretch:85%;margin:22px 0 8px}
+.pane h3{font:800 22px/1.1 Archivo,sans-serif;font-stretch:90%;margin:22px 0 8px}
 .pane h3 small{font:500 13px Inter,sans-serif;color:var(--soft);margin-left:6px}
 .cmp td:nth-child(n+2),.cmp th:nth-child(n+2){text-align:right}
 .mv .up{color:var(--ok)}.mv .dn{color:var(--hot)}
@@ -206,6 +207,44 @@ th{color:var(--soft);font-weight:600;font-size:13px}
 .ldr li span{color:var(--soft);flex:none}
 .ldr li b{text-align:right;font-weight:600}
 @media(max-width:430px){.seg button{font-size:13px;padding:10px 2px}.gl b{font-size:16px}}
+/* record */
+.rtop{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px;align-items:start}
+@media(max-width:760px){.rtop{grid-template-columns:1fr}}
+.rsum{padding:18px;display:flex;flex-direction:column;gap:14px}
+.rbig{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.rbig b{font-size:clamp(46px,7vw,66px);line-height:.95}
+.rbig span{color:var(--soft);font-weight:600}
+.rk{display:grid;grid-template-columns:repeat(auto-fit,minmax(6.4em,1fr));gap:8px}
+.rk div{background:var(--tint);border-radius:12px;padding:10px 12px}
+.rk b{display:block;font-size:26px;line-height:1.1}
+.rk span{font-size:12px;color:var(--soft);font-weight:600}
+.dots{display:flex;gap:5px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--soft);font-weight:600}
+.dots i{width:16px;height:16px;border-radius:5px;background:var(--tint);display:inline-grid;place-items:center;font:800 9px Inter,sans-serif;color:#fff;font-style:normal}
+.dots i.W{background:var(--ok)}.dots i.L{background:var(--hot)}.dots i.P{background:var(--soft)}
+.rbrk{padding:18px}
+.rtab td,.rtab th{padding:7px 8px}
+.rtab td:nth-child(n+2),.rtab th:nth-child(n+2){text-align:right;font-variant-numeric:tabular-nums}
+.rtab tr.sep td{padding-top:14px;color:var(--soft);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em}
+.pos{color:var(--ok)}.neg{color:var(--hot)}
+.rday{font:800 20px/1.1 Archivo,sans-serif;font-stretch:90%;margin:20px 0 10px;display:flex;gap:10px;align-items:baseline}
+.rday span{font:600 14px Inter,sans-serif;color:var(--soft)}
+.rlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:12px}
+.rc{padding:14px 16px;display:flex;flex-direction:column;gap:7px}
+.rc.live{border-color:color-mix(in srgb,#21c46b 65%,var(--line))}
+.rch{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--soft);font-weight:600;min-width:0}
+.res{font:800 11px Inter,sans-serif;letter-spacing:.08em;padding:4px 8px;border-radius:6px;background:var(--tint);color:var(--ink);flex:none}
+.res.W{background:var(--ok);color:#fff}.res.L{background:var(--hot);color:#fff}.res.P{background:var(--soft);color:var(--card)}.res.live{background:#21c46b;color:#fff}
+.rg{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ru{margin-left:auto;font-size:19px;flex:none}
+.rcp{font-size:25px;line-height:1.1}
+.rcs{font-weight:700;font-variant-numeric:tabular-nums;font-size:15px}
+.rce{margin:0;font-size:15px;line-height:1.45}
+.rcm{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--tint);color:var(--soft)}
+.chip.pos{color:var(--ok)}.chip.neg{color:var(--hot)}
+.rc details{font-size:14px;color:var(--soft)}
+.rc summary{cursor:pointer;font-weight:600;min-height:28px;display:flex;align-items:center}
+.rc details p{margin:4px 0 0}
 footer{color:var(--soft);font-size:13px;padding-block:8px 24px}
 button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
 @media(max-width:760px){.hero,.rec{grid-template-columns:1fr}}
@@ -253,13 +292,22 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
   <section class="view" id="v-props"><div id="props"></div></section>
   <section class="view" id="v-slip"><div id="slip"></div></section>
   <section class="view" id="v-record">
-    <div class="rec">
-      <div class="card">
-        <div class="sum" id="recSum"></div>
-        <p class="fine">Graded against the closing line. Results land after each game; losing weeks stay on the record.</p>
-      </div>
-      <div class="card"><div class="scroll"><table><thead><tr><th>When</th><th>League</th><th>Game</th><th>Pick</th><th>Line</th><th>Result</th></tr></thead><tbody id="ledger"></tbody></table></div></div>
+    <div class="rtop">
+      <div class="card rsum" id="recSum"></div>
+      <div class="card rbrk"><h3 class="gh" style="margin:0 0 6px">Breakdown</h3><div class="scroll"><table class="rtab"><thead><tr><th></th><th>Record</th><th>Win %</th><th>Units</th></tr></thead><tbody id="recBrk"></tbody></table></div></div>
     </div>
+    <div class="gtool" style="margin-top:16px">
+      <div class="gtabs" role="group" aria-label="Show results">
+        <button class="q" data-rf="all" aria-pressed="true">All</button>
+        <button class="q" data-rf="W" aria-pressed="false">Wins</button>
+        <button class="q" data-rf="L" aria-pressed="false">Losses</button>
+        <button class="q" data-rf="P" aria-pressed="false">Pushes</button>
+        <button class="q" data-rf="pending" aria-pressed="false">Pending</button>
+      </div>
+      <span class="live" id="recUpd"></span>
+    </div>
+    <div id="recList"></div>
+    <p class="fine" style="margin:14px 0 24px;max-width:72ch">Every pick is logged before its game starts and graded automatically from the final score: 1 unit per pick at the listed price (−110 unless noted). Closing line value compares the number we got with the last line before the game; positive means we beat the market. Games that just ended show their result right away and become official when the grader runs (every 30 minutes). The full timestamped history is public in this site's GitHub repository.</p>
   </section>
 </main>
 
@@ -418,10 +466,93 @@ const renderSlip=()=>{
   <div class="books">${books.map((b,i)=>`<a class="btn ${i===book?"go":""}" href="${b[1]}" target="_blank" rel="noopener">Open ${b[0]}</a>`).join("")}<button class="btn" id="clr">Clear slip</button></div>
   <p class="fine">Prices for game picks assume -110; props use the posted price. The finished app would load the slip at the book through a licensed partner link. Legs in the same game can be correlated, and many books limit same-game parlays.</p></div></div>`;
 };
-const renderRecord=()=>{
-  $("recSum").innerHTML=`<div><b class="num">0–0</b><span>graded</span></div><div><b class="num">${ledger.length}</b><span>picks logged</span></div><div><b class="num">—</b><span>avg closing line value</span></div><div><b class="num">0.0</b><span>units</span></div>`;
-  $("ledger").innerHTML=ledger.filter(r=>inL(r[1])).map(r=>`<tr><td>${typeof r[0]==="number"?"Wk "+r[0]:r[0]}</td><td><span class="lgdot" style="background:${LC[r[1]]}"></span>${LG[r[1]]}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td><td>${r[4]}</td><td style="color:var(--soft)">Pending</td></tr>`).join("");
+/* ---- record: every logged pick, graded from final scores ---- */
+let rec=null,recErr=false,rf="all";
+const REC_URLS=["https://raw.githubusercontent.com/Domrugg44/closer-live/main/data/record.json","data/record.json"];
+const loadRec=async()=>{for(const u of REC_URLS){try{const r=await fetch(u+"?t="+Date.now(),{cache:"no-store"});if(r.ok){const j=await r.json();if(j&&Array.isArray(j.entries)){rec=j;recErr=false;renderRecord();return}}}catch(e){}}if(!rec){recErr=true;renderRecord()}};
+const winU=o=>{o=+o||-110;return o>0?o/100:100/-o};
+const sgnL=v=>v>0?"+"+v:String(v);
+const r1=v=>Math.round(v*10)/10;
+const STATW={"Points":"points","Rebounds":"rebounds","Assists":"assists","Pts + Reb":"points + rebounds","Rec yards":"receiving yards","Rush yards":"rushing yards","Pass yards":"passing yards"};
+/* an entry as it stands now: official grade, or a provisional one from the live feed */
+const effOf=e=>{
+  if(e.status!=="pending")return{...e,prov:false,live:false};
+  if(e.kind==="prop"||typeof feed==="undefined")return{...e,prov:false,live:false};
+  const g=((feed[e.lg]&&feed[e.lg].games)||[]).find(x=>x.id===e.eventId);
+  if(!g||g.state==="pre")return{...e,prov:false,live:false,g};
+  const as=+g.away.score,hs=+g.home.score;let actual,diff;
+  if(e.kind==="total"){actual=as+hs;diff=e.side==="Over"?actual-e.line:e.line-actual}
+  else{actual=e.team===g.home.abbr?hs-as:as-hs;diff=actual+e.line}
+  const x={...e,g,final:{away:g.away.abbr,as,home:g.home.abbr,hs},actual,diff:r1(diff)};
+  if(g.state==="in")return{...x,live:true,prov:false};
+  const st=diff>0?"W":diff<0?"L":"P";
+  return{...x,status:st,units:st==="W"?r1(winU(e.odds)*100)/100:st==="L"?-1:0,prov:true,live:false};
 };
+const explain=x=>{
+  const d=Math.abs(x.diff);
+  if(x.status==="void")return x.note||"No action: the pick was voided.";
+  if(x.final==null||x.actual==null){
+    if(x.kind==="prop")return x.status==="pending"?"Graded from the box score once the game ends.":"";
+    return"";
+  }
+  if(x.kind==="total"){const t=x.actual;
+    if(x.live)return x.side==="Over"?(x.diff>0?`Live: ${t} points so far. Already over by ${d}.`:`Live: ${t} points so far. Needs ${d} more to go over ${x.line}.`):(x.diff>0?`Live: ${t} points so far. ${d} points of room under ${x.line}.`:`Live: ${t} points so far. Already over ${x.line} by ${d}.`);
+    if(x.status==="W")return`Final total: ${t}. The ${x.side} ${x.line} cashed by ${d}.`;
+    if(x.status==="L")return`Final total: ${t}. ${x.side==="Over"?`Fell ${d} short of`:`Went ${d} over`} ${x.line}.`;
+    return`Final total: ${t}, exactly on ${x.line}. Push.`}
+  if(x.kind==="spread"){const m=x.actual,tm=x.team,res=m>0?`${tm} won by ${m}`:m<0?`${tm} lost by ${-m}`:`${tm} tied`;
+    if(x.live)return`Live: ${tm} ${m>0?`up ${m}`:m<0?`down ${-m}`:"tied"}. ${x.diff>0?`Covering ${sgnL(x.line)} by ${d}`:x.diff<0?`${d} short of covering ${sgnL(x.line)}`:`Right on ${sgnL(x.line)}`}.`;
+    if(x.status==="W")return`${res}, covering ${sgnL(x.line)} by ${d}.`;
+    if(x.status==="L")return`${res}, ${d} short of covering ${sgnL(x.line)}.`;
+    return`${res}, landing exactly on ${sgnL(x.line)}. Push.`}
+  const w=STATW[x.stat]||x.stat.toLowerCase();
+  if(x.status==="W")return`${x.player} finished with ${x.actual} ${w}. ${x.side} ${x.line} cashed by ${d}.`;
+  if(x.status==="L")return`${x.player} finished with ${x.actual} ${w}, ${d} ${x.side==="Over"?"short of":"over"} the ${x.line} line.`;
+  return`${x.player} finished with exactly ${x.actual} ${w}. Push.`;
+};
+const tally=xs=>{const W=xs.filter(x=>x.status==="W").length,L=xs.filter(x=>x.status==="L").length,P=xs.filter(x=>x.status==="P").length,u=xs.reduce((a,x)=>a+(["W","L","P"].includes(x.status)?+x.units||0:0),0);return{W,L,P,u,n:W+L+P,pct:W+L?W/(W+L):null}};
+const uTxt=u=>(u>0?"+":u<0?"−":"")+Math.abs(u).toFixed(2)+"u";
+const recTxt=t=>`${t.W}–${t.L}${t.P?`–${t.P}`:""}`;
+const pctTxt=p=>p==null?"—":(p*100).toFixed(1)+"%";
+const dayOf=x=>{const d=new Date(x.date||x.logged);return isNaN(d)?"Undated":d.toLocaleDateString([],{weekday:"short",month:"short",day:"numeric"})};
+const recCard=x=>{
+  const st=x.live?"live":x.status;
+  const badge=x.live?"LIVE":{W:"WIN",L:"LOSS",P:"PUSH",void:"VOID",pending:"PENDING"}[x.status]||"PENDING";
+  const gm=x.g||(typeof gById==="function"?gById(x.eventId):null);
+  const fin=x.final?`${x.prov||x.live?"":"Final: "}${esc(x.final.away)} ${x.final.as} – ${esc(x.final.home)} ${x.final.hs}${x.live&&gm?` · ${esc(gm.detail||"")}`:x.prov?" · Final":""}`:gm&&gm.state==="pre"?`Starts ${esc(when(gm))}`:"";
+  const chips=[];
+  if(x.strength)chips.push(`<span class="chip">${esc(x.strength)}</span>`);
+  chips.push(`<span class="chip">${x.odds>0?"+":""}${x.odds||-110}</span>`);
+  if(x.clv!=null)chips.push(x.clv>0?`<span class="chip pos">Beat the close by ${x.clv}</span>`:x.clv<0?`<span class="chip neg">Close moved ${-x.clv} against</span>`:`<span class="chip">Matched the close</span>`);
+  if(x.close&&x.status==="pending")chips.push(`<span class="chip">Line now: ${esc(x.kind==="total"?"O/U "+x.close.total:x.close.details||"")}</span>`);
+  else if(x.close&&x.kind!=="prop")chips.push(`<span class="chip">Closed ${esc(x.kind==="total"?x.close.total:x.close.details||"")}</span>`);
+  if(x.prov)chips.push(`<span class="chip">Official grade pending</span>`);
+  const ex=explain(x);
+  return`<article class="card rc ${st}"><div class="rch"><span class="res ${st}">${badge}</span><span class="lgt" style="background:${LC[x.lg]}">${x.lg}</span><span class="rg">${esc(x.game)}</span>${["W","L","P"].includes(x.status)?`<b class="ru num ${x.units>0?"pos":x.units<0?"neg":""}">${uTxt(+x.units||0)}</b>`:""}</div>
+  <div class="rcp num">${esc(x.label)}</div>${fin?`<div class="rcs">${fin}</div>`:""}${ex?`<p class="rce">${esc(ex)}</p>`:""}
+  <div class="rcm">${chips.join("")}</div>${x.why?`<details><summary>Why we played it</summary><p>${esc(x.why)}</p></details>`:""}${gm?`<button class="ln" data-game="${esc(gm.id)}" style="align-self:flex-start">Open game</button>`:""}</article>`};
+const renderRecord=()=>{
+  document.querySelectorAll("[data-rf]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.rf===rf));
+  if(!rec){$("recSum").innerHTML=`<div class="rbig"><b class="num">—</b><span>${recErr?"The record could not load. Check your connection and reopen the page.":"Loading the record…"}</span></div>`;$("recBrk").innerHTML="";$("recList").innerHTML="";return}
+  const xs=rec.entries.map(effOf).filter(x=>inL(x.lg));
+  const done=xs.filter(x=>["W","L","P"].includes(x.status)),t=tally(done);
+  const clvs=done.filter(x=>x.clv!=null).map(x=>+x.clv),avgClv=clvs.length?clvs.reduce((a,b)=>a+b,0)/clvs.length:null;
+  const ordered=done.slice().sort((a,b)=>Date.parse(b.gradedAt||b.date||0)-Date.parse(a.gradedAt||a.date||0));
+  let streak="—";if(ordered.length){const f=ordered.find(x=>x.status!=="P");if(f){let n=0;for(const x of ordered){if(x.status==="P")continue;if(x.status===f.status)n++;else break}streak=(f.status==="W"?"W":"L")+n}}
+  const pend=xs.filter(x=>x.status==="pending"),live=xs.filter(x=>x.live).length,prov=done.filter(x=>x.prov).length;
+  $("recSum").innerHTML=`<div class="rbig"><b class="num ${t.u>0?"pos":t.u<0?"neg":""}">${recTxt(t)}</b><span>${t.n?`${uTxt(t.u)} · ${pctTxt(t.pct)} winners`:"No graded picks yet. Results land as games finish."}</span></div>
+    <div class="rk"><div><b class="num ${t.u>0?"pos":t.u<0?"neg":""}">${uTxt(t.u)}</b><span>Units won</span></div><div><b class="num">${t.n?((t.u/t.n)*100).toFixed(1)+"%":"—"}</b><span>Return on risk</span></div><div><b class="num">${avgClv==null?"—":(avgClv>0?"+":"")+avgClv.toFixed(1)}</b><span>Avg line value (pts)</span></div><div><b class="num">${streak}</b><span>Current streak</span></div><div><b class="num">${pend.length}</b><span>Pending${live?` · ${live} live`:""}</span></div></div>
+    <div class="dots"><span>Last 10</span>${ordered.slice(0,10).reverse().map(x=>`<i class="${x.status}" title="${esc(x.label)}">${x.status}</i>`).join("")||"<span>none yet</span>"}</div>
+    ${prov?`<div class="live">${prov} just-finished pick${prov>1?"s":""} counted ahead of the official grade.</div>`:""}`;
+  const row=(lab,ys)=>{const k=tally(ys);return`<tr><td>${esc(lab)}</td><td class="num">${recTxt(k)}</td><td>${pctTxt(k.pct)}</td><td class="${k.u>0?"pos":k.u<0?"neg":""}">${k.n?uTxt(k.u):"—"}</td></tr>`};
+  const groups=[["League",[...new Set(xs.map(x=>x.lg))].map(l=>[LG[l]||l,x=>x.lg===l])],["Bet type",[["Spreads",x=>x.kind==="spread"],["Totals",x=>x.kind==="total"],["Player props",x=>x.kind==="prop"]]],["Confidence",[["Strong",x=>x.strength==="Strong"],["Solid",x=>x.strength==="Solid"],["Lean",x=>x.strength==="Lean"],["Logged only",x=>!x.strength]]]];
+  $("recBrk").innerHTML=groups.map(([h,rs])=>`<tr class="sep"><td colspan="4">${h}</td></tr>`+rs.filter(([,f])=>xs.some(f)).map(([lab,f])=>row(lab,done.filter(f))).join("")).join("");
+  const list=xs.filter(x=>rf==="all"||(rf==="pending"?x.status==="pending":x.status===rf)).sort((a,b)=>{const pa=a.status==="pending",pb=b.status==="pending";if(pa!==pb&&rf==="all")return pa?1:-1;return(pa?1:-1)*(Date.parse(a.date||0)-Date.parse(b.date||0))});
+  const byDay=[];for(const x of list){const d=dayOf(x);let g=byDay.find(y=>y[0]===d);if(!g)byDay.push(g=[d,[]]);g[1].push(x)}
+  $("recList").innerHTML=list.length?byDay.map(([d,ys])=>{const k=tally(ys);return`<h3 class="rday">${esc(d)}<span>${k.n?`${recTxt(k)} · ${uTxt(k.u)}`:`${ys.length} pick${ys.length>1?"s":""}`}</span></h3><div class="rlist">${ys.map(recCard).join("")}</div>`}).join(""):emptyBox(rf==="pending"?"Nothing pending.":rf==="all"?"No picks logged for this league yet.":"None yet.");
+  const up=Date.parse(rec.updatedAt);$("recUpd").innerHTML=isFinite(up)?`<span>Official grades as of ${esc(new Date(up).toLocaleString([],{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}))}</span>`:"";
+};
+loadRec();setInterval(loadRec,300000);
 /* line history chart for game picks */
 const SD={NFL:{spread:13.5,total:10},CFB:{spread:16,total:14},NBA:{spread:12,total:18},CBB:{spread:11,total:16},NHL:{spread:2.4,total:2.3}};
 const erf=x=>{const s=Math.sign(x);x=Math.abs(x);const t=1/(1+0.3275911*x);return s*(1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-(x**2)))};
@@ -545,7 +676,7 @@ const renderGameSheet=()=>{
 };
 const openGame=id=>{gameId=id;$("gsheet").classList.add("on");$("gsheet").setAttribute("aria-hidden","false");renderGameSheet();$("gClose").focus();const g=gById(id);if(g&&(!sums[id]||g.state==="in"))pullSum(g).then(()=>{if(gameId===id)renderGameSheet()})};
 const closeGame=()=>{gameId=null;$("gsheet").classList.remove("on");$("gsheet").setAttribute("aria-hidden","true")};
-const renderFeed=()=>{renderStrip();renderGames();renderGameSheet();renderGrid()};
+const renderFeed=()=>{renderStrip();renderGames();renderGameSheet();renderGrid();renderRecord()};
 /* direct live fetching from ESPN's public feed (allows browser requests from any site) */
 const API="https://site.api.espn.com/apis/site/v2/sports/";
 const BASE={NFL:"football/nfl",CFB:"football/college-football",NBA:"basketball/nba",CBB:"basketball/mens-college-basketball",NHL:"hockey/nhl"};
@@ -595,6 +726,7 @@ document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)r
   if(t.dataset.game&&!t.dataset.add){closeChart();openGame(t.dataset.game)}
   if(t.dataset.follow){const id=t.dataset.follow;follow=isF(id)?follow.filter(x=>x!==id):[...follow,id];saveF();renderStrip();renderGames();renderGameSheet()}
   if(t.dataset.gv){gview=t.dataset.gv;renderGames()}
+  if(t.dataset.rf){rf=t.dataset.rf;renderRecord()}
   if(t.id==="gClose")closeGame()});
 $("gdim").addEventListener("click",closeGame);
 document.addEventListener("input",e=>{if(e.target.id==="gq"){gq=e.target.value;renderGames()}});
