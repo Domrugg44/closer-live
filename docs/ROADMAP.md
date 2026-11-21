@@ -38,8 +38,8 @@ their own models, timestamps and validation.
 | Lock predictions at tip-off; never edit | database rules | ✅ |
 | Refuse predictions on stale, postponed, duplicate or unhealthy data | M1 guard | ✅ |
 | Detect postponements, cancellations, overdue results, stuck statuses, outages | M1 checks | ✅ |
-| Settle as win / loss / push / void, with a pending-review queue for suspect results | M3 | planned |
-| Void predictions on postponed or canceled games; handle reschedules (store the start time each prediction was made for) | M3 | planned |
+| Settle as win / loss / push / void, with a pending-review queue for suspect results | M3 | ✅ |
+| Void predictions on postponed or canceled games; handle reschedules (store the start time each prediction was made for) | M3 | ✅ |
 | Generate predictions automatically for each upcoming slate, before tip-off | M7 | planned |
 | Public "active predictions" and "completed / daily record" data | M7 | planned |
 | Website: active picks refresh automatically; finished picks move to the daily record and history | **Phase 4** (website) | planned |
