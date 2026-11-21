@@ -14,13 +14,21 @@ concurrency:
 
 jobs:
   grade:
-    runs-on: ubuntu-latest
+    # Windows PowerShell 5.1, the same engine used locally, so the log's hashes are computed identically
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Check the log before grading
+        shell: powershell
+        run: ./tools/verify-log.ps1
       - name: Grade pending picks
-        shell: pwsh
+        shell: powershell
         run: ./tools/grade.ps1
+      - name: Check nothing locked was changed
+        shell: powershell
+        run: ./tools/verify-log.ps1 -BaseRef HEAD
       - name: Save results
+        shell: bash
         run: |
           if git diff --quiet -- data/record.json; then
             echo "Nothing new to grade"

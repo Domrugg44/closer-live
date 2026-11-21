@@ -1,0 +1,26 @@
+name: Verify prediction log
+
+# Runs on every change to the log. A red X on a commit means a past prediction
+# or a final result was altered, removed or reordered.
+on:
+  push:
+    paths: ["data/record.json", "tools/log-lib.ps1", "tools/verify-log.ps1"]
+  pull_request:
+    paths: ["data/record.json"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify hash chain and history
+        shell: powershell
+        run: |
+          $before = "${{ github.event.before }}"
+          if ($before -and $before -notmatch '^0+$') { ./tools/verify-log.ps1 -BaseRef $before } else { ./tools/verify-log.ps1 }

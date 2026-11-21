@@ -248,6 +248,21 @@ th{color:var(--soft);font-weight:600;font-size:13px}
 .rc details{font-size:14px;color:var(--soft)}
 .rc summary{cursor:pointer;font-weight:600;min-height:28px;display:flex;align-items:center}
 .rc details p{margin:4px 0 0}
+/* prediction sources + integrity */
+.src{display:inline-block;font:800 10.5px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:6px;white-space:nowrap;vertical-align:1px}
+.src.man{background:var(--tint);color:var(--ink);border:1px solid var(--line)}
+.src.exp{background:color-mix(in srgb,#ffb020 24%,var(--card));color:light-dark(#7a4600,#ffd27a);border:1px solid color-mix(in srgb,#ffb020 45%,var(--line))}
+.src.val{background:color-mix(in srgb,#12a46a 20%,var(--card));color:light-dark(#0b6b45,#7be3b4);border:1px solid color-mix(in srgb,#12a46a 45%,var(--line))}
+.srcnote{color:var(--soft);font-style:italic}
+.srcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:14px;padding:16px;margin-top:14px}
+.srcs p{margin:6px 0 0;font-size:14px;color:var(--soft)}
+.rk .na b{color:var(--soft)}
+.rk .na small{display:block;font-size:11.5px;color:var(--soft);margin-top:4px;line-height:1.35}
+.integ{font-size:13.5px;padding:9px 12px;border-radius:10px;background:var(--tint);color:var(--soft)}
+.integ.ok{color:light-dark(#0b6b45,#7be3b4);background:color-mix(in srgb,#12a46a 12%,var(--card))}
+.integ.bad{color:var(--hot);background:color-mix(in srgb,#ff4d2e 12%,var(--card));font-weight:700}
+.integ a{color:inherit}
+.hashid{font:500 11.5px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--soft)}
 footer{color:var(--soft);font-size:13px;padding-block:8px 24px}
 button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
 @media(max-width:760px){.hero,.rec{grid-template-columns:1fr}}
@@ -300,6 +315,11 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
       <div class="card rsum" id="recSum"></div>
       <div class="card rbrk"><h3 class="gh" style="margin:0 0 6px">Breakdown</h3><div class="scroll"><table class="rtab"><thead><tr><th></th><th>Record</th><th>Win %</th><th>Units</th></tr></thead><tbody id="recBrk"></tbody></table></div></div>
     </div>
+    <div class="card srcs" aria-label="Prediction sources">
+      <div><span class="src man">Manual pick</span><p>Chosen by hand. Ratings like Strong or Lean are human judgment, not probabilities. Logged with a timestamp before the game.</p></div>
+      <div><span class="src exp">Experimental</span><p>Output of an untested model, such as the live in-game plays. Shown for research only and not yet saved to this log.</p></div>
+      <div><span class="src val">Validated model</span><p>None yet. A model earns this label only after a published test on past seasons it was never trained on. Only these will show a probability.</p></div>
+    </div>
     <div class="gtool" style="margin-top:16px">
       <div class="gtabs" role="group" aria-label="Show results">
         <button class="q" data-rf="all" aria-pressed="true">All</button>
@@ -311,11 +331,11 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
       <span class="live" id="recUpd"></span>
     </div>
     <div id="recList"></div>
-    <p class="fine" style="margin:14px 0 24px;max-width:72ch">Every pick is logged before its game starts and graded automatically from the final score: 1 unit per pick at the listed price (−110 unless noted). Closing line value compares the number we got with the last line before the game; positive means we beat the market. Games that just ended show their result right away and become official when the grader runs (every 30 minutes). The full timestamped history is public in this site's GitHub repository.</p>
+    <p class="fine" style="margin:14px 0 24px;max-width:72ch">Every prediction is written to an append-only log with the time it was logged, the price available then (when recorded), and its source. Each entry carries a fingerprint chained to the one before it, so any later edit, deletion or reordering breaks the chain; GitHub re-checks it on every change and your browser re-checks it on every visit. Results are filled in automatically from final scores (every 30 minutes). Units and ROI count only picks whose odds were recorded at the time, at 1 unit per pick. Closing line value compares our number with the last line seen before the game.</p>
   </section>
 </main>
 
-<footer class="wrap">Model outputs, not guarantees. Sportsbook prices on the slip are samples. 21+ and in a legal state only. Gambling problem? Call 1-800-GAMBLER.</footer>
+<footer class="wrap">Manual picks and experimental estimates, not guarantees. No prediction on this site comes from a validated model yet. Sportsbook prices on the slip are samples. 21+ and in a legal state only. Gambling problem? Call 1-800-GAMBLER.</footer>
 
 <div class="slipbar" id="slipbar"><div class="wrap"><div><div style="font-size:13px;opacity:.8" id="sbLegs"></div><b class="num" id="sbOdds"></b></div><button id="sbOpen">View slip</button></div></div>
 
@@ -414,23 +434,23 @@ const renderLgs=()=>{
 const dial=(v,lab,max=4)=>{const f=Math.min(1,v/max),a=Math.PI*(1-f),x=75+60*Math.cos(a),y=90-60*Math.sin(a);
   return `<svg class="dial" viewBox="0 0 150 110" aria-hidden="true"><path d="M15 90A60 60 0 0 1 135 90" fill="none" stroke="var(--tint)" stroke-width="16" stroke-linecap="round"/><path d="M15 90A60 60 0 0 1 ${x.toFixed(1)} ${y.toFixed(1)}" fill="none" stroke="var(--hot)" stroke-width="16" stroke-linecap="round"/><text x="75" y="84" text-anchor="middle" font-size="40" font-weight="800" fill="var(--ink)">${v.toFixed(1)}</text><text x="75" y="104" text-anchor="middle" font-size="13" fill="var(--soft)">${lab}</text></svg>`};
 const renderHero=()=>{
-  const all=[...picks.map((p,i)=>({l:p[0],g:p[1],t:p[2],pk:p[4],e:p[6],why:p[8],lab:"pts edge"})),...props.filter(p=>p[12]!=="Pass").map(p=>({l:p[0],g:p[2]+" · "+p[3],t:p[4],pk:p[2].split(" ").filter(w=>w!=="Jr.").slice(-1)[0]+" "+(p[12]==="Over"?"O":"U")+" "+p[6]+" "+pAbbr(p[5]),e:Math.abs(p[11]),why:p[14],lab:"prop score"}))].filter(x=>inL(x.l)).sort((a,b)=>b.e-a.e);
+  const all=[...picks.map((p,i)=>({l:p[0],g:p[1],t:p[2],pk:p[4],e:p[6],why:p[8],lab:"manual score"})),...props.filter(p=>p[12]!=="Pass").map(p=>({l:p[0],g:p[2]+" · "+p[3],t:p[4],pk:p[2].split(" ").filter(w=>w!=="Jr.").slice(-1)[0]+" "+(p[12]==="Over"?"O":"U")+" "+p[6]+" "+pAbbr(p[5]),e:Math.abs(p[11]),why:p[14],lab:"manual score"}))].filter(x=>inL(x.l)).sort((a,b)=>b.e-a.e);
   if(!all.length){$("hero").innerHTML="";return}
   const b=all[0];
   const by=["NFL","CFB","NBA","CBB","NHL"].map(l=>{const xs=all.filter(x=>x.l===l);return [l,xs.filter(x=>x.e>=3).length,xs.filter(x=>x.e>=2&&x.e<3).length,xs.filter(x=>x.e<2).length]}).filter(r=>r[1]+r[2]+r[3]>0);
   const mx=Math.max(...by.map(r=>r[1]+r[2]+r[3]));
-  $("hero").innerHTML=`<div class="card best">${dial(b.e,b.lab)}<div><div class="k">Top edge on the board · ${LG[b.l]} · ${esc(b.t)}</div><h2>${esc(b.pk)}</h2><p>${esc(b.g)}. ${esc(b.why)}</p></div></div>
-  <div class="card heat"><h3>The board</h3>${by.map(r=>{const t=r[1]+r[2]+r[3];return `<div class="hrow"><span>${LG[r[0]]}</span><div class="hbar" style="width:${t/mx*100}%"><i style="width:${r[1]/t*100}%;background:var(--hot)"></i><i style="width:${r[2]/t*100}%;background:var(--co)"></i><i style="width:${r[3]/t*100}%;background:color-mix(in srgb,var(--co) 30%,var(--tint))"></i></div><em>${t}</em></div>`}).join("")}<div class="gk"><i style="background:var(--hot)"></i>Strong<i style="background:var(--co)"></i>Solid<i style="background:color-mix(in srgb,var(--co) 30%,var(--tint))"></i>Lean</div></div>`;
+  $("hero").innerHTML=`<div class="card best">${dial(b.e,b.lab)}<div><div class="k"><span class="src man">Manual pick</span> Highest-rated manual pick · ${LG[b.l]} · ${esc(b.t)}</div><h2>${esc(b.pk)}</h2><p>${esc(b.g)}. <span title="Entered by hand; the source of this note wasn't recorded">Analyst note: ${esc(b.why)}</span></p></div></div>
+  <div class="card heat"><h3>Manual picks by rating</h3>${by.map(r=>{const t=r[1]+r[2]+r[3];return `<div class="hrow"><span>${LG[r[0]]}</span><div class="hbar" style="width:${t/mx*100}%"><i style="width:${r[1]/t*100}%;background:var(--hot)"></i><i style="width:${r[2]/t*100}%;background:var(--co)"></i><i style="width:${r[3]/t*100}%;background:color-mix(in srgb,var(--co) 30%,var(--tint))"></i></div><em>${t}</em></div>`}).join("")}<div class="gk">Manual rating:<i style="background:var(--hot)"></i>Strong<i style="background:var(--co)"></i>Solid<i style="background:color-mix(in srgb,var(--co) 30%,var(--tint))"></i>Lean</div><div class="gk">Ratings and scores are hand-entered judgments, not tested probabilities.</div></div>`;
 };
 const emptyBox=t=>`<div class="card empty">${ICON.all}${esc(t)}</div>`;
 const renderGrid=()=>{
   const list=picks.map((p,i)=>[p,i]).filter(([p])=>inL(p[0])).sort((a,b)=>b[0][6]-a[0][6]);
   $("grid").innerHTML=list.map(([p,i])=>`<article class="card tk ${p[7]}">
     <div class="ico" style="background:${LC[p[0]]}">${ic(p[0])}</div>
-    <div><div class="g">${esc(p[1])} · ${esc(p[2])}</div><div class="p num">${esc(p[4])}</div>
-      <div class="mt"><div class="m"><i style="width:${Math.min(100,p[6]/4*100)}%"></i></div><span class="st ${p[7]}">${p[7]}</span></div></div>
+    <div><div class="g"><span class="src man">Manual</span> ${esc(p[1])} · ${esc(p[2])}</div><div class="p num">${esc(p[4])}</div>
+      <div class="mt"><div class="m" title="Hand-entered score, not a probability"><i style="width:${Math.min(100,p[6]/4*100)}%"></i></div><span class="st ${p[7]}" title="Manual rating, not a probability">${p[7]}</span></div></div>
     <div class="side"><button class="add" data-add="${pkey(i)}" aria-pressed="${onSlip(pkey(i))}" aria-label="Add to slip">${onSlip(pkey(i))?"✓":"+"}</button><button class="ln" data-chart="${i}">Line ${chip(i)}</button>${(()=>{const gm=findG(p[0],p[1]);return gm?`<button class="ln" data-game="${esc(gm.id)}">${gm.state==="in"?"● Live":"Game"}</button>`:""})()}</div>
-    <p class="why">${esc(p[8])}</p></article>`).join("")||emptyBox(EMPTY[filter]||"No picks for this league right now.");
+    <p class="why"><b>Analyst note</b> <span class="srcnote">(source not recorded)</span>: ${esc(p[8])}</p></article>`).join("")||emptyBox(EMPTY[filter]||"No picks for this league right now.");
 };
 const ring=(pct)=>{if(pct==null)return `<svg class="ring" viewBox="0 0 58 58" aria-hidden="true"><circle cx="29" cy="29" r="24" fill="none" stroke="var(--tint)" stroke-width="7"/><text x="29" y="34" text-anchor="middle">avg</text></svg>`;
   const c=2*Math.PI*24,on=pct>=52.4;return `<svg class="ring" viewBox="0 0 58 58" aria-label="Over in ${pct}% of games"><circle cx="29" cy="29" r="24" fill="none" stroke="var(--tint)" stroke-width="7"/><circle cx="29" cy="29" r="24" fill="none" stroke="${on?"var(--ok)":"var(--hot)"}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${(pct/100*c).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 29 29)"/><text x="29" y="34" text-anchor="middle">${pct}%</text></svg>`};
@@ -452,7 +472,7 @@ const renderProps=()=>{
         ${p[12]==="Pass"?"<span></span>":`<button class="add" data-add="${prkey(i)}" aria-pressed="${onSlip(prkey(i))}" aria-label="Add to slip">${onSlip(prkey(i))?"✓":"+"}</button>`}</div>`).join("")}</section>`;
     }
   }
-  $("props").innerHTML=h||emptyBox("No props for this league yet.");
+  $("props").innerHTML=h?`<p class="card tipbox" style="margin:0 0 14px"><span class="src man">Manual picks</span> These props were entered by hand. Their averages, hit rates and ratings haven't been checked against a data source, so treat them as notes, not statistics.</p>`+h:emptyBox("No props for this league yet.");
 };
 const legOf=k=>{const it=slip.find(s=>s.k===k);if(it&&it.live)return it.live;const i=+k.slice(1);if(k[0]==="g"){const p=picks[i];return p&&{l:p[0],t:p[4],s:p[1],o:-110}}const p=props[i];return p&&{l:p[0],t:`${p[2]} ${p[12]} ${p[6]} ${pAbbr(p[5])}`,s:p[3],o:p[12]==="Over"?p[7]:-110}};
 const renderSlip=()=>{
@@ -473,8 +493,16 @@ const renderSlip=()=>{
 /* ---- record: every logged pick, graded from final scores ---- */
 let rec=null,recErr=false,rf="all";
 const REC_URLS=["https://raw.githubusercontent.com/Domrugg44/closer-live/main/data/record.json","data/record.json"];
-const loadRec=async()=>{for(const u of REC_URLS){try{const r=await fetch(u+"?t="+Date.now(),{cache:"no-store"});if(r.ok){const j=await r.json();if(j&&Array.isArray(j.entries)){rec=j;recErr=false;renderRecord();return}}}catch(e){}}if(!rec){recErr=true;renderRecord()}};
-const winU=o=>{o=+o||-110;return o>0?o/100:100/-o};
+/* integrity: recompute the log's SHA-256 hash chain in the browser (same rule as tools/log-lib.ps1) */
+let integ={state:"checking"};
+const SEP="\u001f",LOCKED=["id","logged","pickTime","source","lg","game","eventId","date","kind","label","team","side","player","stat","line","odds","prob","tier","why","loggedAfterStart"];
+const canonV=v=>v==null?"":typeof v==="boolean"?(v?"true":"false"):String(v);
+const sha256=async s=>[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+const verifyChain=async es=>{let prev="";for(const e of es){const h=await sha256(prev+SEP+LOCKED.map(k=>canonV(e[k])).join(SEP));if(h!==e.hash)return{state:"bad",id:e.id};prev=e.hash}return{state:"ok",n:es.length,last:prev}};
+const loadRec=async()=>{for(const u of REC_URLS){try{const r=await fetch(u+"?t="+Date.now(),{cache:"no-store"});if(r.ok){const j=await r.json();if(j&&Array.isArray(j.entries)){rec=j;recErr=false;
+  if(j.schema!==2)integ={state:"legacy"};else{integ={state:"checking"};verifyChain(j.entries).then(v=>{integ=v;renderRecord()},()=>{integ={state:"unsupported"};renderRecord()})}
+  renderRecord();return}}}catch(e){}}if(!rec){recErr=true;renderRecord()}};
+const winU=o=>{o=+o;return o>0?o/100:100/-o};
 const sgnL=v=>v>0?"+"+v:String(v);
 const r1=v=>Math.round(v*10)/10;
 const STATW={"Points":"points","Rebounds":"rebounds","Assists":"assists","Pts + Reb":"points + rebounds","Rec yards":"receiving yards","Rush yards":"rushing yards","Pass yards":"passing yards"};
@@ -490,7 +518,7 @@ const effOf=e=>{
   const x={...e,g,final:{away:g.away.abbr,as,home:g.home.abbr,hs},actual,diff:r1(diff)};
   if(g.state==="in")return{...x,live:true,prov:false};
   const st=diff>0?"W":diff<0?"L":"P";
-  return{...x,status:st,units:st==="W"?r1(winU(e.odds)*100)/100:st==="L"?-1:0,prov:true,live:false};
+  return{...x,status:st,units:e.odds==null?null:st==="W"?Math.round(winU(e.odds)*100)/100:st==="L"?-1:0,prov:true,live:false};
 };
 const explain=x=>{
   const d=Math.abs(x.diff);
@@ -514,7 +542,12 @@ const explain=x=>{
   if(x.status==="L")return`${x.player} finished with ${x.actual} ${w}, ${d} ${x.side==="Over"?"short of":"over"} the ${x.line} line.`;
   return`${x.player} finished with exactly ${x.actual} ${w}. Push.`;
 };
-const tally=xs=>{const W=xs.filter(x=>x.status==="W").length,L=xs.filter(x=>x.status==="L").length,P=xs.filter(x=>x.status==="P").length,u=xs.reduce((a,x)=>a+(["W","L","P"].includes(x.status)?+x.units||0:0),0);return{W,L,P,u,n:W+L+P,pct:W+L?W/(W+L):null}};
+/* minimum samples before a metric is shown at all; below these it reads "Unavailable" */
+const MIN_RATE=100,MIN_ROI=100,MIN_CLV=50;
+const tally=xs=>{const g=xs.filter(x=>["W","L","P"].includes(x.status)),W=g.filter(x=>x.status==="W").length,L=g.filter(x=>x.status==="L").length,P=g.filter(x=>x.status==="P").length,priced=g.filter(x=>x.odds!=null&&x.units!=null),u=priced.reduce((a,x)=>a+(+x.units||0),0);return{W,L,P,u,n:W+L+P,pn:priced.length,pct:W+L?W/(W+L):null}};
+const SRC={manual:["man","Manual pick"],experimental:["exp","Experimental"],validated:["val","Validated model"]};
+const srcBadge=s=>{const v=SRC[s]||SRC.manual;return`<span class="src ${v[0]}">${v[1]}</span>`};
+const naTile=(label,have,need,unit)=>`<div class="na"><b class="num">—</b><span>${label}</span><small>Unavailable: ${have} of ${need} ${unit}</small></div>`;
 const uTxt=u=>(u>0?"+":u<0?"−":"")+Math.abs(u).toFixed(2)+"u";
 const recTxt=t=>`${t.W}–${t.L}${t.P?`–${t.P}`:""}`;
 const pctTxt=p=>p==null?"—":(p*100).toFixed(1)+"%";
@@ -524,36 +557,53 @@ const recCard=x=>{
   const badge=x.live?"LIVE":{W:"WIN",L:"LOSS",P:"PUSH",void:"VOID",pending:"PENDING"}[x.status]||"PENDING";
   const gm=x.g||(typeof gById==="function"?gById(x.eventId):null);
   const fin=x.final?`${x.prov||x.live?"":"Final: "}${esc(x.final.away)} ${x.final.as} – ${esc(x.final.home)} ${x.final.hs}${x.live&&gm?` · ${esc(gm.detail||"")}`:x.prov?" · Final":""}`:gm&&gm.state==="pre"?`Starts ${esc(when(gm))}`:"";
-  const chips=[];
-  if(x.strength)chips.push(`<span class="chip">${esc(x.strength)}</span>`);
-  chips.push(`<span class="chip">${x.odds>0?"+":""}${x.odds||-110}</span>`);
+  const chips=[srcBadge(x.source)];
+  if(x.tier)chips.push(`<span class="chip" title="A hand-assigned rating, not a probability">Manual rating: ${esc(x.tier)}</span>`);
+  chips.push(x.odds!=null?`<span class="chip">Odds at pick ${x.odds>0?"+":""}${esc(x.odds)}</span>`:`<span class="chip" title="The price wasn't recorded when this pick was made, so it's left out of ROI and units">Odds not recorded</span>`);
+  if(x.prob!=null&&x.source==="validated")chips.push(`<span class="chip">Model ${Math.round(x.prob*100)}%</span>`);
+  if(x.logged)chips.push(`<span class="chip" title="Time this prediction entered the log">Logged ${esc(new Date(x.logged).toLocaleString([],{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}))}</span>`);
+  if(x.loggedAfterStart)chips.push(`<span class="chip neg" title="Entered the log after the game began, so it can't count as a verified prediction">Logged after start · not in verified stats</span>`);
   if(x.clv!=null)chips.push(x.clv>0?`<span class="chip pos">Beat the close by ${x.clv}</span>`:x.clv<0?`<span class="chip neg">Close moved ${-x.clv} against</span>`:`<span class="chip">Matched the close</span>`);
   if(x.close&&x.status==="pending")chips.push(`<span class="chip">Line now: ${esc(x.kind==="total"?"O/U "+x.close.total:x.close.details||"")}</span>`);
   else if(x.close&&x.kind!=="prop")chips.push(`<span class="chip">Closed ${esc(x.kind==="total"?x.close.total:x.close.details||"")}</span>`);
   if(x.prov)chips.push(`<span class="chip">Official grade pending</span>`);
   const ex=explain(x);
-  return`<article class="card rc ${st}"><div class="rch"><span class="res ${st}">${badge}</span><span class="lgt" style="background:${LC[x.lg]}">${x.lg}</span><span class="rg">${esc(x.game)}</span>${["W","L","P"].includes(x.status)?`<b class="ru num ${x.units>0?"pos":x.units<0?"neg":""}">${uTxt(+x.units||0)}</b>`:""}</div>
+  return`<article class="card rc ${st}"><div class="rch"><span class="res ${st}">${badge}</span><span class="lgt" style="background:${LC[x.lg]}">${x.lg}</span><span class="rg">${esc(x.game)}</span>${["W","L","P"].includes(x.status)&&x.units!=null?`<b class="ru num ${x.units>0?"pos":x.units<0?"neg":""}">${uTxt(+x.units)}</b>`:""}</div>
   <div class="rcp num">${esc(x.label)}</div>${fin?`<div class="rcs">${fin}</div>`:""}${ex?`<p class="rce">${esc(ex)}</p>`:""}
-  <div class="rcm">${chips.join("")}</div>${x.why?`<details><summary>Why we played it</summary><p>${esc(x.why)}</p></details>`:""}${gm?`<button class="ln" data-game="${esc(gm.id)}" style="align-self:flex-start">Open game</button>`:""}</article>`};
+  <div class="rcm">${chips.join("")}</div>${x.why?`<details><summary>Analyst note (source not recorded)</summary><p>${esc(x.why)}</p></details>`:""}${x.hash?`<div class="hashid" title="SHA-256 fingerprint of this prediction, chained to the one before it">Fingerprint ${esc(x.hash.slice(0,12))}</div>`:""}${gm?`<button class="ln" data-game="${esc(gm.id)}" style="align-self:flex-start">Open game</button>`:""}</article>`};
 const renderRecord=()=>{
   document.querySelectorAll("[data-rf]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.rf===rf));
   if(!rec){$("recSum").innerHTML=`<div class="rbig"><b class="num">—</b><span>${recErr?"The record could not load. Check your connection and reopen the page.":"Loading the record…"}</span></div>`;$("recBrk").innerHTML="";$("recList").innerHTML="";return}
   const xs=rec.entries.map(effOf).filter(x=>inL(x.lg));
-  const done=xs.filter(x=>["W","L","P"].includes(x.status)),t=tally(done);
-  const clvs=done.filter(x=>x.clv!=null).map(x=>+x.clv),avgClv=clvs.length?clvs.reduce((a,b)=>a+b,0)/clvs.length:null;
-  const ordered=done.slice().sort((a,b)=>Date.parse(b.gradedAt||b.date||0)-Date.parse(a.gradedAt||a.date||0));
-  let streak="—";if(ordered.length){const f=ordered.find(x=>x.status!=="P");if(f){let n=0;for(const x of ordered){if(x.status==="P")continue;if(x.status===f.status)n++;else break}streak=(f.status==="W"?"W":"L")+n}}
-  const pend=xs.filter(x=>x.status==="pending"),live=xs.filter(x=>x.live).length,prov=done.filter(x=>x.prov).length;
-  $("recSum").innerHTML=`<div class="rbig"><b class="num ${t.u>0?"pos":t.u<0?"neg":""}">${recTxt(t)}</b><span>${t.n?`${uTxt(t.u)} · ${pctTxt(t.pct)} winners`:"No graded picks yet. Results land as games finish."}</span></div>
-    <div class="rk"><div><b class="num ${t.u>0?"pos":t.u<0?"neg":""}">${uTxt(t.u)}</b><span>Units won</span></div><div><b class="num">${t.n?((t.u/t.n)*100).toFixed(1)+"%":"—"}</b><span>Return on risk</span></div><div><b class="num">${avgClv==null?"—":(avgClv>0?"+":"")+avgClv.toFixed(1)}</b><span>Avg line value (pts)</span></div><div><b class="num">${streak}</b><span>Current streak</span></div><div><b class="num">${pend.length}</b><span>Pending${live?` · ${live} live`:""}</span></div></div>
-    <div class="dots"><span>Last 10</span>${ordered.slice(0,10).reverse().map(x=>`<i class="${x.status}" title="${esc(x.label)}">${x.status}</i>`).join("")||"<span>none yet</span>"}</div>
-    ${prov?`<div class="live">${prov} just-finished pick${prov>1?"s":""} counted ahead of the official grade.</div>`:""}`;
-  const row=(lab,ys)=>{const k=tally(ys);return`<tr><td>${esc(lab)}</td><td class="num">${recTxt(k)}</td><td>${pctTxt(k.pct)}</td><td class="${k.u>0?"pos":k.u<0?"neg":""}">${k.n?uTxt(k.u):"—"}</td></tr>`};
-  const groups=[["League",[...new Set(xs.map(x=>x.lg))].map(l=>[LG[l]||l,x=>x.lg===l])],["Bet type",[["Spreads",x=>x.kind==="spread"],["Totals",x=>x.kind==="total"],["Player props",x=>x.kind==="prop"]]],["Confidence",[["Strong",x=>x.strength==="Strong"],["Solid",x=>x.strength==="Solid"],["Lean",x=>x.strength==="Lean"],["Logged only",x=>!x.strength]]]];
-  $("recBrk").innerHTML=groups.map(([h,rs])=>`<tr class="sep"><td colspan="4">${h}</td></tr>`+rs.filter(([,f])=>xs.some(f)).map(([lab,f])=>row(lab,done.filter(f))).join("")).join("");
+  const done=xs.filter(x=>["W","L","P"].includes(x.status));
+  /* verified = official grade (not provisional) on a prediction logged before its game started */
+  const ver=done.filter(x=>!x.prov&&!x.loggedAfterStart),t=tally(ver);
+  const clvs=ver.filter(x=>x.clv!=null).map(x=>+x.clv),avgClv=clvs.length?clvs.reduce((a,b)=>a+b,0)/clvs.length:null;
+  const ordered=ver.slice().sort((a,b)=>Date.parse(b.gradedAt||b.date||0)-Date.parse(a.gradedAt||a.date||0));
+  const pend=xs.filter(x=>x.status==="pending"),live=xs.filter(x=>x.live).length,prov=done.filter(x=>x.prov).length,late=xs.filter(x=>x.loggedAfterStart).length;
+  const it=integ.state==="ok"?`<div class="integ ok">✓ Log integrity verified in your browser: all ${integ.n} predictions match their fingerprints, and none were edited, removed or reordered. <a href="https://github.com/Domrugg44/closer-live/commits/main/data/record.json" target="_blank" rel="noopener">Full change history</a></div>`
+    :integ.state==="bad"?`<div class="integ bad">⚠ Integrity check failed at prediction ${esc(integ.id)}: its contents don't match its fingerprint. Treat this log as unverified.</div>`
+    :integ.state==="legacy"?`<div class="integ">This copy of the log predates fingerprints; refresh in a few minutes.</div>`
+    :integ.state==="unsupported"?`<div class="integ">This browser can't run the integrity check.</div>`:`<div class="integ">Checking log integrity…</div>`;
+  $("recSum").innerHTML=`<div class="rbig"><b class="num">${recTxt(t)}</b><span>${t.n?"Verified record (wins–losses–pushes)":"No verified results yet: results appear as logged games finish."}</span></div>
+    ${it}
+    <div class="rk">
+      ${t.n>=MIN_RATE?`<div><b class="num">${pctTxt(t.pct)}</b><span>Win rate</span></div>`:naTile("Win rate",t.n,MIN_RATE,"graded picks")}
+      ${t.pn>=MIN_ROI?`<div><b class="num ${t.u>0?"pos":t.u<0?"neg":""}">${(t.u/t.pn*100).toFixed(1)}%</b><span>ROI</span></div>`:naTile("ROI",t.pn,MIN_ROI,"graded picks with recorded odds")}
+      ${t.pn>=MIN_ROI?`<div><b class="num ${t.u>0?"pos":t.u<0?"neg":""}">${uTxt(t.u)}</b><span>Units</span></div>`:naTile("Units",t.pn,MIN_ROI,"graded picks with recorded odds")}
+      ${clvs.length>=MIN_CLV?`<div><b class="num">${(avgClv>0?"+":"")+avgClv.toFixed(1)}</b><span>Avg closing line value</span></div>`:naTile("Closing line value",clvs.length,MIN_CLV,"picks with a closing line")}
+      <div class="na"><b class="num">—</b><span>Model accuracy</span><small>Unavailable: no validated model yet</small></div>
+      <div><b class="num">${pend.length}</b><span>Pending${live?` · ${live} live`:""}</span></div>
+    </div>
+    <div class="dots"><span>Last 10 verified</span>${ordered.slice(0,10).reverse().map(x=>`<i class="${x.status}" title="${esc(x.label)}">${x.status}</i>`).join("")||"<span>none yet</span>"}</div>
+    ${prov?`<div class="live">${prov} just-finished pick${prov>1?"s are":" is"} shown with a provisional result and will count once officially graded.</div>`:""}
+    ${late?`<div class="live">${late} pick${late>1?"s were":" was"} entered in the log after the game started. They're shown below but left out of all verified stats.</div>`:""}`;
+  const row=(lab,ys)=>{const k=tally(ys);return`<tr><td>${esc(lab)}</td><td class="num">${recTxt(k)}</td><td>${k.n>=MIN_RATE?pctTxt(k.pct):"n/a"}</td><td class="${k.pn>=MIN_ROI?(k.u>0?"pos":k.u<0?"neg":""):""}">${k.pn>=MIN_ROI?uTxt(k.u):"n/a"}</td></tr>`};
+  const groups=[["Source",[["Manual picks",x=>(x.source||"manual")==="manual"],["Experimental",x=>x.source==="experimental"],["Validated model",x=>x.source==="validated"]]],["League",[...new Set(xs.map(x=>x.lg))].map(l=>[LG[l]||l,x=>x.lg===l])],["Bet type",[["Spreads",x=>x.kind==="spread"],["Totals",x=>x.kind==="total"],["Player props",x=>x.kind==="prop"]]],["Manual rating",[["Strong",x=>x.tier==="Strong"],["Solid",x=>x.tier==="Solid"],["Lean",x=>x.tier==="Lean"],["Unrated",x=>!x.tier]]]];
+  $("recBrk").innerHTML=groups.map(([h,rs])=>`<tr class="sep"><td colspan="4">${h}</td></tr>`+rs.filter(([,f])=>xs.some(f)).map(([lab,f])=>row(lab,ver.filter(f))).join("")).join("")+`<tr><td colspan="4" class="fine" style="white-space:normal;padding-top:10px">Verified results only. Win % shows from ${MIN_RATE} graded picks and units from ${MIN_ROI} with recorded odds; until then they read n/a.</td></tr>`;
   const list=xs.filter(x=>rf==="all"||(rf==="pending"?x.status==="pending":x.status===rf)).sort((a,b)=>{const pa=a.status==="pending",pb=b.status==="pending";if(pa!==pb&&rf==="all")return pa?1:-1;return(pa?1:-1)*(Date.parse(a.date||0)-Date.parse(b.date||0))});
   const byDay=[];for(const x of list){const d=dayOf(x);let g=byDay.find(y=>y[0]===d);if(!g)byDay.push(g=[d,[]]);g[1].push(x)}
-  $("recList").innerHTML=list.length?byDay.map(([d,ys])=>{const k=tally(ys);return`<h3 class="rday">${esc(d)}<span>${k.n?`${recTxt(k)} · ${uTxt(k.u)}`:`${ys.length} pick${ys.length>1?"s":""}`}</span></h3><div class="rlist">${ys.map(recCard).join("")}</div>`}).join(""):emptyBox(rf==="pending"?"Nothing pending.":rf==="all"?"No picks logged for this league yet.":"None yet.");
+  $("recList").innerHTML=list.length?byDay.map(([d,ys])=>{const k=tally(ys);return`<h3 class="rday">${esc(d)}<span>${k.n?`${recTxt(k)} graded`:`${ys.length} pick${ys.length>1?"s":""}`}</span></h3><div class="rlist">${ys.map(recCard).join("")}</div>`}).join(""):emptyBox(rf==="pending"?"Nothing pending.":rf==="all"?"No picks logged for this league yet.":"None yet.");
   const up=Date.parse(rec.updatedAt);$("recUpd").innerHTML=isFinite(up)?`<span>Official grades as of ${esc(new Date(up).toLocaleString([],{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}))}</span>`:"";
 };
 loadRec();setInterval(loadRec,300000);
@@ -725,11 +775,11 @@ const liveModel=g=>{
   return{f,projT,projM,L,T0,S0,cands:why?[]:out.filter(sane),plays,stale:why}};
 const spTxtH=(g,h)=>h==null?"—":h<0?`${g.home.abbr} ${r1(h)}`:h>0?`${g.away.abbr} ${r1(-h)}`:"PK";
 const pr=o=>o==null?"":`${o>0?"+":""}${o}`;
-const lpRow=p=>`<div class="gpc lvp"><span class="st ${p.strength}">${p.strength}</span><b>${esc(p.label)} <small style="color:var(--soft)">${esc(pr(p.price))}</small><br><small style="color:var(--soft);font-weight:500">${Math.round(p.p*100)}% to win · ${(p.ev*100).toFixed(1)}% expected value</small></b><button class="add sm" data-addlive="${esc(p.k)}" aria-pressed="${onSlip(p.k)}" aria-label="Add ${esc(p.label)} to slip">${onSlip(p.k)?"✓":"+"}</button></div>`;
+const lpRow=p=>`<div class="gpc lvp"><span class="src exp" title="Untested model output, not a validated prediction">Experimental</span><b>${esc(p.label)} <small style="color:var(--soft)">${esc(pr(p.price))}</small><br><small style="color:var(--soft);font-weight:500">Untested estimate ${Math.round(p.p*100)}% vs market ${Math.round(p.q*100)}%</small></b><button class="add sm" data-addlive="${esc(p.k)}" aria-pressed="${onSlip(p.k)}" aria-label="Add ${esc(p.label)} to slip">${onSlip(p.k)?"✓":"+"}</button></div>`;
 const liveSection=g=>{if(g.state!=="in")return"";const m=liveModel(g);
   if(!m||m.none)return`<h3>Live plays</h3><p class="fine" style="margin:0">${m&&m.nopre?"No pregame line to anchor the model for this game.":liveOdds[g.id]?"No live lines posted for this game right now.":"Loading live lines…"}</p>`;
   const L=m.L,b=m.cands[0];
-  return`<h3>Live plays<small>in-game · updates every 15s</small></h3>
+  return`<h3>Live plays<small>experimental, untested model · not saved to the prediction log</small></h3>
   <div class="scroll"><table class="cmp"><thead><tr><th></th><th>Live market</th><th>Model fair</th><th>Pregame</th></tr></thead><tbody>
   <tr><td>Spread</td><td class="num">${esc(spTxtH(g,L.spreadHome))} <span style="color:var(--soft)">${esc(pr(L.homeSp))}</span></td><td class="num">${esc(spTxtH(g,-m.projM))}</td><td class="num">${esc(spTxtH(g,m.S0))}</td></tr>
   <tr><td>Total</td><td class="num">${L.total??"—"} <span style="color:var(--soft)">o${esc(pr(L.over))} u${esc(pr(L.under))}</span></td><td class="num">${r1(m.projT)}</td><td class="num">${m.T0}</td></tr>
@@ -737,12 +787,12 @@ const liveSection=g=>{if(g.state!=="in")return"";const m=liveModel(g);
   </tbody></table></div>
   ${m.plays.length?`<div class="gp" style="margin-top:8px">${m.plays.map(lpRow).join("")}</div>`:m.stale?`<p class="tipbox card" style="margin-top:8px">${{late:"No live plays this late in the game: books suspend and move lines too fast to trust.",frozen:"The live line hasn't moved while the score has, so it's likely suspended or delayed. No plays until it updates.",pregame:"The live line still matches the pregame line, so it hasn't been updated yet. No plays until it does.",checking:"Checking that the live line is current: plays appear once it's seen moving (usually within a minute or two)."}[m.stale]}</p>`:`<p class="tipbox card" style="margin-top:8px">No live edge right now: the market is close to the model.${b?` Closest: <b>${esc(b.label)} ${esc(pr(b.price))}</b> at ${(b.ev*100).toFixed(1)}% expected value (needs 3%+).`:""}</p>`}
   <p class="fine" style="margin:8px 0 0">${Math.round(m.f*100)}% of the game played. The model starts from the pregame line, blends in the scoring pace so far, and projects the rest of the game from the current score; each play's chance is then averaged with the market's own (no-vig) chance, so only real disagreements show up. Estimates, not guarantees. Live lines are DraftKings via ESPN, checked ${Math.max(0,Math.round((Date.now()-L.at)/1000))}s ago; ESPN can lag the book by a few minutes, so confirm the price in your sportsbook before betting.</p>`};
-const liveChip=g=>{if(g.state!=="in")return"";const m=liveModel(g);if(!m||!m.plays||!m.plays.length)return"";return`<div style="font-size:12px;font-weight:800;color:#12a46a;letter-spacing:.05em">LIVE PLAY</div>${lpRow(m.plays[0])}`};
+const liveChip=g=>{if(g.state!=="in")return"";const m=liveModel(g);if(!m||!m.plays||!m.plays.length)return"";return`<div style="font-size:12px;font-weight:800;color:#12a46a;letter-spacing:.05em">LIVE PLAY · EXPERIMENTAL</div>${lpRow(m.plays[0])}`};
 const liveTag=g=>{if(g.state!=="in")return"";const m=liveModel(g);return m&&m.plays&&m.plays.length?`<div class="sgl lvt">⚡ ${esc(m.plays[0].label)} ${esc(pr(m.plays[0].price))}</div>`:""};
 const renderLivePlays=()=>{const el=$("livePlays");if(!el)return;const xs=[];
   games().filter(g=>g.state==="in"&&inL(g.lg)).forEach(g=>{const m=liveModel(g);if(m&&m.plays)m.plays.forEach(p=>xs.push([g,p]))});
   xs.sort((a,b)=>b[1].ev-a[1].ev);
-  el.innerHTML=xs.length?`<h3 class="gh" style="margin-top:0">Live plays<span>${xs.length} edge${xs.length>1?"s":""} right now · updates every 15s</span></h3><div class="grid">${xs.map(([g,p])=>`<article class="card tk ${p.strength}"><div class="ico" style="background:${LC[g.lg]}">${ic(g.lg)}</div><div><div class="g">${esc(g.away.abbr)} ${esc(g.away.score)} – ${esc(g.home.abbr)} ${esc(g.home.score)} · ${esc(g.detail||"Live")}</div><div class="p num">${esc(p.label)} <span style="font-size:18px;color:var(--soft)">${esc(pr(p.price))}</span></div><div class="mt"><div class="m"><i style="width:${Math.min(100,p.ev/.15*100)}%"></i></div><span class="st ${p.strength}">${p.strength}</span></div></div><div class="side"><button class="add" data-addlive="${esc(p.k)}" aria-pressed="${onSlip(p.k)}" aria-label="Add ${esc(p.label)} to slip">${onSlip(p.k)?"✓":"+"}</button><button class="ln" data-game="${esc(g.id)}">● Game</button></div><p class="why">We make it ${Math.round(p.p*100)}% to win vs the market's ${Math.round(p.q*100)}%: ${(p.ev*100).toFixed(1)}% expected value at this price. Live line, so it can move fast.</p></article>`).join("")}</div>`:"";};
+  el.innerHTML=xs.length?`<h3 class="gh" style="margin-top:0">Live plays<span>${xs.length} experimental play${xs.length>1?"s":""} from an untested model · not saved to the prediction log</span></h3><div class="grid">${xs.map(([g,p])=>`<article class="card tk ${p.strength}"><div class="ico" style="background:${LC[g.lg]}">${ic(g.lg)}</div><div><div class="g">${esc(g.away.abbr)} ${esc(g.away.score)} – ${esc(g.home.abbr)} ${esc(g.home.score)} · ${esc(g.detail||"Live")}</div><div class="p num">${esc(p.label)} <span style="font-size:18px;color:var(--soft)">${esc(pr(p.price))}</span></div><div class="mt"><div class="m"><i style="width:${Math.min(100,p.ev/.15*100)}%"></i></div><span class="src exp">Experimental</span></div></div><div class="side"><button class="add" data-addlive="${esc(p.k)}" aria-pressed="${onSlip(p.k)}" aria-label="Add ${esc(p.label)} to slip">${onSlip(p.k)?"✓":"+"}</button><button class="ln" data-game="${esc(g.id)}">● Game</button></div><p class="why">Untested model estimate: ${Math.round(p.p*100)}% vs the market's ${Math.round(p.q*100)}%. This model hasn't been checked against past results, so its numbers aren't proven. Live line, so it can move fast.</p></article>`).join("")}</div>`:"";};
 const renderFeed=()=>{renderStrip();renderGames();renderGameSheet();renderGrid();renderRecord();renderLivePlays()};
 /* direct live fetching from ESPN's public feed (allows browser requests from any site) */
 const API="https://site.api.espn.com/apis/site/v2/sports/";
