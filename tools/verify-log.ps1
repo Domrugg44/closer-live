@@ -21,6 +21,7 @@ foreach ($e in $cur) {
   if ($e.source -ne "validated" -and $null -ne $e.prob) { $problems += "Entry $($e.id) has a probability but its source ($($e.source)) is not a validated model" }
 }
 
+$compared = $false
 if ($BaseRef) {
   $raw = $null
   try { $raw = (& git show "$($BaseRef):data/record.json" 2>$null) -join "`n" } catch {}
@@ -29,7 +30,7 @@ if ($BaseRef) {
     $base = $raw | ConvertFrom-Json
     if ($base.schema -ne 2) { Write-Host "Earlier log at $BaseRef predates schema 2; chain check only." }
     else {
-      $old = @($base.entries)
+      $old = @($base.entries); $compared = $true
       if ($cur.Count -lt $old.Count) { $problems += "Entries were removed ($($old.Count) before, $($cur.Count) now)" }
       for ($i = 0; $i -lt [Math]::Min($old.Count, $cur.Count); $i++) {
         $a = $old[$i]; $b = $cur[$i]
@@ -51,4 +52,4 @@ if ($BaseRef) {
 }
 
 if ($problems.Count) { $problems | ForEach-Object { Write-Host "PROBLEM: $_" }; exit 1 }
-Write-Host "Log verified: $($cur.Count) entries, hash chain intact$(if($BaseRef){", no past entries or final results changed since $BaseRef"})."
+Write-Host "Log verified: $($cur.Count) entries, hash chain intact$(if($compared){", no past entries or final results changed since $BaseRef"})."
