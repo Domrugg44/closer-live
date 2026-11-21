@@ -124,7 +124,7 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true", help="compute and print, but do not record evaluations")
     ap.add_argument("--model", help="only this model version id")
     args = ap.parse_args()
-    token = (os.environ.get("CLOSER_QC_TOKEN") or "").strip()
+    token = (os.environ.get("CLOSER_QC_TOKEN") or "").strip().lstrip("﻿").strip()
     if not token:
         print("CLOSER_QC_TOKEN is not set", file=sys.stderr)
         return 2
