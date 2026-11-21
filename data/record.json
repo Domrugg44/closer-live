@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-21T15:38:34Z",
+    "updatedAt":  "2026-11-21T16:39:04Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -148,9 +148,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -16.5,
+                                      "spread":  -15.5,
                                       "total":  40.5,
-                                      "details":  "KC -16.5"
+                                      "details":  "KC -15.5"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -292,9 +292,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -5.5,
-                                      "total":  45.5,
-                                      "details":  "DET -5.5"
+                                      "spread":  -4.5,
+                                      "total":  46.5,
+                                      "details":  "DET -4.5"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -400,9 +400,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -3.0,
+                                      "spread":  -3.5,
                                       "total":  46.5,
-                                      "details":  "SF -3"
+                                      "details":  "SF -3.5"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -714,7 +714,7 @@
                         "units":  null,
                         "close":  {
                                       "spread":  -7.0,
-                                      "total":  37.5,
+                                      "total":  36.5,
                                       "details":  "OU -7"
                                   },
                         "clv":  null,
@@ -965,9 +965,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  9.5,
+                                      "spread":  10.0,
                                       "total":  53.5,
-                                      "details":  "ARIZ -9.5"
+                                      "details":  "ARIZ -10"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -1084,7 +1084,7 @@
                         "units":  null,
                         "close":  {
                                       "spread":  3.5,
-                                      "total":  41.5,
+                                      "total":  42.5,
                                       "details":  "OSU -3.5"
                                   },
                         "clv":  null,
@@ -1192,7 +1192,7 @@
                         "units":  null,
                         "close":  {
                                       "spread":  -7.0,
-                                      "total":  37.5,
+                                      "total":  36.5,
                                       "details":  "OU -7"
                                   },
                         "clv":  null,
@@ -2038,9 +2038,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -16.5,
+                                      "spread":  -15.5,
                                       "total":  40.5,
-                                      "details":  "KC -16.5"
+                                      "details":  "KC -15.5"
                                   },
                         "clv":  null,
                         "note":  null,
