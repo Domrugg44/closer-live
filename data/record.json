@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-21T20:35:05Z",
+    "updatedAt":  "2026-11-21T21:32:46Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -678,7 +678,7 @@
                         "units":  null,
                         "close":  {
                                       "spread":  14.5,
-                                      "total":  51.5,
+                                      "total":  50.5,
                                       "details":  "UGA -14.5"
                                   },
                         "clv":  null,
@@ -928,19 +928,24 @@
                         "why":  null,
                         "loggedAfterStart":  false,
                         "hash":  "4c3bb63750a4025b99b949980fefd1a5ea1943439129b711851ae197fe1aa595",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "UNC",
+                                      "as":  24,
+                                      "home":  "UVA",
+                                      "hs":  41
+                                  },
+                        "actual":  -17,
+                        "diff":  -15.5,
                         "units":  null,
                         "close":  {
                                       "spread":  1.5,
                                       "total":  42.5,
                                       "details":  "UNC -1.5"
                                   },
-                        "clv":  null,
+                        "clv":  3.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T21:32:45Z"
                     },
                     {
                         "id":  "L026",
@@ -1082,19 +1087,24 @@
                         "why":  null,
                         "loggedAfterStart":  false,
                         "hash":  "0e2faf58b421f9bfbb927c035109fe19e77050cfb5a6556dd7a0410eeb645eea",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "OSU",
+                                      "as":  28,
+                                      "home":  "NEB",
+                                      "hs":  31
+                                  },
+                        "actual":  59,
+                        "diff":  -17.5,
                         "units":  null,
                         "close":  {
                                       "spread":  3.5,
                                       "total":  42.5,
                                       "details":  "OSU -3.5"
                                   },
-                        "clv":  null,
+                        "clv":  -1.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T21:32:46Z"
                     },
                     {
                         "id":  "L030",
@@ -1226,19 +1236,24 @@
                         "why":  null,
                         "loggedAfterStart":  false,
                         "hash":  "979cd783a609708017acc40397173fabbb60596bb951bcbf80e0811ce5dba0d0",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "BYU",
+                                      "as":  31,
+                                      "home":  "KU",
+                                      "hs":  29
+                                  },
+                        "actual":  60,
+                        "diff":  -13.5,
                         "units":  null,
                         "close":  {
                                       "spread":  4.5,
                                       "total":  46.5,
                                       "details":  "BYU -4.5"
                                   },
-                        "clv":  null,
+                        "clv":  0.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T21:32:46Z"
                     },
                     {
                         "id":  "L034",
