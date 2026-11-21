@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-21T03:16:09Z",
+    "updatedAt":  "2026-11-21T04:25:41Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -507,19 +507,24 @@
                         "why":  null,
                         "loggedAfterStart":  true,
                         "hash":  "9240532d6a459349ff8c084cf2fc39bafa31790129b185b97b528587d3e37300",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "CLEM",
+                                      "as":  20,
+                                      "home":  "DUKE",
+                                      "hs":  10
+                                  },
+                        "actual":  -10,
+                        "diff":  -23.5,
                         "units":  null,
                         "close":  {
                                       "spread":  -11.5,
                                       "total":  41.5,
                                       "details":  "DUKE -11.5"
                                   },
-                        "clv":  null,
+                        "clv":  -2.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T04:25:39Z"
                     },
                     {
                         "id":  "L015",
@@ -615,19 +620,24 @@
                         "why":  null,
                         "loggedAfterStart":  true,
                         "hash":  "9dba084b83c85afdecb2e8284b1c28a6c4da7c7c26ead63f9e094691531ff808",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "BGSU",
+                                      "as":  0,
+                                      "home":  "TOL",
+                                      "hs":  19
+                                  },
+                        "actual":  19,
+                        "diff":  2.5,
                         "units":  null,
                         "close":  {
                                       "spread":  -17.5,
                                       "total":  45.5,
                                       "details":  "TOL -17.5"
                                   },
-                        "clv":  null,
+                        "clv":  1.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T04:25:40Z"
                     },
                     {
                         "id":  "L018",
@@ -946,7 +956,7 @@
                         "units":  null,
                         "close":  {
                                       "spread":  7.5,
-                                      "total":  52.5,
+                                      "total":  51.5,
                                       "details":  "ARIZ -7.5"
                                   },
                         "clv":  null,
@@ -1016,19 +1026,24 @@
                         "why":  null,
                         "loggedAfterStart":  true,
                         "hash":  "761f8a503a190d8a51397a65a5e0db8fe0bb07c68f41db6d21785ceaa3d736ab",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "CLEM",
+                                      "as":  20,
+                                      "home":  "DUKE",
+                                      "hs":  10
+                                  },
+                        "actual":  30,
+                        "diff":  10.5,
                         "units":  null,
                         "close":  {
                                       "spread":  -11.5,
                                       "total":  41.5,
                                       "details":  "DUKE -11.5"
                                   },
-                        "clv":  null,
+                        "clv":  -1.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T04:25:40Z"
                     },
                     {
                         "id":  "L029",
@@ -1530,11 +1545,16 @@
                         "why":  "22+ in 11 of 15. OKC short-handed.",
                         "loggedAfterStart":  false,
                         "hash":  "8e794aea9fb33ff530a45ea62028890e453d9284584332796b3541898eced318",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "NO",
+                                      "as":  120,
+                                      "home":  "OKC",
+                                      "hs":  126
+                                  },
+                        "actual":  22,
+                        "diff":  2.5,
+                        "units":  0.87,
                         "close":  {
                                       "spread":  -11.5,
                                       "total":  229.5,
@@ -1542,7 +1562,7 @@
                                   },
                         "clv":  null,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T04:25:41Z"
                     },
                     {
                         "id":  "P002",
@@ -1566,11 +1586,16 @@
                         "why":  "Bulls 27th in boards allowed, fastest pace.",
                         "loggedAfterStart":  false,
                         "hash":  "b17a3ba3a2ebea0043f0784036c754fb4ea861229ad5ef209c5adc9f82bca785",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "WSH",
+                                      "as":  98,
+                                      "home":  "CHI",
+                                      "hs":  94
+                                  },
+                        "actual":  3,
+                        "diff":  -3.5,
+                        "units":  -1,
                         "close":  {
                                       "spread":  -1.5,
                                       "total":  237.5,
@@ -1578,7 +1603,7 @@
                                   },
                         "clv":  null,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T04:25:41Z"
                     },
                     {
                         "id":  "P003",
