@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-21T22:32:21Z",
+    "updatedAt":  "2026-11-21T23:30:43Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -400,9 +400,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -3.5,
+                                      "spread":  -3.0,
                                       "total":  46.5,
-                                      "details":  "SF -3.5"
+                                      "details":  "SF -3"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -678,7 +678,7 @@
                         "units":  null,
                         "close":  {
                                       "spread":  14.5,
-                                      "total":  50.5,
+                                      "total":  51.5,
                                       "details":  "UGA -14.5"
                                   },
                         "clv":  null,
@@ -749,9 +749,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -20.5,
+                                      "spread":  -21.0,
                                       "total":  61.5,
-                                      "details":  "MIA -20.5"
+                                      "details":  "MIA -21"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -779,19 +779,24 @@
                         "why":  null,
                         "loggedAfterStart":  false,
                         "hash":  "dbad64ca1412745de701953a2a869adfc85e0bb94fc5a9c7399c15b82a9e5822",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "IOWA",
+                                      "as":  34,
+                                      "home":  "ILL",
+                                      "hs":  17
+                                  },
+                        "actual":  17,
+                        "diff":  8.5,
                         "units":  null,
                         "close":  {
                                       "spread":  8.5,
                                       "total":  40.5,
                                       "details":  "IOWA -8.5"
                                   },
-                        "clv":  null,
+                        "clv":  0.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T23:30:42Z"
                     },
                     {
                         "id":  "L022",
@@ -1318,19 +1323,24 @@
                         "why":  null,
                         "loggedAfterStart":  false,
                         "hash":  "9d9f1ffc2a73fc3d4b2caffd16dcfd35f58d78bb520caa0d9e8c724f9fa84025",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "IOWA",
+                                      "as":  34,
+                                      "home":  "ILL",
+                                      "hs":  17
+                                  },
+                        "actual":  51,
+                        "diff":  -10.5,
                         "units":  null,
                         "close":  {
                                       "spread":  8.5,
                                       "total":  40.5,
                                       "details":  "IOWA -8.5"
                                   },
-                        "clv":  null,
+                        "clv":  0.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-21T23:30:42Z"
                     },
                     {
                         "id":  "L036",
