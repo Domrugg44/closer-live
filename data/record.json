@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-21T14:44:18Z",
+    "updatedAt":  "2026-11-21T15:38:34Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -400,9 +400,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -3.5,
+                                      "spread":  -3.0,
                                       "total":  46.5,
-                                      "details":  "SF -3.5"
+                                      "details":  "SF -3"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -893,9 +893,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -13.5,
+                                      "spread":  -12.5,
                                       "total":  50.5,
-                                      "details":  "LOU -13.5"
+                                      "details":  "LOU -12.5"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -929,9 +929,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -1.5,
+                                      "spread":  1.5,
                                       "total":  41.5,
-                                      "details":  "UVA -1.5"
+                                      "details":  "UNC -1.5"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -965,9 +965,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  7.5,
+                                      "spread":  9.5,
                                       "total":  53.5,
-                                      "details":  "ARIZ -7.5"
+                                      "details":  "ARIZ -9.5"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -1227,9 +1227,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  5.5,
+                                      "spread":  4.5,
                                       "total":  46.5,
-                                      "details":  "BYU -5.5"
+                                      "details":  "BYU -4.5"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -1263,9 +1263,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  6.0,
+                                      "spread":  4.5,
                                       "total":  46.5,
-                                      "details":  "WIS -6"
+                                      "details":  "WIS -4.5"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -1408,7 +1408,7 @@
                         "units":  null,
                         "close":  {
                                       "spread":  -13.5,
-                                      "total":  46.5,
+                                      "total":  47.5,
                                       "details":  "FLA -13.5"
                                   },
                         "clv":  null,
@@ -1443,9 +1443,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -18.5,
+                                      "spread":  -20.5,
                                       "total":  60.5,
-                                      "details":  "BOIS -18.5"
+                                      "details":  "BOIS -20.5"
                                   },
                         "clv":  null,
                         "note":  null,
