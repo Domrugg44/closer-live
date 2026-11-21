@@ -240,11 +240,29 @@ async function handleAdmin(req, env, url) {
   return send(await recordQc(env, body));
 }
 
+// Local testing only (COUNT_QUERIES=1 in .dev.vars): count database calls per request, since
+// Cloudflare's free plan limits queries per invocation (a batch counts as one).
+function counted(env) {
+  if (env.COUNT_QUERIES !== "1") return { env, n: () => null };
+  let n = 0;
+  const wrapStmt = (s) => new Proxy(s, { get: (t, k) => (k === "__raw" ? t : ["first", "all", "run", "raw"].includes(k) ? (...a) => { n++; return t[k](...a); }
+    : k === "bind" ? (...a) => wrapStmt(t.bind(...a)) : typeof t[k] === "function" ? t[k].bind(t) : t[k]) });
+  const db = new Proxy(env.DB, { get: (t, k) => (k === "prepare" ? (sql) => wrapStmt(t.prepare(sql))
+    : k === "batch" ? (stmts) => { n++; return t.batch(stmts.map((s) => s.__raw || s)); } : typeof t[k] === "function" ? t[k].bind(t) : t[k]) });
+  return { env: { ...env, DB: db }, n: () => n };
+}
+
 export default {
   async fetch(req, env) {
-    try { return await handle(req, env); } catch (e) { return json(env, { error: "server error" }, 500); }
+    const c = counted(env);
+    try {
+      const res = await handle(req, c.env);
+      if (c.n() != null) { const h = new Headers(res.headers); h.set("x-db-queries", String(c.n())); return new Response(res.body, { status: res.status, headers: h }); }
+      return res;
+    } catch (e) { return json(env, { error: "server error" }, 500); }
   },
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(runCron(event.cron, env));
+    const c = counted(env);
+    ctx.waitUntil(runCron(event.cron, c.env).then(() => { if (c.n() != null) console.log(`cron ${event.cron}: ${c.n()} database queries`); }));
   },
 };

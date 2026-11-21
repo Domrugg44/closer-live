@@ -102,23 +102,27 @@ export async function runQualityChecks(env, startRun, endRun) {
   const runId = await startRun(env, "quality");
   let failing = 0, warning = 0;
   try {
-    for (const c of CHECKS) {
-      const [sql, ...args] = c.q(now);
-      const rows = (await env.DB.prepare(sql).bind(...args).all()).results;
+    // previous statuses in one read, and every status write in one batch (free-plan query limit per run)
+    const prevStatus = new Map((await env.DB.prepare("SELECT check_name, status FROM data_quality").all()).results.map((r) => [r.check_name, r.status]));
+    const found = await env.DB.batch(CHECKS.map((c) => { const [sql, ...args] = c.q(now); return env.DB.prepare(sql).bind(...args); }));
+    const writes = [];
+    for (const [i, c] of CHECKS.entries()) {
+      const rows = found[i].results || [];
       const status = rows.length ? c.severity : "pass";
       if (status === "fail") failing++;
       if (status === "warn") warning++;
       const sample = rows.length ? JSON.stringify(rows.slice(0, 5)) : null;
-      const prev = await env.DB.prepare("SELECT status FROM data_quality WHERE check_name = ?").bind(c.name).first();
-      await env.DB.prepare(
+      const prev = prevStatus.get(c.name);
+      writes.push(env.DB.prepare(
         `INSERT INTO data_quality (check_name, severity, status, issues, sample_json, description, checked_at) VALUES (?,?,?,?,?,?,?)
          ON CONFLICT(check_name) DO UPDATE SET severity=excluded.severity, status=excluded.status, issues=excluded.issues,
            sample_json=excluded.sample_json, description=excluded.description, checked_at=excluded.checked_at`
-      ).bind(c.name, c.severity, status, rows.length, sample, c.description, at).run();
-      if (!prev || prev.status !== status)
-        await env.DB.prepare("INSERT INTO data_quality_events (check_name, from_status, to_status, issues, sample_json, at) VALUES (?,?,?,?,?,?)")
-          .bind(c.name, prev ? prev.status : null, status, rows.length, sample, at).run();
+      ).bind(c.name, c.severity, status, rows.length, sample, c.description, at));
+      if (prev !== status)
+        writes.push(env.DB.prepare("INSERT INTO data_quality_events (check_name, from_status, to_status, issues, sample_json, at) VALUES (?,?,?,?,?,?)")
+          .bind(c.name, prev ?? null, status, rows.length, sample, at));
     }
+    await env.DB.batch(writes);
     await endRun(env, runId, { ok: true, note: `${CHECKS.length} checks: ${failing} failing, ${warning} warning` });
   } catch (e) {
     await endRun(env, runId, { ok: false, note: String(e.message || e).slice(0, 250) });
@@ -136,14 +140,15 @@ export async function qualityStatus(env) {
 
 // Safeguard used before accepting a live prediction: the game must be cleanly scheduled,
 // recently confirmed by the collector, and the pipeline itself must be healthy.
-export async function liveGameGuard(env, gameId) {
-  const g = await env.DB.prepare("SELECT status, start_time, updated_at FROM games WHERE id = ?").bind(gameId).first();
+// Pure: takes the game row and the non-passing data_quality rows (loaded once per request).
+export function liveGameGuard(g, gameId, dqNotPassing, nowMs = Date.now()) {
   if (!g) return "unknown game";
   if (g.status !== "scheduled") return `game status is '${g.status || "unknown"}', not scheduled`;
-  if (Date.now() - Date.parse(g.updated_at) > 90 * MIN) return `game data is stale (last confirmed ${g.updated_at})`;
-  const hb = await env.DB.prepare("SELECT status FROM data_quality WHERE check_name = 'collector_heartbeat'").first();
+  if (!(Date.parse(g.start_time) > nowMs)) return "game already started";
+  if (nowMs - Date.parse(g.updated_at) > 90 * MIN) return `game data is stale (last confirmed ${g.updated_at})`;
+  const hb = dqNotPassing.find((d) => d.check_name === "collector_heartbeat");
   if (hb && hb.status === "fail") return "data pipeline is not current (collector heartbeat failing)";
-  const bad = await env.DB.prepare("SELECT check_name, sample_json FROM data_quality WHERE status = 'fail' AND check_name IN ('duplicate_games')").first();
+  const bad = dqNotPassing.find((d) => d.check_name === "duplicate_games" && d.status === "fail");
   if (bad && bad.sample_json && new RegExp(`"game_[ab]":${gameId}[,}]`).test(bad.sample_json)) return "game has a duplicate record under review";
   return null;
 }

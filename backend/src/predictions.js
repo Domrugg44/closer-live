@@ -3,7 +3,7 @@
 // the database triggers in migrations/0002_predictions.sql; this code only routes requests to them.
 import { bdlSeasonPage } from "./providers.js";
 import { liveGameGuard } from "./quality.js";
-import { buildExplanation } from "./explain.js";
+import { buildExplanation, loadExplainContext } from "./explain.js";
 
 const nowIso = () => new Date().toISOString();
 const SEP = "\u001f";
@@ -54,63 +54,88 @@ export async function registerModel(env, body) {
 }
 
 /* ---------------- model pipeline: submit predictions ---------------- */
-async function priceAt(env, gameId, side, atIso) {
-  // latest captured price for this side at or before the prediction time; DraftKings preferred
-  return await env.DB.prepare(
-    `SELECT o.price, o.book, o.captured_at FROM odds_snapshots o JOIN games g ON g.odds_event_id = o.odds_event_id
-     WHERE g.id = ? AND o.market = 'h2h' AND o.side = ? AND o.captured_at <= ?
-     ORDER BY o.captured_at DESC, (o.book = 'draftkings') DESC LIMIT 1`
-  ).bind(gameId, side, atIso).first();
+// latest captured price per game and side at or before `atIso`; DraftKings preferred at equal times (one query for all games)
+async function pricesAt(env, gameIds, atIso) {
+  const out = new Map();
+  if (!gameIds.length) return out;
+  const rows = (await env.DB.prepare(
+    `SELECT g.id AS gid, o.side, o.price, o.book, o.captured_at FROM odds_snapshots o JOIN games g ON g.odds_event_id = o.odds_event_id
+     WHERE g.id IN (SELECT value FROM json_each(?)) AND o.market = 'h2h' AND o.side IN ('home','away') AND o.captured_at <= ?
+     ORDER BY o.captured_at DESC, (o.book = 'draftkings') DESC, o.book`
+  ).bind(JSON.stringify(gameIds), atIso).all()).results;
+  for (const r of rows) { const k = `${r.gid}:${r.side}`; if (!out.has(k)) out.set(k, r); }
+  return out;
 }
+const PRED_MAX = 500;
+// Validates every prediction first, then writes all accepted ones (prediction + explanation) in ONE batch.
+// A constant number of database queries per request, whatever its size (Cloudflare free-plan query limit).
 export async function submitPredictions(env, body) {
   const { model_version_id, kind, predictions } = body || {};
   if (!model_version_id || !["live", "backtest"].includes(kind) || !Array.isArray(predictions)) return { status: 400, body: { error: "model_version_id, kind ('live'|'backtest') and predictions[] are required" } };
-  if (predictions.length > 500) return { status: 400, body: { error: "at most 500 predictions per request" } };
+  if (predictions.length > PRED_MAX) return { status: 400, body: { error: `at most ${PRED_MAX} predictions per request` } };
   const mv = await env.DB.prepare("SELECT status FROM model_versions WHERE id = ?").bind(model_version_id).first();
   if (!mv) return { status: 404, body: { error: "unknown model version" } };
-  const results = [];
+  if (kind === "backtest" && mv.status !== "experimental") return { status: 409, body: { error: "backtest predictions are only accepted while a version is experimental" } };
+  if (!["experimental", "testing", "validated"].includes(mv.status)) return { status: 409, body: { error: "unknown or rejected model version" } };
+
+  const startedAt = nowIso(), startedMs = Date.parse(startedAt);
+  const ctx = await loadExplainContext(env, predictions, startedAt);
+  const ids = [...new Set(predictions.map((p) => p.game_id).filter(Number.isInteger))];
+  const existing = new Set(ids.length ? (await env.DB.prepare(
+    "SELECT game_id, market, side FROM predictions WHERE model_version_id = ? AND kind = ? AND game_id IN (SELECT value FROM json_each(?))"
+  ).bind(model_version_id, kind, JSON.stringify(ids)).all()).results.map((r) => `${r.game_id}:${r.market}:${r.side}`) : []);
+  const prices = kind === "live" ? await pricesAt(env, ids, startedAt) : new Map();
+  const last = await env.DB.prepare("SELECT hash FROM predictions ORDER BY id DESC LIMIT 1").first();
+
+  let prev = last ? last.hash : "";
+  const results = [], stmts = [], accepted = [];
   for (const p of predictions) {
-    const createdAt = nowIso();
-    const prob = Number(p.probability);
-    if (!Number.isInteger(p.game_id) || !["home", "away"].includes(p.side) || !(prob > 0 && prob < 1) || p.inputs == null) {
-      results.push({ game_id: p.game_id, ok: false, error: "needs integer game_id, side home|away, 0<probability<1, inputs" });
-      continue;
-    }
+    const createdAt = startedAt; // one timestamp for the whole request; the chain order is the request order
+    const prob = Number(p.probability), market = p.market || "moneyline";
+    const refuse = (error) => results.push({ game_id: p.game_id, ok: false, error });
+    if (!Number.isInteger(p.game_id) || !["home", "away"].includes(p.side) || !(prob > 0 && prob < 1) || p.inputs == null) { refuse("needs integer game_id, side home|away, 0<probability<1, inputs"); continue; }
+    const key = `${p.game_id}:${market}:${p.side}`;
+    if (existing.has(key)) { refuse("already predicted (predictions are permanent)"); continue; }
     if (kind === "live") {
-      const problem = await liveGameGuard(env, p.game_id);
-      if (problem) { results.push({ game_id: p.game_id, ok: false, error: `refused by data safeguard: ${problem}` }); continue; }
+      const problem = liveGameGuard(ctx.games.get(p.game_id), p.game_id, ctx.dq, startedMs);
+      if (problem) { refuse(`refused by data safeguard: ${problem}`); continue; }
     }
     // M3: every prediction must carry a valid explanation (contributions add up; evidence verified)
-    const ex = await buildExplanation(env, { gameId: p.game_id, probability: prob, explanation: p.explanation, nowIso: createdAt });
-    if (ex.error) { results.push({ game_id: p.game_id, ok: false, error: `explanation refused: ${ex.error}` }); continue; }
+    const ex = buildExplanation(ctx, { gameId: p.game_id, probability: prob, explanation: p.explanation, nowIso: createdAt });
+    if (ex.error) { refuse(`explanation refused: ${ex.error}`); continue; }
+    existing.add(key);
     const explanationRecord = { method: "additive_logit", base_logit: ex.base, contributions: ex.contributions, reasons: ex.reasons, evidence: ex.evidence, quality_stamp: ex.stamp, game_start_at_prediction: ex.gameStart };
     const explanationHash = await sha256(canon(explanationRecord));
     // fold the explanation's fingerprint into the inputs, so the prediction chain also covers the explanation
     const inputsJson = canon({ ...p.inputs, _explanation_hash: explanationHash }), inputsHash = await sha256(inputsJson);
-    const px = kind === "live" ? await priceAt(env, p.game_id, p.side, createdAt) : null;
-    const last = await env.DB.prepare("SELECT hash FROM predictions ORDER BY id DESC LIMIT 1").first();
-    const prev = last ? last.hash : "";
-    const locked = [model_version_id, kind, p.game_id, p.market || "moneyline", p.side, prob, inputsHash, px ? px.price : null, px ? px.book : null, px ? px.captured_at : null, mv.status, createdAt];
+    const px = kind === "live" ? prices.get(`${p.game_id}:${p.side}`) || null : null;
+    const locked = [model_version_id, kind, p.game_id, market, p.side, prob, inputsHash, px ? px.price : null, px ? px.book : null, px ? px.captured_at : null, mv.status, createdAt];
     const hash = await sha256(prev + SEP + locked.map((v) => (v == null ? "" : String(v))).join(SEP));
+    stmts.push(
+      env.DB.prepare(
+        `INSERT INTO predictions (model_version_id, kind, game_id, market, side, probability, inputs_json, inputs_hash, market_price, market_book, market_captured_at, model_status_at_time, created_at, prev_hash, hash)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+      ).bind(model_version_id, kind, p.game_id, market, p.side, prob, inputsJson, inputsHash, px ? px.price : null, px ? px.book : null, px ? px.captured_at : null, mv.status, createdAt, prev, hash),
+      env.DB.prepare(
+        `INSERT INTO prediction_explanations (prediction_id, method, base_logit, contributions_json, reasons_json, evidence_json, quality_stamp_json, game_start_at_prediction, explanation_hash, created_at)
+         SELECT id, 'additive_logit', ?, ?, ?, ?, ?, ?, ?, ? FROM predictions WHERE hash = ?`
+      ).bind(ex.base, JSON.stringify(ex.contributions), JSON.stringify(ex.reasons), JSON.stringify(ex.evidence), JSON.stringify(ex.stamp), ex.gameStart, explanationHash, createdAt, hash),
+    );
+    const r = { game_id: p.game_id, ok: true, hash, market_price: px ? px.price : null, reasons: ex.reasons };
+    results.push(r); accepted.push(r);
+    prev = hash;
+  }
+  if (stmts.length) {
     try {
-      // prediction and explanation are written together: both or neither
-      await env.DB.batch([
-        env.DB.prepare(
-          `INSERT INTO predictions (model_version_id, kind, game_id, market, side, probability, inputs_json, inputs_hash, market_price, market_book, market_captured_at, model_status_at_time, created_at, prev_hash, hash)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-        ).bind(model_version_id, kind, p.game_id, p.market || "moneyline", p.side, prob, inputsJson, inputsHash, px ? px.price : null, px ? px.book : null, px ? px.captured_at : null, mv.status, createdAt, prev, hash),
-        env.DB.prepare(
-          `INSERT INTO prediction_explanations (prediction_id, method, base_logit, contributions_json, reasons_json, evidence_json, quality_stamp_json, game_start_at_prediction, explanation_hash, created_at)
-           SELECT id, 'additive_logit', ?, ?, ?, ?, ?, ?, ?, ? FROM predictions WHERE hash = ?`
-        ).bind(ex.base, JSON.stringify(ex.contributions), JSON.stringify(ex.reasons), JSON.stringify(ex.evidence), JSON.stringify(ex.stamp), ex.gameStart, explanationHash, createdAt, hash),
-      ]);
-      results.push({ game_id: p.game_id, ok: true, hash, market_price: px ? px.price : null, reasons: ex.reasons });
+      // one transaction: every accepted prediction and its explanation are written together, or none are
+      await env.DB.batch(stmts);
     } catch (e) {
-      results.push({ game_id: p.game_id, ok: false, error: dbError(e) });
+      const err = dbError(e);
+      for (const r of accepted) { r.ok = false; r.error = `not saved (whole request rolled back, resubmit): ${err}`; delete r.hash; delete r.reasons; }
     }
   }
-  const accepted = results.filter((r) => r.ok).length;
-  return { status: accepted ? 201 : 422, body: { accepted, rejected: results.length - accepted, results } };
+  const n = results.filter((r) => r.ok).length;
+  return { status: n ? 201 : 422, body: { accepted: n, rejected: results.length - n, results } };
 }
 
 /* ---------------- reads for the pipeline and QC ---------------- */
@@ -183,67 +208,87 @@ async function settlePredictions(env) {
      LEFT JOIN game_results r ON r.game_id = p.game_id
      LEFT JOIN prediction_settlements s ON s.prediction_id = p.id
      WHERE s.prediction_id IS NULL AND (r.game_id IS NOT NULL OR g.status IN ('postponed','canceled','abandoned') OR g.start_time < ?
-       OR (e.game_start_at_prediction IS NOT NULL AND abs(julianday(g.start_time) - julianday(e.game_start_at_prediction)) * 24 > 12)) LIMIT 200`
+       OR (e.game_start_at_prediction IS NOT NULL AND abs(julianday(g.start_time) - julianday(e.game_start_at_prediction)) * 24 > 12)) LIMIT 300`
   ).bind(new Date(now).toISOString()).all()).results;
-  let settled = 0, reviews = 0;
+  // decide every open prediction in memory, then write all settlements and reviews in one batch
+  const stmts = [], kinds = [];
   for (const p of open) {
-    const settle = (result, reason, hs = null, as = null) => env.DB.prepare(
+    const settle = (result, reason, hs = null, as = null) => { kinds.push("settle"); stmts.push(env.DB.prepare(
       "INSERT INTO prediction_settlements (prediction_id, result, reason, home_score, away_score, settled_by, settled_at) VALUES (?,?,?,?,?,'auto',?) ON CONFLICT(prediction_id) DO NOTHING"
-    ).bind(p.id, result, reason, hs, as, at).run();
-    const review = (issue) => env.DB.prepare("INSERT INTO settlement_reviews (prediction_id, issue, opened_at) VALUES (?,?,?) ON CONFLICT(prediction_id, issue) DO NOTHING").bind(p.id, issue, at).run();
-    try {
-      if (["postponed", "canceled", "abandoned"].includes(p.status)) { await settle("void", `game ${p.status}`); settled++; continue; }
-      if (p.start_pred && Math.abs(Date.parse(p.start_time) - Date.parse(p.start_pred)) > 12 * 3600e3) {
-        await settle("void", `game rescheduled from ${p.start_pred} to ${p.start_time}`); settled++; continue;
-      }
-      if (p.home_score != null) {
-        const bad = p.home_score === p.away_score || Math.min(p.home_score, p.away_score) < 50 || Math.max(p.home_score, p.away_score) > 200;
-        if (bad) { const r = await review(`implausible final score ${p.away_score}-${p.home_score}`); reviews += (r.meta && r.meta.changes) || 0; continue; }
-        const won = p.side === "home" ? p.home_score > p.away_score : p.away_score > p.home_score;
-        await settle(won ? "win" : "loss", "final score", p.home_score, p.away_score); settled++; continue;
-      }
-      if (now - Date.parse(p.start_time) > 36 * 3600e3) { const r = await review("no final score 36 hours after start"); reviews += (r.meta && r.meta.changes) || 0; }
-    } catch (e) { /* leave for the next run */ }
+    ).bind(p.id, result, reason, hs, as, at)); };
+    const review = (issue) => { kinds.push("review"); stmts.push(env.DB.prepare(
+      "INSERT INTO settlement_reviews (prediction_id, issue, opened_at) VALUES (?,?,?) ON CONFLICT(prediction_id, issue) DO NOTHING").bind(p.id, issue, at)); };
+    if (["postponed", "canceled", "abandoned"].includes(p.status)) { settle("void", `game ${p.status}`); continue; }
+    if (p.start_pred && Math.abs(Date.parse(p.start_time) - Date.parse(p.start_pred)) > 12 * 3600e3) { settle("void", `game rescheduled from ${p.start_pred} to ${p.start_time}`); continue; }
+    if (p.home_score != null) {
+      const bad = p.home_score === p.away_score || Math.min(p.home_score, p.away_score) < 50 || Math.max(p.home_score, p.away_score) > 200;
+      if (bad) { review(`implausible final score ${p.away_score}-${p.home_score}`); continue; }
+      const won = p.side === "home" ? p.home_score > p.away_score : p.away_score > p.home_score;
+      settle(won ? "win" : "loss", "final score", p.home_score, p.away_score); continue;
+    }
+    if (now - Date.parse(p.start_time) > 36 * 3600e3) review("no final score 36 hours after start");
   }
-  return { settled, reviews };
+  let settled = 0, reviews = 0, error = null;
+  if (stmts.length) {
+    try {
+      const res = await env.DB.batch(stmts);
+      res.forEach((r, i) => { const c = (r.meta && r.meta.changes) || 0; if (kinds[i] === "settle") settled += c; else reviews += c; });
+    } catch (e) { error = dbError(e); /* nothing written; retried next run */ }
+  }
+  return { settled, reviews, error };
 }
 
 export async function gradePredictions(env, startRun, endRun) {
   const sres = await settlePredictions(env);
   // score (Brier, log loss, closing line) only real wins and losses; voids and reviews are excluded
+  // three queries in total: the pending list, every closing line they need, and one batch of outcomes
   const pending = (await env.DB.prepare(
-    `SELECT p.id, p.side, p.probability, g.start_time, g.odds_event_id FROM predictions p
+    `SELECT p.id, p.side, p.probability, g.start_time, g.odds_event_id, r.home_score, r.away_score FROM predictions p
      JOIN games g ON g.id = p.game_id JOIN game_results r ON r.game_id = p.game_id
      JOIN prediction_settlements s ON s.prediction_id = p.id AND s.result IN ('win','loss')
-     LEFT JOIN prediction_outcomes o ON o.prediction_id = p.id WHERE o.prediction_id IS NULL LIMIT 200`
+     LEFT JOIN prediction_outcomes o ON o.prediction_id = p.id WHERE o.prediction_id IS NULL LIMIT 300`
   ).all()).results;
-  if (!pending.length && !sres.settled && !sres.reviews) return;
+  if (!pending.length && !sres.settled && !sres.reviews && !sres.error) return;
   const id = await startRun(env, "grade");
-  let rows = 0, errors = 0;
-  for (const p of pending) {
-    try {
-      const won = await env.DB.prepare(
-        `SELECT CASE WHEN (? = 'home' AND r.home_score > r.away_score) OR (? = 'away' AND r.away_score > r.home_score) THEN 1 ELSE 0 END AS w
-         FROM predictions p JOIN game_results r ON r.game_id = p.game_id WHERE p.id = ?`
-      ).bind(p.side, p.side, p.id).first();
-      const y = won.w, q = Math.min(Math.max(p.probability, 1e-6), 1 - 1e-6);
-      let closePrice = null, closeBook = null, noVig = null;
-      if (p.odds_event_id) {
-        // closing line = last pregame snapshot per side from the same book (DraftKings first)
-        const c = await env.DB.prepare(
-          `SELECT book, MAX(CASE WHEN side = ? THEN price END) AS mine, MAX(CASE WHEN side <> ? THEN price END) AS other FROM (
-             SELECT book, side, price, ROW_NUMBER() OVER (PARTITION BY book, side ORDER BY captured_at DESC) AS rn
-             FROM odds_snapshots WHERE odds_event_id = ? AND market = 'h2h' AND captured_at < ? AND side IN ('home','away'))
-           WHERE rn = 1 GROUP BY book HAVING mine IS NOT NULL AND other IS NOT NULL ORDER BY (book = 'draftkings') DESC LIMIT 1`
-        ).bind(p.side, p.side, p.odds_event_id, p.start_time).first();
-        if (c) { closePrice = c.mine; closeBook = c.book; const a = american(c.mine), b = american(c.other); noVig = a / (a + b); }
-      }
-      await env.DB.prepare("INSERT INTO prediction_outcomes (prediction_id, outcome, brier, log_loss, closing_price, closing_book, closing_no_vig, graded_at) VALUES (?,?,?,?,?,?,?,?)")
-        .bind(p.id, y, (p.probability - y) ** 2, -(y * Math.log(q) + (1 - y) * Math.log(1 - q)), closePrice, closeBook, noVig, nowIso()).run();
-      rows++;
-    } catch (e) { errors++; }
+  // closing line = last pregame snapshot per side from the same book (DraftKings first, then alphabetical)
+  const events = [...new Set(pending.map((p) => p.odds_event_id).filter(Boolean))];
+  const closing = new Map(); // event -> book -> {home, away}
+  if (events.length) {
+    const rows = (await env.DB.prepare(
+      `SELECT odds_event_id AS ev, book, side, price FROM (
+         SELECT o.odds_event_id, o.book, o.side, o.price, ROW_NUMBER() OVER (PARTITION BY o.odds_event_id, o.book, o.side ORDER BY o.captured_at DESC) AS rn
+         FROM odds_snapshots o JOIN games g ON g.odds_event_id = o.odds_event_id
+         WHERE o.odds_event_id IN (SELECT value FROM json_each(?)) AND o.market = 'h2h' AND o.captured_at < g.start_time AND o.side IN ('home','away'))
+       WHERE rn = 1`
+    ).bind(JSON.stringify(events)).all()).results;
+    for (const r of rows) {
+      const b = closing.get(r.ev) || new Map(); closing.set(r.ev, b);
+      const x = b.get(r.book) || {}; x[r.side] = r.price; b.set(r.book, x);
+    }
   }
-  await endRun(env, id, { ok: errors === 0, rows, note: `${sres.settled} settled, ${sres.reviews} sent to review, ${rows} scored${errors ? `, ${errors} failed` : ""}` });
+  const stmts = [], at = nowIso();
+  for (const p of pending) {
+    const y = (p.side === "home" ? p.home_score > p.away_score : p.away_score > p.home_score) ? 1 : 0;
+    const q = Math.min(Math.max(p.probability, 1e-6), 1 - 1e-6);
+    let closePrice = null, closeBook = null, noVig = null;
+    const books = closing.get(p.odds_event_id);
+    if (books) {
+      const usable = [...books.entries()].filter(([, x]) => x.home != null && x.away != null)
+        .sort(([a], [b]) => (b === "draftkings") - (a === "draftkings") || a.localeCompare(b));
+      if (usable.length) {
+        const [book, x] = usable[0], mine = x[p.side], other = x[p.side === "home" ? "away" : "home"];
+        closePrice = mine; closeBook = book; const a = american(mine), b = american(other); noVig = a / (a + b);
+      }
+    }
+    stmts.push(env.DB.prepare("INSERT INTO prediction_outcomes (prediction_id, outcome, brier, log_loss, closing_price, closing_book, closing_no_vig, graded_at) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(prediction_id) DO NOTHING")
+      .bind(p.id, y, (p.probability - y) ** 2, -(y * Math.log(q) + (1 - y) * Math.log(1 - q)), closePrice, closeBook, noVig, at));
+  }
+  let rows = 0, err = sres.error ? `settlement batch failed: ${sres.error}` : null;
+  if (stmts.length) {
+    try { rows = (await env.DB.batch(stmts)).reduce((s, r) => s + ((r.meta && r.meta.changes) || 0), 0); }
+    catch (e) { err = (err ? err + "; " : "") + `scoring batch failed: ${dbError(e)}`; }
+  }
+  await endRun(env, id, { ok: !err, rows, note: `${sres.settled} settled, ${sres.reviews} sent to review, ${rows} scored${err ? `; ${err}` : ""}` });
 }
 
 /* ---------------- scheduled: free history backfill (balldontlie), a few pages per run ---------------- */

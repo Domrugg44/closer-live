@@ -79,3 +79,11 @@ Arenas (`venues`) are public facts with date ranges (the Clippers moved to Intui
 - The free "closing line" is our last snapshot at least 30 minutes before tip-off (the schedule runs every 30 minutes).
 - History before 2026-11-21 has results only, no odds.
 - No injury, lineup or player-availability data yet. That needs a licensed feed (a later phase, with budget approval).
+
+## Free-plan database limits (checked 2026-11-21)
+Cloudflare's free plan documents a limit of **50 database queries per request or scheduled run** (a batch of statements counts as one), plus 5 million rows read and 100,000 rows written per day.
+- Prediction uploads use a fixed number of queries whatever their size: 7 for a 100-prediction request, measured locally.
+- Settlement and scoring use about 5 queries per run, for up to 300 predictions.
+- The 12 quality checks run as one batched read and one batched write.
+- A full 30-minute collector cycle now uses about **19 queries** (measured locally with `COUNT_QUERIES=1`). It was 52–76 before batching.
+- The model pipeline caches finished seasons' schedule context locally (`closer-models/data/cache/`), so tuning never re-reads it from the database.

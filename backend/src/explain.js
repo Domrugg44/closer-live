@@ -8,8 +8,38 @@ export const GROUPS = ["baseline", "team strength", "home court", "rest & schedu
 const sig = (z) => 1 / (1 + Math.exp(-z));
 const pts = (x) => (x >= 0 ? "+" : "−") + Math.abs(x * 100).toFixed(1);
 
-// Build the stored explanation, or return { error } explaining why it's refused.
-export async function buildExplanation(env, { gameId, probability, explanation, nowIso }) {
+// Everything the explanation checks need for a whole request, in a handful of bulk queries.
+// (Cloudflare's free plan limits the number of database queries per request, so nothing here runs per prediction.)
+export async function loadExplainContext(env, predictions, nowIso) {
+  const gameIds = new Set(), results = new Set(), odds = new Set(), through = new Set();
+  for (const p of predictions) {
+    if (Number.isInteger(p.game_id)) gameIds.add(p.game_id);
+    for (const x of (p.explanation && Array.isArray(p.explanation.evidence) ? p.explanation.evidence : [])) {
+      if (x.type === "game_result" && Number.isInteger(+x.ref)) results.add(+x.ref);
+      if (x.type === "odds_snapshot" && Number.isInteger(+x.ref)) odds.add(+x.ref);
+      if (x.type === "results_through" && typeof x.ref === "string") through.add(x.ref);
+    }
+  }
+  const all = async (sql, list, ...rest) => (list.size ? (await env.DB.prepare(sql).bind(JSON.stringify([...list]), ...rest).all()).results : []);
+  const [games, res, od, thr, dq] = await Promise.all([
+    all("SELECT id, status, start_time, updated_at FROM games WHERE id IN (SELECT value FROM json_each(?))", gameIds),
+    all("SELECT r.game_id, g.start_time, r.finalized_at FROM game_results r JOIN games g ON g.id = r.game_id WHERE r.game_id IN (SELECT value FROM json_each(?))", results),
+    all("SELECT o.id, o.captured_at, o.book, o.side, o.price, g.id AS gid FROM odds_snapshots o LEFT JOIN games g ON g.odds_event_id = o.odds_event_id WHERE o.id IN (SELECT value FROM json_each(?))", odds),
+    all("SELECT j.value AS ref, (SELECT COUNT(*) FROM game_results WHERE finalized_at <= j.value) AS n FROM json_each(?) j", through),
+    env.DB.prepare("SELECT check_name, status, sample_json FROM data_quality WHERE status <> 'pass'").all().then((r) => r.results),
+  ]);
+  return {
+    now: nowIso,
+    games: new Map(games.map((g) => [g.id, g])),
+    results: new Map(res.map((r) => [r.game_id, r])),
+    odds: new Map(od.map((o) => [o.id, o])),
+    through: new Map(thr.map((t) => [t.ref, t.n])),
+    dq,
+  };
+}
+
+// Build the stored explanation, or return { error } explaining why it's refused. Pure: uses only the loaded context.
+export function buildExplanation(ctx, { gameId, probability, explanation, nowIso }) {
   const e = explanation;
   if (!e || typeof e !== "object") return { error: "explanation required" };
   if (e.method !== "additive_logit") return { error: "explanation.method must be 'additive_logit'" };
@@ -30,7 +60,7 @@ export async function buildExplanation(env, { gameId, probability, explanation, 
   // evidence: verified against stored data, ages computed here
   const ev = Array.isArray(e.evidence) ? e.evidence : [];
   if (!ev.length || ev.length > MAX_EVIDENCE) return { error: `explanation.evidence must have 1-${MAX_EVIDENCE} items` };
-  const game = await env.DB.prepare("SELECT id, status, start_time, updated_at FROM games WHERE id = ?").bind(gameId).first();
+  const game = ctx.games.get(gameId);
   if (!game) return { error: "unknown game" };
   const now = Date.parse(nowIso), age = (t) => Math.round((now - Date.parse(t)) / 60000);
   const verified = [];
@@ -38,15 +68,14 @@ export async function buildExplanation(env, { gameId, probability, explanation, 
     if (x.type === "results_through") {
       // "the model used every final score recorded before this time"
       if (typeof x.ref !== "string" || !(Date.parse(x.ref) <= now)) return { error: "results_through must be a time at or before now" };
-      const n = await env.DB.prepare("SELECT COUNT(*) AS n FROM game_results WHERE finalized_at <= ?").bind(x.ref).first();
-      verified.push({ type: x.type, ref: x.ref, as_of: x.ref, age_minutes: age(x.ref), count: n.n });
+      verified.push({ type: x.type, ref: x.ref, as_of: x.ref, age_minutes: age(x.ref), count: ctx.through.get(x.ref) ?? 0 });
     } else if (x.type === "game_result") {
-      const r = await env.DB.prepare("SELECT g.start_time, r.finalized_at FROM game_results r JOIN games g ON g.id = r.game_id WHERE r.game_id = ?").bind(+x.ref).first();
+      const r = ctx.results.get(+x.ref);
       if (!r) return { error: `evidence game_result ${x.ref}: no final score stored` };
       if (!(r.start_time < game.start_time) || !(Date.parse(r.finalized_at) <= now)) return { error: `evidence game_result ${x.ref}: not available before this prediction` };
       verified.push({ type: x.type, ref: +x.ref, as_of: r.finalized_at, age_minutes: age(r.finalized_at) });
     } else if (x.type === "odds_snapshot") {
-      const o = await env.DB.prepare("SELECT o.captured_at, o.book, o.side, o.price, g.id AS gid FROM odds_snapshots o LEFT JOIN games g ON g.odds_event_id = o.odds_event_id WHERE o.id = ?").bind(+x.ref).first();
+      const o = ctx.odds.get(+x.ref);
       if (!o) return { error: `evidence odds_snapshot ${x.ref}: not found` };
       if (!(Date.parse(o.captured_at) <= now)) return { error: `evidence odds_snapshot ${x.ref}: captured after the prediction` };
       if (o.gid !== gameId) return { error: `evidence odds_snapshot ${x.ref}: belongs to a different game` };
@@ -60,7 +89,7 @@ export async function buildExplanation(env, { gameId, probability, explanation, 
   }
 
   // server-written data-quality stamp
-  const dq = (await env.DB.prepare("SELECT check_name, status FROM data_quality WHERE status <> 'pass'").all()).results;
+  const dq = ctx.dq;
   const stamp = {
     game_status: game.status, game_confirmed_at: game.updated_at, game_confirmed_age_minutes: age(game.updated_at),
     active_failures: dq.filter((d) => d.status === "fail").map((d) => d.check_name),
