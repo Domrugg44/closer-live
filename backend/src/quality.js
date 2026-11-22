@@ -36,10 +36,15 @@ export const CHECKS = [
   },
   {
     name: "duplicate_games", severity: "fail",
-    description: "Two different game records for the same matchup within 3 hours of each other",
-    q: () => [`SELECT a.id AS game_a, b.id AS game_b, a.start_time FROM games a JOIN games b
-        ON a.home_team_id = b.home_team_id AND a.away_team_id = b.away_team_id AND a.id < b.id
-        AND abs(julianday(a.start_time) - julianday(b.start_time)) * 24 < 3 LIMIT 200`],
+    description: "Two different game records for the same matchup within 3 hours of each other (games within 7 days of now)",
+    // Only games near today matter for live predictions. Reads just this window's games through the existing
+    // games_by_start index, then pairs them in memory. (An all-history self-join read ~290k rows per run and
+    // pushed the database past the free plan's daily read limit on 2026-11-22.)
+    q: (now) => [`WITH w AS MATERIALIZED (SELECT id, home_team_id, away_team_id, start_time FROM games
+          WHERE league = 'NBA' AND start_time BETWEEN ? AND ?)
+        SELECT a.id AS game_a, b.id AS game_b, a.start_time FROM w a JOIN w b
+        ON b.home_team_id = a.home_team_id AND b.away_team_id = a.away_team_id AND b.id > a.id
+        AND abs(julianday(a.start_time) - julianday(b.start_time)) * 24 < 3 LIMIT 200`, iso(now - 7 * 24 * H), iso(now + 7 * 24 * H)],
   },
   {
     name: "odds_missing_or_stale", severity: "warn",
