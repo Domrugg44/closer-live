@@ -5,6 +5,12 @@
 # Totals use -Side Over/Under; props use -Kind prop -Player "Full Name" -Stat "Points" -Side Over.
 # -Odds is the price available when the pick is made. Leave it out only if it truly wasn't recorded.
 # -Prob is accepted only with -Source validated (a model with a published backtest).
+#
+# DATA CHECK: every manual pick is first checked against real numbers from games played before it
+# (tools/check-pick.ps1). If the numbers don't support the pick, it is NOT logged. To post it anyway,
+# add -Force -ForceReason "why the numbers miss something". The check result, and any reason, are
+# saved in the pick's locked note, so members can see exactly what was checked.
+# -CheckOnly runs the check and logs nothing.
 param(
   [Parameter(Mandatory)][ValidateSet("NFL", "CFB", "NBA", "CBB", "NHL")][string]$League,
   [Parameter(Mandatory)][string]$Game,
@@ -17,6 +23,7 @@ param(
   [ValidateSet("manual", "experimental", "validated")][string]$Source = "manual",
   [ValidateSet("", "Strong", "Solid", "Lean")][string]$Tier = "",
   [string]$Why, [Nullable[double]]$Prob,
+  [switch]$Force, [string]$ForceReason = "", [switch]$CheckOnly,
   [string]$Path = ""
 )
 $ErrorActionPreference = "Stop"
@@ -28,6 +35,22 @@ $entries = @($doc.entries)
 $p = @(Test-Chain $entries); if ($p.Count) { throw "Log failed its integrity check; fix that first." }
 $now = (Get-Date).ToUniversalTime()
 $startT = [DateTime]::Parse($Start).ToUniversalTime()
+
+# ---- data check (manual picks; model picks are validated through QC instead) ----
+if ($Source -eq "manual") {
+  if (-not $Why) { throw "Write the case for this pick with -Why (what you see that the numbers support)." }
+  if ($Kind -in @("spread", "total", "prop") -and $null -eq $Line) { throw "-Line is required for $Kind picks." }
+  . (Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "check-pick.ps1")
+  $case = Get-PickCase -League $League -EventId $EventId -Kind $Kind -Team $Team -Side $Side -Player $Player -Stat $Stat -Line ([double]$Line) -Start $startT
+  Write-Host "Data check: $(if($case.Pass){'SUPPORTS this pick'}else{'does NOT support this pick'})"
+  Write-Host "  $($case.Summary)"
+  if ($CheckOnly) { return }
+  if (-not $case.Pass) {
+    if (-not $Force) { throw "Not logged: the numbers don't support this pick. Re-run with -Force -ForceReason `"...`" only if you have a real reason the numbers miss." }
+    if ($ForceReason.Trim().Length -lt 15) { throw "-ForceReason must explain why (at least a sentence)." }
+  }
+  $Why = "$Why | Data check: $($case.Summary)$(if(-not $case.Pass){" | Posted against the numbers because: $($ForceReason.Trim())"})"
+}
 $n = 1 + @($entries | Where-Object { $_.id -like "M*" }).Count
 $e = [pscustomobject][ordered]@{
   id = "M{0:d4}" -f $n; logged = $now.ToString("yyyy-MM-ddTHH:mm:ssZ"); pickTime = $now.ToString("yyyy-MM-ddTHH:mm:ssZ"); source = $Source

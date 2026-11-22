@@ -212,7 +212,7 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;backgroun
   <a class="nav" href="#models"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M21 7l-9 5-9-5"/></svg>Models</a>
   <div class="sep"></div>
   <div id="sideLgs"></div>
-  <div class="sfoot"><b>Every pick is logged</b>Picks are fingerprinted before tip-off and graded from final scores. Nothing is edited after the fact.<a href="classic.html" style="display:block;margin-top:8px;color:var(--acc2);font-weight:700">Classic view →</a></div>
+  <div class="sfoot"><b>Every pick is logged</b>Picks are fingerprinted before tip-off and graded from final scores. Nothing is edited after the fact.</div>
 </aside>
 
 <main class="main">
@@ -349,7 +349,7 @@ const renderStreak=()=>{const el=$("streak");if(!rec){el.innerHTML=`<span class=
   const label=hot?`${s.cur} straight win${s.cur>1?"s":""}`:`${s.cur} straight loss${s.cur>1?"es":""}`;
   el.innerHTML=`<div class="flame ${hot?"hot":"cold"}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 2 1 3 3 3 3s0-3 0-6z"/></svg></div>
     <div class="skv"><b class="num">${s.type}${s.cur}</b><span>Current streak · ${esc(label)}</span></div>
-    <div class="skv"><b class="num">W${s.best}</b><span>Best win streak</span></div>
+    <div class="skv"><b class="num">${s.best?"W"+s.best:"—"}</b><span>Best win streak</span></div>
     <div class="dots" title="Last ${last.length} graded picks, oldest to newest">${last.map((x,i)=>`<i class="${x.status}${i===last.length-1?" last":""}" title="${esc(x.label)} (${x.status})">${x.status}</i>`).join("")}</div>`;};
 const tm=t=>t&&t.logo?`<img class="logo42" src="${esc(t.logo)}" alt="" loading="lazy">`:`<span class="tl" style="background:#${/^[0-9a-f]{6}$/i.test(t&&t.color||"")?t.color:"334155"}">${esc((t&&t.abbr)||"?")}</span>`;
 const timeOf=d=>{const x=new Date(d);if(isNaN(x))return"";const t=x.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});return x.toDateString()===new Date().toDateString()?t:x.toLocaleDateString([],{weekday:"short"})+" "+t};
@@ -413,7 +413,7 @@ const renderRecord=()=>{if(!rec){$("recNote").textContent="The record couldn't b
   $("kv").innerHTML=`<div><b class="num">${esc(W+L+P)}</b><span>Graded</span></div><div><b class="num">${w10}–${l10}</b><span>Last 10</span></div><div><b class="num">${esc(streak)}</b><span>Streak</span></div>`;};
 
 
-// ---- slip: shared with classic.html (same saved list), so plays added here appear in the Slip tab ----
+// ---- slip: saved in the browser (closer-slip), shared by every view ----
 const SLIPK="closer-slip";
 const getSlip=()=>{try{return JSON.parse(localStorage.getItem(SLIPK)||"[]")}catch(e){return[]}};
 const setSlip=v=>{try{localStorage.setItem(SLIPK,JSON.stringify(v))}catch(e){}};
@@ -637,7 +637,7 @@ const checkIntegrity=()=>{if(!rec||integFor===rec)return;integFor=rec;
   if(rec.schema!==2||!(window.crypto&&crypto.subtle)){integ={state:"legacy"};return}
   integ={state:"checking"};verifyChain(rec.entries).then(v=>{integ=v;if(view==="results")renderIntegrity()},()=>{integ={state:"legacy"}})};
 const renderIntegrity=()=>{const el=$("integ");el.className="integ "+(integ.state==="ok"?"ok":integ.state==="bad"?"bad":"");
-  el.textContent=integ.state==="ok"?`✓ Log verified · ${integ.n} picks match their fingerprints`:integ.state==="bad"?`✗ Log check failed at ${integ.id}`:integ.state==="legacy"?"Log check unavailable in this browser":"Checking the log…"};
+  el.textContent=integ.state==="ok"?(integ.n?`✓ Log verified · ${integ.n} picks match their fingerprints`:"✓ Log verified · fresh record, no picks yet"):integ.state==="bad"?`✗ Log check failed at ${integ.id}`:integ.state==="legacy"?"Log check unavailable in this browser":"Checking the log…"};
 
 const renderResultsView=()=>{checkIntegrity();renderIntegrity();if(!rec){$("rsBody").innerHTML=`<div class="card empty">Loading results…</div>`;return}
   const g=graded().filter(x=>inLg(x,lg)),W=g.filter(x=>x.status==="W").length,L=g.filter(x=>x.status==="L").length,P=g.filter(x=>x.status==="P").length,s=streaks(g);
@@ -651,7 +651,7 @@ const renderResultsView=()=>{checkIntegrity();renderIntegrity();if(!rec){$("rsBo
   $("rsBody").innerHTML=`<div class="rg">
       <div class="card rt"><span>Verified record</span><b class="num">${tally(g)}</b><small>Wins–losses${P?"–pushes":""}</small></div>
       <div class="card rt"><span>Win rate</span>${rate}</div>
-      <div class="card rt"><span>Current streak</span><b class="num" style="color:${s.type==="W"?"var(--pos)":s.type==="L"?"var(--neg)":"inherit"}">${s.type?s.type+s.cur:"—"}</b><small>Best win streak: W${s.best}</small></div>
+      <div class="card rt"><span>Current streak</span><b class="num" style="color:${s.type==="W"?"var(--pos)":s.type==="L"?"var(--neg)":"inherit"}">${s.type?s.type+s.cur:"—"}</b><small>Best win streak: ${s.best?"W"+s.best:"—"}</small></div>
       <div class="card rt"><span>Still pending</span><b class="num">${entries().filter(x=>x.status==="pending"&&inLg(x,lg)).length}</b><small>Graded after the final score</small></div></div>
     <div class="r2"><section class="card bd"><h3>By league</h3>${bdl(x=>x.lg,LN)}</section><section class="card bd"><h3>By bet type</h3>${bdl(x=>x.kind,KINDS)}</section></div>
     ${hist||`<div class="card empty" style="margin-top:12px">No graded picks${lg==="All"?"":" in "+esc(LN[lg])} yet.</div>`}

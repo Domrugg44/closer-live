@@ -31,7 +31,19 @@ if ($BaseRef) {
     if ($base.schema -ne 2) { Write-Host "Earlier log at $BaseRef predates schema 2; chain check only." }
     else {
       $old = @($base.entries); $compared = $true
-      if ($cur.Count -lt $old.Count) { $problems += "Entries were removed ($($old.Count) before, $($cur.Count) now)" }
+      # A documented reset (CEO decision) may clear the log once: only when the new log's "reset" block names an
+      # archive file whose hash chain is intact and matches, entry for entry, the log being replaced.
+      $isReset = $false
+      if ($doc.reset -and $old.Count -gt 0 -and $old.Count -eq [int]$doc.reset.previousEntries -and $old[-1].hash -eq $doc.reset.previousLastHash) {
+        $arcPath = Join-Path (Split-Path -Parent $PSScriptRoot) $doc.reset.archive
+        if (Test-Path $arcPath) {
+          $arc = @((Read-Log $arcPath).entries)
+          if (-not @(Test-Chain $arc).Count -and $arc.Count -eq $old.Count -and $arc[-1].hash -eq $old[-1].hash) { $isReset = $true }
+        }
+        if (-not $isReset) { $problems += "The log was reset, but its archive ($($doc.reset.archive)) is missing or doesn't match the replaced log" }
+      }
+      if ($isReset) { Write-Host "Documented reset: $($old.Count) entries moved to $($doc.reset.archive) ($($doc.reset.reason))"; $old = @() }
+      elseif ($cur.Count -lt $old.Count) { $problems += "Entries were removed ($($old.Count) before, $($cur.Count) now)" }
       for ($i = 0; $i -lt [Math]::Min($old.Count, $cur.Count); $i++) {
         $a = $old[$i]; $b = $cur[$i]
         if ($a.id -ne $b.id -or $a.hash -ne $b.hash) { $problems += "Entry $($a.id) was changed, moved or replaced"; continue }

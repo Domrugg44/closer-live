@@ -2,7 +2,7 @@
 
 Picks, props, a parlay slip and a live game feed (scores, stats, lines and injuries) in one page.
 
-- **Site:** published by GitHub Pages from the `main` branch. `index.html` is the dashboard (main page); `classic.html` is the original app (picks, games, props, slip, record); `dashboard.html` redirects to the main page. Every push updates it within a minute or two.
+- **Site:** published by GitHub Pages from the `main` branch. `index.html` is the whole app (Dashboard, Picks, Live games, Slip, Results). `classic.html` and `dashboard.html` forward to it. Every push updates it within a minute or two.
 - **Live data:** the page reads ESPN's public scoreboard and game summary feeds directly in the browser. Leagues with a game in progress refresh every 15 seconds; others every minute.
 - **Picks and props:** stored in the `picks`, `props` and `ledger` arrays near the top of the script in `index.html`.
 - **Prediction log (`data/record.json`):** append-only record of every prediction. Locked fields (game, market, line, odds at pick, timestamp, source, rating, note) are covered by a SHA-256 hash chain; only result fields are filled in later.
@@ -14,3 +14,6 @@ Picks, props, a parlay slip and a live game feed (scores, stats, lines and injur
 - **`tools/closer-feed.ps1`:** builds the saved game feed used by the Claude artifact version of the app. The website doesn't need it.
 
 Model outputs, not guarantees. 21+ and in a legal state only. Gambling problem? Call 1-800-GAMBLER.
+
+## Adding a pick
+Use `tools/add-pick.ps1`. Every manual pick is first checked against real numbers from earlier games (`tools/check-pick.ps1`). If they don't support it, it isn't logged unless you add `-Force -ForceReason "..."`. The check result and any reason are saved in the pick's locked note. `-CheckOnly` runs the check without logging. The record was reset to 0-0 on 2026-11-21; see `data/archive/README.md`.
