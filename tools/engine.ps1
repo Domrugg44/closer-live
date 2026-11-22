@@ -11,10 +11,11 @@
 #   Post    : only when ALL 3 signals agree on a side. One pick per game.
 #   Skip    : teams with fewer than 8 earlier games this season (early-season averages are mostly noise),
 #             and spreads bigger than 20 points (blowout lines are too unpredictable).
-#   Volume  : at most 6 engine picks per game day (US Eastern), at most 3 per league per day; strongest first.
+#   Volume  : every game that passes is posted (no per-sport limit; CEO decision 2026-11-22). A safety limit of
+#             15 a game day (US Eastern) only guards against a bug posting dozens by mistake. Strongest first.
 # These are simple rules, not a validated model: picks are labeled Experimental and tracked separately.
 # Data: ESPN's public feed (unlicensed; CEO accepted the risk, see docs/DATA.md).
-param([switch]$DryRun, [string]$Path = "", [int]$HorizonHours = 36, [int]$DailyCap = 6, [int]$LeagueCap = 3, [int]$MinLeadMinutes = 30, [int]$MinGames = 8, [double]$MaxSpread = 20)
+param([switch]$DryRun, [string]$Path = "", [int]$HorizonHours = 36, [int]$DailyCap = 15, [int]$LeagueCap = 15, [int]$MinLeadMinutes = 30, [int]$MinGames = 8, [double]$MaxSpread = 20)
 $ErrorActionPreference = "Stop"
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not $Path) { $Path = Join-Path $here "..\data\record.json" }
