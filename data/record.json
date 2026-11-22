@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-21T23:30:43Z",
+    "updatedAt":  "2026-11-22T00:47:23Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -400,9 +400,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -3.0,
+                                      "spread":  -3.5,
                                       "total":  46.5,
-                                      "details":  "SF -3"
+                                      "details":  "SF -3.5"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -677,9 +677,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  14.5,
+                                      "spread":  16.5,
                                       "total":  51.5,
-                                      "details":  "UGA -14.5"
+                                      "details":  "UGA -16.5"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -707,19 +707,24 @@
                         "why":  null,
                         "loggedAfterStart":  false,
                         "hash":  "e4bb04675f891724db72ac516a3a193d21ebe3b7f9d9145902f6532f4242e105",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "TA\u0026M",
+                                      "as":  7,
+                                      "home":  "OU",
+                                      "hs":  28
+                                  },
+                        "actual":  21,
+                        "diff":  13.5,
                         "units":  null,
                         "close":  {
                                       "spread":  -7.0,
                                       "total":  36.5,
                                       "details":  "OU -7"
                                   },
-                        "clv":  null,
+                        "clv":  -0.5,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-22T00:47:22Z"
                     },
                     {
                         "id":  "L020",
@@ -861,19 +866,24 @@
                         "why":  "81% of spread money on Florida St from 36% of bets.",
                         "loggedAfterStart":  false,
                         "hash":  "ab3ea46252627e08ae2930f78931a7d644e98e4db06b9eb2b9d5f5d07b429bfe",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "NCSU",
+                                      "as":  28,
+                                      "home":  "FSU",
+                                      "hs":  10
+                                  },
+                        "actual":  -18,
+                        "diff":  -28.5,
                         "units":  null,
                         "close":  {
                                       "spread":  -10.5,
                                       "total":  56.5,
                                       "details":  "FSU -10.5"
                                   },
-                        "clv":  null,
+                        "clv":  0.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-22T00:47:22Z"
                     },
                     {
                         "id":  "L024",
@@ -1133,19 +1143,24 @@
                         "why":  null,
                         "loggedAfterStart":  false,
                         "hash":  "79a7c10d5567312a7d09ffed79af2a16d4d9e4303341fcb7367fad135f9a63a5",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "UCLA",
+                                      "as":  16,
+                                      "home":  "MICH",
+                                      "hs":  18
+                                  },
+                        "actual":  34,
+                        "diff":  3.5,
                         "units":  null,
                         "close":  {
                                       "spread":  3.5,
                                       "total":  35.5,
                                       "details":  "UCLA -3.5"
                                   },
-                        "clv":  null,
+                        "clv":  2.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-22T00:47:23Z"
                     },
                     {
                         "id":  "L031",
@@ -1205,19 +1220,24 @@
                         "why":  null,
                         "loggedAfterStart":  false,
                         "hash":  "892d5adee982a1390497cb43224f83d776a9f4df63e1b160f0331fdd08782212",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "TA\u0026M",
+                                      "as":  7,
+                                      "home":  "OU",
+                                      "hs":  28
+                                  },
+                        "actual":  35,
+                        "diff":  3.5,
                         "units":  null,
                         "close":  {
                                       "spread":  -7.0,
                                       "total":  36.5,
                                       "details":  "OU -7"
                                   },
-                        "clv":  null,
+                        "clv":  2.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-22T00:47:23Z"
                     },
                     {
                         "id":  "L033",
