@@ -1,0 +1,43 @@
+name: Closer Engine (experimental picks)
+
+# Every 3 hours: score upcoming games and log the engine's experimental picks (tools/engine.ps1).
+# Shares a concurrency group with the grader, so the two never write the log at the same time.
+on:
+  schedule:
+    - cron: "15 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: record-writer
+  cancel-in-progress: false
+
+jobs:
+  engine:
+    # Windows PowerShell 5.1, the same engine used locally, so the log's hashes are computed identically
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the log before adding picks
+        shell: powershell
+        run: ./tools/verify-log.ps1
+      - name: Run the engine
+        shell: powershell
+        run: ./tools/engine.ps1
+      - name: Check nothing locked was changed
+        shell: powershell
+        run: ./tools/verify-log.ps1 -BaseRef HEAD
+      - name: Save picks
+        shell: bash
+        run: |
+          if git diff --quiet -- data/record.json; then
+            echo "No new picks this run"
+            exit 0
+          fi
+          git config user.name "closer-engine"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/record.json
+          git commit -m "Engine picks $(date -u +'%Y-%m-%d %H:%M') UTC"
+          git push

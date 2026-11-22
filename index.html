@@ -246,6 +246,26 @@ html,body{font-family:"Space Grotesk",system-ui,sans-serif;background:var(--bg)}
 /* buttons */
 .addb{border-radius:6px;font-weight:600;letter-spacing:.2px}.addm{border-radius:5px}.go,.bk{border-radius:6px}
 .slipbar{border-top:1px solid var(--line2)}.slipbar b{font-weight:600}
+
+/* who made the pick */
+.srcb{display:inline-flex;align-items:center;gap:5px;font:500 10px "JetBrains Mono",monospace;letter-spacing:.08em;text-transform:uppercase;padding:3px 7px;border-radius:5px;border:1px solid var(--line2);color:#c9d4ea;background:#0f1726;cursor:pointer;white-space:nowrap}
+.srcb i{font-style:normal;display:inline-grid;place-items:center;width:13px;height:13px;border-radius:50%;border:1px solid currentColor;font-size:9px;opacity:.8}
+.srcb.exp{color:#fbbf24;border-color:#fbbf2466;background:#fbbf2412}.srcb.man{color:#9cc2ff;border-color:#3B82F666}.srcb.val{color:#22c55e;border-color:#22c55e66}
+.srcb.sm{padding:1px 5px;font-size:9px;cursor:default}
+.pc.isexp{border-color:#3a3320}
+.exprec{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:13px}.exprec .r{display:flex;justify-content:space-between;align-items:center}.exprec b{font-size:18px}.exprec small{display:block;color:var(--dim);font-size:11px;margin-top:4px}
+.lnk{color:var(--acc2);font-size:11px;font-weight:600;padding:0;text-decoration:underline}
+.guideb{margin-top:8px;font-size:12px;font-weight:600;color:var(--acc2);border:1px solid var(--line2);border-radius:6px;padding:5px 10px}
+/* explainer sheet */
+.xsheet{position:fixed;inset:0;z-index:30;display:none}.xsheet.on{display:block}
+.xdim{position:absolute;inset:0;background:#000a}
+.xpane{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100% - 32px));max-height:calc(100% - 64px);overflow:auto;background:var(--panel);border:1px solid var(--line2);border-radius:10px;padding:18px 20px}
+.xpane>.r{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}.xpane h3{margin:0;font-size:18px}.xbody{font-size:14px;line-height:1.55;color:#c9d4ea}.xbody b{color:var(--txt)}.xbody ol{padding-left:20px;margin:6px 0}
+.xbody h4{margin:16px 0 6px;font:500 11px "JetBrains Mono",monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.gk{display:grid;grid-template-columns:150px minmax(0,1fr);gap:10px;align-items:center;margin:6px 0;font-size:13px}.gk>span:first-child{justify-self:start}
+.fact.mini{padding:2px 8px;font-size:11px}
+.warnp{margin-top:12px;padding:8px 10px;border-radius:6px;background:#fbbf2412;border:1px solid #fbbf2433;color:#fde68a;font-size:12px}
+@media (max-width:520px){.gk{grid-template-columns:minmax(0,1fr)}.xpane{top:auto;bottom:0;transform:translateX(-50%);border-radius:12px 12px 0 0;max-height:85%}}
 </style>
 </head>
 <body>
@@ -291,9 +311,10 @@ html,body{font-family:"Space Grotesk",system-ui,sans-serif;background:var(--bg)}
 
     <div class="rc">
       <section class="card rec">
-        <div class="rech"><h3>Your record</h3><span class="sel">Verified picks</span></div>
+        <div class="rech"><h3>Closer picks record</h3><span class="sel">Verified</span></div>
         <div class="big"><b class="num" id="recWL">—</b><span class="pill neu" id="recPct">—</span></div>
         <div class="fine" id="recNote">Loading the verified record…</div>
+        <div class="exprec" id="expRec"></div>
       </section>
       <section class="card pf">
         <div class="rech"><h3>Performance</h3><span class="sel">Net wins over time</span></div>
@@ -315,7 +336,7 @@ html,body{font-family:"Space Grotesk",system-ui,sans-serif;background:var(--bg)}
   </section>
 
   <section class="view" id="v-picks">
-    <div class="vh"><div><h1>Picks</h1><p id="pkSub">Every open play, logged before the game starts.</p></div><div class="seg2" id="pkTabs"></div></div>
+    <div class="vh"><div><h1>Picks</h1><p id="pkSub">Every open play, logged before the game starts.</p><button class="guideb" data-explain="guide">How to read a pick: colors, labels and badges</button></div><div class="seg2" id="pkTabs"></div></div>
     <div id="pkList"></div>
   </section>
 
@@ -331,12 +352,14 @@ html,body{font-family:"Space Grotesk",system-ui,sans-serif;background:var(--bg)}
 
   <section class="view" id="v-results">
     <div class="vh"><div><h1>Results</h1><p>Verified picks only: logged before the game started, graded from final scores.</p></div><span class="integ" id="integ">Checking the log…</span></div>
+    <div class="seg2" id="rsTabs" style="margin-bottom:14px;width:max-content"></div>
     <div id="rsBody"></div>
   </section>
 </main>
 
 </div>
 <div class="slipbar" id="slipbar"><div class="in"><div><div style="font-size:12px;color:var(--mut)" id="sbLegs"></div><b class="num" id="sbOdds"></b></div><a class="go" href="#slip">View slip →</a></div></div>
+<div class="xsheet" id="xsheet" aria-hidden="true"><div class="xdim" id="xDim"></div><div class="xpane" role="dialog" aria-modal="true" aria-labelledby="xTitle"><div class="r"><h3 id="xTitle"></h3><button class="x" id="xClose" aria-label="Close">×</button></div><div class="xbody" id="xBody"></div></div></div>
 <nav class="mnav" aria-label="Main navigation"><a data-nav="dash" href="#" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Home</a><a data-nav="picks" href="#picks" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>Picks</a><a data-nav="live" href="#live" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M5 12a7 7 0 0 1 14 0M2 12a10 10 0 0 1 20 0"/></svg>Live</a><a data-nav="slip" href="#slip" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>Slip<span class="cnt" data-slipcount></span></a><a data-nav="results" href="#results" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Results</a></nav>
 
 <script>
@@ -376,7 +399,11 @@ const inLg=(x,f)=>f==="All"||x.lg===f;
 const entries=()=>(rec&&rec.entries)||[];
 // graded picks in game order (by start time), so streaks follow the order games were played
 // verified only, same rule as the Results tab: logged before the game started and not provisionally graded
-const graded=()=>entries().filter(x=>["W","L","P"].includes(x.status)&&!x.prov&&!x.loggedAfterStart).sort((a,b)=>(Date.parse(a.date)||0)-(Date.parse(b.date)||0)||String(a.id).localeCompare(String(b.id)));
+// Two records, never mixed: Closer picks (person-approved) and Experimental (the automatic engine).
+const isExp=x=>x.source==="experimental";
+const gradedAll=()=>entries().filter(x=>["W","L","P"].includes(x.status)&&!x.prov&&!x.loggedAfterStart).sort((a,b)=>(Date.parse(a.date)||0)-(Date.parse(b.date)||0)||String(a.id).localeCompare(String(b.id)));
+const graded=()=>gradedAll().filter(x=>!isExp(x));
+const gradedExp=()=>gradedAll().filter(isExp);
 // streaks over decided picks (pushes don't break or extend a streak)
 const streaks=g=>{const d=g.filter(x=>x.status!=="P");let best=0,run=0;for(const x of d){run=x.status==="W"?run+1:0;best=Math.max(best,run)}
   let cur=0,t=null;for(let i=d.length-1;i>=0;i--){if(t==null)t=d[i].status;if(d[i].status!==t)break;cur++}return{cur,type:t,best}};
@@ -400,7 +427,7 @@ const renderStats=()=>{const g=graded(),W=g.filter(x=>x.status==="W").length,L=g
   const ico=p=>`<div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${p}</svg></div>`;
   $("stats").innerHTML=[
     ["blue",ico('<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>'),open.length,"Open picks"],
-    ["violet",ico('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>'),rec?`${W}–${L}`:"—","Verified record"],
+    ["violet",ico('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>'),rec?`${W}–${L}`:"—","Closer picks record"],
     ["green",ico('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>'),rec?(W+L>=100?pct(W,L)+"%":`${W+L} of 100`):"—",rec&&W+L>=100?"Win rate":"Graded · win % shows at 100"],
     ["red",ico('<circle cx="12" cy="12" r="3"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4M3.5 3.5a12 12 0 0 0 0 17M20.5 3.5a12 12 0 0 1 0 17"/>'),live,"Games live now"],
   ].map(([c,i,v,s])=>`<div class="st ${c}">${i}<div><b class="num">${esc(v)}</b><span>${esc(s)}</span></div></div>`).join("");
@@ -409,7 +436,7 @@ const renderStats=()=>{const g=graded(),W=g.filter(x=>x.status==="W").length,L=g
 
 const renderPicks=()=>{const now=Date.now(),gm=new Map(games().map(g=>[g.id,g]));
   const xs=entries().filter(x=>isOpen(x)&&inLg(x,lg)&&playNow(x).state!=="pass")
-    .sort((a,b)=>(TIER[b.tier]||0)-(TIER[a.tier]||0)||Date.parse(a.date)-Date.parse(b.date)).slice(0,3);
+    .sort((a,b)=>(isExp(a)-isExp(b))||(TIER[b.tier]||0)-(TIER[a.tier]||0)||Date.parse(a.date)-Date.parse(b.date)).slice(0,3);
   if(!rec){$("picks").innerHTML=`<div class="card empty" style="grid-column:1/-1">Loading picks…</div>`;return}
   if(!xs.length){$("picks").innerHTML=`<div class="card empty" style="grid-column:1/-1">No open picks${lg==="All"?"":" in "+esc(LN[lg])} right now. New picks appear here once they're logged.</div>`;return}
   $("picks").innerHTML=xs.map((x,i)=>{const g=gm.get(String(x.eventId));const [aw,hm]=String(x.game).split(/\s+@\s+/);
@@ -418,8 +445,8 @@ const renderPicks=()=>{const now=Date.now(),gm=new Map(games().map(g=>[g.id,g]))
     const pn0=playNow(x),odds=pn0.state!=="none"&&pn0.odds!=null?fmtSp(pn0.odds):x.odds!=null?(x.odds>0?"+":"")+x.odds:"—";
     return`<article class="card pk ${i===0?"best":""}"><div class="pkh"><span class="lgb" style="background:${LC[x.lg]||"#334155"}">${esc(x.lg)}</span><span>${esc(timeOf(x.date))}</span></div>
       <div class="mt"><div class="tm">${tm(A)}${esc(A.abbr||"")}</div><span class="vs">@</span><div class="tm">${tm(H)}${esc(H.abbr||"")}</div></div>
-      <div class="pkl">${esc(playNow(x).state!=="none"?playNow(x).label:x.label)}</div><div class="pkc">${playNow(x).state!=="none"&&playNow(x).label!==x.label?`Closer logged ${esc(x.label)}`:"Closer pick"}${x.tier?` · <span class="tier">${esc(x.tier)}</span>`:""}</div><div style="text-align:center">${playChip(x)}</div>
-      ${x.why?`<div class="why">${esc(x.why)}</div>`:""}
+      <div class="pkl">${esc(playNow(x).state!=="none"?playNow(x).label:x.label)}</div><div class="pkc">${playNow(x).state!=="none"&&playNow(x).label!==x.label?`${isExp(x)?"Engine":"Closer"} logged ${esc(x.label)}`:isExp(x)?"Engine pick":"Closer pick"}${x.tier?` · <span class="tier">${esc(x.tier)}</span>`:""}</div><div style="text-align:center;margin:-2px 0 2px">${srcBadge(x)}</div><div style="text-align:center">${playChip(x)}</div>
+      ${x.why&&!isExp(x)?`<div class="why">${esc(x.why)}</div>`:""}
       <div class="pkf"><div><b class="num">${esc(odds)}</b><span>Odds</span></div>${x.prob!=null?`<div><b class="num">${esc(prob)}</b><span>Est. chance</span></div>`:`<div><b class="num">${x.line!=null?esc((x.line>0&&x.kind==="spread"?"+":"")+x.line):"—"}</b><span>Line</span></div>`}</div>${addBtn(x)}</article>`}).join("");};
 
 const renderGames=()=>{const now=Date.now(),pickBy=new Map(entries().filter(x=>x.status==="pending").map(x=>[String(x.eventId),x]));
@@ -444,7 +471,9 @@ const renderRecord=()=>{if(!rec){$("recNote").textContent="The record couldn't b
   $("recWL").textContent=`${W}–${L}${P?`–${P}`:""}`;
   const el=$("recPct");const sk=streaks(g);if(W+L>=100){el.textContent=p+"% wins";el.className="pill "+(p>=52.4?"pos":p<50?"neg":"neu")}else{el.textContent=sk.type?`${sk.type}${sk.cur} streak`:"No graded picks";el.className="pill "+(sk.type==="W"?"pos":sk.type==="L"?"neg":"neu")}
   const units=g.filter(x=>x.units!=null);
-  $("recNote").innerHTML=`${W+L+P} verified manual picks, ${entries().filter(x=>x.status==="pending").length} still pending. `+(entries().some(x=>x.loggedAfterStart)?`${entries().filter(x=>x.loggedAfterStart).length} picks logged after their game started are left out, as on the Results tab. `:"")+
+  const ge=gradedExp(),eW=ge.filter(x=>x.status==="W").length,eL=ge.filter(x=>x.status==="L").length,eP=ge.filter(x=>x.status==="P").length,eOpen=entries().filter(x=>isExp(x)&&x.status==="pending").length;
+  $("expRec").innerHTML=`<div class="r"><span><span class="srcb exp sm">Experimental</span> engine record</span><b class="num">${eW}–${eL}${eP?`–${eP}`:""}</b></div><small>${eW+eL+eP} graded · ${eOpen} pending · kept separate from Closer picks. <button class="lnk" data-explain="exp">What is this?</button></small>`;
+  $("recNote").innerHTML=`${W+L+P} verified Closer picks, ${entries().filter(x=>x.status==="pending"&&!isExp(x)).length} still pending. `+(entries().some(x=>x.loggedAfterStart)?`${entries().filter(x=>x.loggedAfterStart).length} picks logged after their game started are left out, as on the Results tab. `:"")+
     (units.length>=100?"":`Profit and ROI appear after 100 priced, graded picks (${units.length} so far).`)+` Win % appears at 100 verified picks.`;
   // chart: cumulative net wins
   const pts=[0];g.forEach(x=>pts.push(pts[pts.length-1]+(x.status==="W"?1:x.status==="L"?-1:0)));
@@ -484,7 +513,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-slip]");if
 window.addEventListener("storage",e=>{if(e.key===SLIPK)render()});
 
 // ================= views: Picks, Live games, Slip, Results =================
-let view="dash",pkT="all",lvT=null,stake=10,integ={state:"checking"};
+let rsT="closer",view="dash",pkT="all",lvT=null,stake=10,integ={state:"checking"};
 try{stake=+(localStorage.getItem("closer-stake")||10)||10}catch(e){}
 const BOOKS=[["DraftKings","https://sportsbook.draftkings.com"],["FanDuel","https://sportsbook.fanduel.com"],["BetMGM","https://sports.betmgm.com"],["Caesars","https://www.caesars.com/sportsbook-and-casino"]];
 const KIND={spread:"Spread",total:"Total",prop:"Player prop",moneyline:"Moneyline"};
@@ -565,7 +594,7 @@ const memo=new Map(),once=(k,f)=>{if(!memo.has(k))memo.set(k,f().catch(()=>null)
 const seasonFor=(lgx,d)=>{const x=new Date(d||Date.now()),y=x.getUTCFullYear(),m=x.getUTCMonth()+1;return["NBA","CBB","NHL"].includes(lgx)?(m>=8?y+1:y):(m>=3?y:y-1)};
 const STATN={"Rush yards":[["rushingYards"]],"Rec yards":[["receivingYards"]],"Receptions":[["receptions"]],"Pass yards":[["passingYards"]],
   "Points":[["points"]],"Rebounds":[["totalRebounds","rebounds"]],"Assists":[["assists"]],"Pts + Reb":[["points"],["totalRebounds","rebounds"]],"Pts + Ast":[["points"],["assists"]],"Pts + Reb + Ast":[["points"],["totalRebounds","rebounds"],["assists"]]};
-const caseBox=x=>`<details class="more case" data-case="${esc(x.id)}"${CASE_OPEN.has(String(x.id))?" open":""}><summary>The case for this pick</summary><div class="cbody">${x.why?`<p class="note"><b>Analyst note</b>${esc(x.why)}</p>`:""}<div class="facts">${CASE.get(String(x.id))||`<div class="fact">Loading the numbers…</div>`}</div></div></details>`;
+const caseBox=x=>`<details class="more case" data-case="${esc(x.id)}"${CASE_OPEN.has(String(x.id))?" open":""}><summary>The case for this pick</summary><div class="cbody">${x.why?`<p class="note"><b>${isExp(x)?"How the engine decided":"Analyst note"}</b>${esc(isExp(x)?String(x.why).replace(/^Closer Engine \(experimental\):\s*/,""):x.why)}</p>`:""}<div class="facts">${CASE.get(String(x.id))||`<div class="fact">Loading the numbers…</div>`}</div></div></details>`;
 const fact=(cls,html)=>`<div class="fact ${cls||""}">${html}</div>`;
 const playerLog=async(x,g)=>{
   const teams=[g.away,g.home].filter(t=>t&&t.id);let ath=null,team=null;
@@ -616,15 +645,50 @@ document.addEventListener("toggle",async e=>{const d=e.target;if(!d.matches||!d.
   const x=entries().find(z=>String(z.id)===id);if(!x)return;
   let html;try{html=await buildCase(x)}catch(err){html=fact("","The numbers couldn't load right now. Try again in a moment.")}
   CASE.set(id,html);document.querySelectorAll(`details[data-case="${CSS.escape(id)}"] .facts`).forEach(f=>f.innerHTML=html)},true);
+
+// ---- plain-language labels: who made a pick, and what every color means ----
+const srcBadge=x=>isExp(x)?`<button class="srcb exp" data-explain="exp" title="What does Experimental mean?">Experimental <i>?</i></button>`
+  :x.source==="validated"?`<button class="srcb val" data-explain="val">Model pick <i>?</i></button>`:`<button class="srcb man" data-explain="man">Closer pick <i>?</i></button>`;
+const checksChip=x=>{if(!isExp(x))return"";const m=String(x.why||"").match(/(\d) of 3 signals/);return m?`<span class="chip2">${m[1]} of 3 checks agree</span>`:""};
+const EXPLAIN={
+  exp:{t:"Experimental pick",b:`<p><b>A computer picked this, not a person.</b> Every few hours it looks at upcoming games and checks three things:</p>
+    <ol><li>How both teams played in their <b>last 5 games</b></li><li>How they've played <b>all season</b></li><li>Which way the <b>betting line has moved</b> since it opened</li></ol>
+    <p>It only posts a pick when <b>all three point the same way</b>.</p>
+    <p><b>What "experimental" means for you:</b> these are simple rules, not a proven system. Nothing shows yet that they win over time, and they can lose for long stretches. Every one is logged before the game and graded in public, in its <b>own record, kept separate</b> from Closer picks, so you can judge it yourself.</p>
+    <p class="warnp">Treat these as ideas to look into, not sure things. Only bet what you can afford to lose.</p>`},
+  man:{t:"Closer pick",b:`<p><b>Chosen and approved by the Closer team.</b> Before it can be posted, it's checked against real numbers from earlier games. If the numbers don't back it up, it isn't posted unless a written reason is saved with it.</p>
+    <p>Every Closer pick is logged before the game starts, can't be edited afterwards, and is graded in public. That's the record shown as <b>Closer picks record</b>.</p><p class="warnp">No pick is a sure thing.</p>`},
+  val:{t:"Model pick",b:`<p><b>Made by Closer's prediction model</b> after it passed independent testing on games it had never seen. Its record is tracked in public.</p><p class="warnp">No pick is a sure thing.</p>`},
+  guide:{t:"How to read a pick",b:`
+    <h4>Who made it</h4><div class="gk"><span class="srcb man">Closer pick</span><span>Chosen by the Closer team and checked against real numbers first.</span></div>
+    <div class="gk"><span class="srcb exp">Experimental</span><span>Picked automatically by simple rules. Not proven, kept in its own record.</span></div>
+    <h4>Is the number still good?</h4><p>We log every pick at a number (for example <b>Over 55.5</b>). Lines move before the game, so each card shows where it stands right now:</p>
+    <div class="gk"><span class="chip2 ps at">At our number</span><span>You can still get the same number we picked.</span></div>
+    <div class="gk"><span class="chip2 ps better">Better than our number</span><span>The line moved <b>in your favor</b>. You get a better number than we did.</span></div>
+    <div class="gk"><span class="chip2 ps ok">Still a play</span><span>It moved a little against us but is still inside our limit (shown as "play to …").</span></div>
+    <div class="gk"><span class="chip2 ps pass">Pass at this number</span><span>It moved too far. We wouldn't bet it now, so you can't add it to your slip.</span></div>
+    <h4>How confident</h4><div class="gk"><span class="chip2 Strong">Strong</span><span>Our highest-confidence Closer picks.</span></div>
+    <div class="gk"><span class="chip2 Solid">Solid</span><span>A good spot, a step below Strong.</span></div>
+    <div class="gk"><span class="chip2 Lean">Lean</span><span>A small edge. Smaller stakes make sense.</span></div>
+    <div class="gk"><span class="chip2">3 of 3 checks agree</span><span>Experimental picks show how many of the engine's checks agreed.</span></div>
+    <h4>The case for this pick</h4><div class="gk"><span class="fact pro mini">Green</span><span>A real number that supports the pick.</span></div>
+    <div class="gk"><span class="fact con mini">Red</span><span>A real number that cuts against it. We show both.</span></div>
+    <h4>Once the game starts</h4><p>The pick is locked and moves to <b>In progress</b>, showing how it's doing. It's graded at the number we logged, win or lose.</p>
+    <p class="warnp">No pick is a sure thing. 21+ and in a legal state only. Gambling problem? Call 1-800-GAMBLER.</p>`}};
+const openExplain=k=>{const e=EXPLAIN[k];if(!e)return;$("xTitle").textContent=e.t;$("xBody").innerHTML=e.b;$("xsheet").classList.add("on");$("xsheet").setAttribute("aria-hidden","false");$("xClose").focus()};
+const closeExplain=()=>{$("xsheet").classList.remove("on");$("xsheet").setAttribute("aria-hidden","true")};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-explain]");if(b){e.preventDefault();openExplain(b.dataset.explain)}
+  if(e.target.id==="xClose"||e.target.id==="xDim")closeExplain()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeExplain()});
 const pickCard=x=>{const g=gameOf(x);const [aw,hm]=String(x.game).split(/\s+@\s+/),pn=playNow(x);
   const price=pn.state!=="none"&&pn.odds!=null?fmtSp(pn.odds):x.odds!=null?fmtSp(x.odds):null;
   const head=pn.state==="none"||pn.state==="pass"?x.label:pn.label;
   const sub=pn.state==="none"?`Logged ${esc(timeOf(x.logged))}`:pn.state==="at"?`Our number · play to ${esc(pn.limit)}`
-    :pn.state==="pass"?`Now ${esc(pn.label)} · our limit was ${esc(pn.limit)}`:`Closer logged ${esc(x.label)} · play to ${esc(pn.limit)}`;
-  return`<article class="card pc ${pn.state==="pass"?"passed":""}"><div class="pch"><span class="lgb" style="background:${LC[x.lg]||"#334155"}">${esc(x.lg)}</span><span class="t">${esc(timeOf(x.date))}</span></div>
+    :pn.state==="pass"?`Now ${esc(pn.label)} · our limit was ${esc(pn.limit)}`:`${isExp(x)?"Engine":"Closer"} logged ${esc(x.label)} · play to ${esc(pn.limit)}`;
+  return`<article class="card pc ${pn.state==="pass"?"passed":""} ${isExp(x)?"isexp":""}"><div class="pch"><span class="lgb" style="background:${LC[x.lg]||"#334155"}">${esc(x.lg)}</span>${srcBadge(x)}<span class="t">${esc(timeOf(x.date))}</span></div>
     <div class="mini">${teamMini(g&&g.away,aw)}${esc(g?g.away.abbr:aw)} <span style="color:var(--dim)">@</span> ${teamMini(g&&g.home,hm)}${esc(g?g.home.abbr:hm)}</div>
     <div><div class="pcl">${esc(head)}${price?` <span class="pr">${esc(price)}</span>`:""}</div><div class="pcs">${sub}</div></div>
-    <div class="meta">${playChip(x)}${x.tier?`<span class="chip2 ${esc(x.tier)}">${esc(x.tier)}</span>`:""}<span class="chip2">${esc(KIND[x.kind]||x.kind)}</span></div>
+    <div class="meta">${playChip(x)}${x.tier?`<span class="chip2 ${esc(x.tier)}">${esc(x.tier)}</span>`:""}${checksChip(x)}<span class="chip2">${esc(KIND[x.kind]||x.kind)}</span></div>
     ${caseBox(x)}
     ${pn.state==="pass"?`<div class="addb dis" aria-disabled="true">Line moved past our limit</div>`:addBtn(x)}</article>`};
 
@@ -685,8 +749,10 @@ const checkIntegrity=()=>{if(!rec||integFor===rec)return;integFor=rec;
 const renderIntegrity=()=>{const el=$("integ");el.className="integ "+(integ.state==="ok"?"ok":integ.state==="bad"?"bad":"");
   el.textContent=integ.state==="ok"?(integ.n?`✓ Log verified · ${integ.n} picks match their fingerprints`:"✓ Log verified · fresh record, no picks yet"):integ.state==="bad"?`✗ Log check failed at ${integ.id}`:integ.state==="legacy"?"Log check unavailable in this browser":"Checking the log…"};
 
-const renderResultsView=()=>{checkIntegrity();renderIntegrity();if(!rec){$("rsBody").innerHTML=`<div class="card empty">Loading results…</div>`;return}
-  const g=graded().filter(x=>inLg(x,lg)),W=g.filter(x=>x.status==="W").length,L=g.filter(x=>x.status==="L").length,P=g.filter(x=>x.status==="P").length,s=streaks(g);
+const renderResultsView=()=>{checkIntegrity();renderIntegrity();
+  $("rsTabs").innerHTML=[["closer","Closer picks"],["exp","Experimental"]].map(([k,t])=>`<button class="${rsT===k?"on":""}" data-rs="${k}">${t}</button>`).join("")+(rsT==="exp"?`<button data-explain="exp">What's this?</button>`:"");
+  if(!rec){$("rsBody").innerHTML=`<div class="card empty">Loading results…</div>`;return}
+  const g=(rsT==="exp"?gradedExp():graded()).filter(x=>inLg(x,lg)),W=g.filter(x=>x.status==="W").length,L=g.filter(x=>x.status==="L").length,P=g.filter(x=>x.status==="P").length,s=streaks(g);
   const tally=xs=>{const w=xs.filter(x=>x.status==="W").length,l=xs.filter(x=>x.status==="L").length,p=xs.filter(x=>x.status==="P").length;return`${w}–${l}${p?`–${p}`:""}`};
   const late=entries().filter(x=>x.loggedAfterStart&&inLg(x,lg));
   const rate=W+L>=MIN_RATE?`<b class="num">${pct(W,L)}%</b><small>${W+L} decided picks</small>`
@@ -695,10 +761,10 @@ const renderResultsView=()=>{checkIntegrity();renderIntegrity();if(!rec){$("rsBo
   const hist=groupBy([...g].reverse(),x=>dayLabel(x.date)).map(([d,ys])=>`<div class="day">${esc(d)} · ${tally(ys)}</div><section class="card hist">${ys.map(x=>{const f=x.final;
       return`<div class="hr"><span class="res ${x.status}">${x.status}</span><div style="min-width:0"><div class="hl">${esc(x.label)}</div><div class="hs">${esc(x.lg)} · ${esc(x.game)}</div></div><span class="fs">${f?`${esc(f.away)} ${esc(f.as)}<br>${esc(f.home)} ${esc(f.hs)}`:""}</span></div>`}).join("")}</section>`).join("");
   $("rsBody").innerHTML=`<div class="rg">
-      <div class="card rt"><span>Verified record</span><b class="num">${tally(g)}</b><small>Wins–losses${P?"–pushes":""}</small></div>
+      <div class="card rt"><span>${rsT==="exp"?"Experimental record":"Closer picks record"}</span><b class="num">${tally(g)}</b><small>Wins–losses${P?"–pushes":""}</small></div>
       <div class="card rt"><span>Win rate</span>${rate}</div>
       <div class="card rt"><span>Current streak</span><b class="num" style="color:${s.type==="W"?"var(--pos)":s.type==="L"?"var(--neg)":"inherit"}">${s.type?s.type+s.cur:"—"}</b><small>Best win streak: ${s.best?"W"+s.best:"—"}</small></div>
-      <div class="card rt"><span>Still pending</span><b class="num">${entries().filter(x=>x.status==="pending"&&inLg(x,lg)).length}</b><small>Graded after the final score</small></div></div>
+      <div class="card rt"><span>Still pending</span><b class="num">${entries().filter(x=>x.status==="pending"&&inLg(x,lg)&&(rsT==="exp")===isExp(x)).length}</b><small>Graded after the final score</small></div></div>
     <div class="r2"><section class="card bd"><h3>By league</h3>${bdl(x=>x.lg,LN)}</section><section class="card bd"><h3>By bet type</h3>${bdl(x=>x.kind,KINDS)}</section></div>
     ${hist||`<div class="card empty" style="margin-top:12px">No graded picks${lg==="All"?"":" in "+esc(LN[lg])} yet.</div>`}
     <details class="card fold"><summary>How grading works</summary><div class="in">Each pick is written to a permanent log with a fingerprint that chains to the one before it, so any later edit would be detected, and your browser re-checks the whole log on this page. Picks are graded automatically from final scores. A pick only counts if it was logged before its game started${late.length?`; ${late.length} pick${late.length>1?"s were":" was"} logged after the start and ${late.length>1?"are":"is"} left out`:""}. Win % appears once ${MIN_RATE} picks are graded, so a short hot or cold run can't pass for skill.</div></details>`;};
@@ -714,6 +780,7 @@ const route=()=>{const h=location.hash.slice(1);if(h==="models"){setView("dash")
 window.addEventListener("hashchange",route);
 document.addEventListener("click",e=>{const t=e.target;
   const pk=t.closest("[data-pk]");if(pk){pkT=pk.dataset.pk;renderView()}
+  const rs=t.closest("[data-rs]");if(rs){rsT=rs.dataset.rs;renderView()}
   const lv=t.closest("[data-lv]");if(lv){lvT=lv.dataset.lv;renderView()}
   const st=t.closest("[data-st]");if(st){stake=+st.dataset.st;try{localStorage.setItem("closer-stake",stake)}catch(_){}renderView()}
   const rm=t.closest("[data-rm]");if(rm){setSlip(getSlip().filter(s=>s.k!==rm.dataset.rm));render()}

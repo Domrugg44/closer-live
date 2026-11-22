@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: grade
+  group: record-writer
   cancel-in-progress: false
 
 jobs:

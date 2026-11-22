@@ -51,9 +51,11 @@ if ($Source -eq "manual") {
   }
   $Why = "$Why | Data check: $($case.Summary)$(if(-not $case.Pass){" | Posted against the numbers because: $($ForceReason.Trim())"})"
 }
-$n = 1 + @($entries | Where-Object { $_.id -like "M*" }).Count
+# id prefix by source: M = manual (person-approved), E = experimental engine, V = validated model
+$prefix = @{ manual = "M"; experimental = "E"; validated = "V" }[$Source]
+$n = 1 + @($entries | Where-Object { $_.id -like "$prefix*" }).Count
 $e = [pscustomobject][ordered]@{
-  id = "M{0:d4}" -f $n; logged = $now.ToString("yyyy-MM-ddTHH:mm:ssZ"); pickTime = $now.ToString("yyyy-MM-ddTHH:mm:ssZ"); source = $Source
+  id = "$prefix{0:d4}" -f $n; logged = $now.ToString("yyyy-MM-ddTHH:mm:ssZ"); pickTime = $now.ToString("yyyy-MM-ddTHH:mm:ssZ"); source = $Source
   lg = $League; game = $Game; eventId = $EventId; date = $startT.ToString("yyyy-MM-ddTHH:mmZ")
   kind = $Kind; label = $Label; team = $(if ($Team) { $Team } else { $null }); side = $(if ($Side) { $Side } else { $null })
   player = $(if ($Player) { $Player } else { $null }); stat = $(if ($Stat) { $Stat } else { $null })
