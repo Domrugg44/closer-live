@@ -183,6 +183,12 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;backgroun
 .trk{font-size:12px;font-weight:800;color:var(--mut);background:#0f1830;border-radius:8px;padding:6px 8px}.trk.ok{color:var(--pos);background:#22c55e14}.trk.no{color:var(--neg);background:#f0525d12}
 .ourp.lk{padding:3px 8px;background:#0f1830;color:#c9d4ea;flex-wrap:wrap}.ourp.lk .trk{padding:0;background:none}
 .warn{font-size:11px;font-weight:800;color:var(--warn);margin-top:3px}
+
+.pr{font-family:"JetBrains Mono",monospace;font-size:14px;font-weight:700;color:var(--mut);margin-left:4px}
+.pcs{font-size:12px;color:var(--mut);margin-top:3px}
+.chip2.ps.at{color:#cfe0ff;border-color:#2b4a9e}.chip2.ps.better{background:#22c55e1f;border-color:#22c55e66;color:var(--pos)}
+.chip2.ps.ok{background:#f5b83d1a;border-color:#f5b83d66;color:var(--warn)}.chip2.ps.pass{background:#f0525d1a;border-color:#f0525d66;color:var(--neg)}
+.pc.passed{opacity:.6}.addb.dis{border-color:var(--line);color:var(--dim);cursor:default}.addb.dis:hover{background:none}
 </style>
 </head>
 <body>
@@ -310,9 +316,10 @@ const tabs=()=>{const all=["All",...LGO];
 document.addEventListener("click",e=>{const t=e.target.closest("[data-l]");if(t){lg=lg===t.dataset.l&&t.dataset.l!=="All"?"All":t.dataset.l;gtab=lg;render()}
   const g=e.target.closest("[data-g]");if(g){gtab=g.dataset.g;render()}});
 
+const mkS=(m,side)=>{const c=m&&m[side]&&m[side].close;if(!c)return null;const line=parseFloat(String(c.line??"").replace(/^[ou]/i,""));const odds=parseInt(c.odds,10);return isFinite(line)?{line,odds:isFinite(odds)?odds:null}:null};
 const toGame=(e,l)=>{const c=(e.competitions||[])[0]||{},st=(e.status&&e.status.type)||{},T={};
   (c.competitors||[]).forEach(t=>{const tm=t.team||{};T[t.homeAway]={abbr:tm.abbreviation,name:tm.shortDisplayName,logo:tm.logo,color:tm.color,score:t.score,rec:t.records&&t.records[0]&&t.records[0].summary,rank:t.curatedRank&&t.curatedRank.current<99?t.curatedRank.current:null,leaders:(t.leaders||[]).map(l=>{const x=(l.leaders||[])[0];return x?{cat:l.shortDisplayName,who:x.athlete&&x.athlete.shortName,val:x.displayValue}:null}).filter(Boolean).slice(0,3)}});
-  const o=(c.odds||[])[0];return{id:e.id,lg:l,date:e.date,state:st.state,detail:st.shortDetail,away:T.away||{},home:T.home||{},details:o&&o.details,total:o&&o.overUnder,tv:(c.broadcasts||[]).flatMap(b=>b.names||[]).slice(0,2).join(" / "),venue:c.venue&&c.venue.fullName}};
+  const o=(c.odds||[])[0];return{id:e.id,lg:l,date:e.date,state:st.state,detail:st.shortDetail,away:T.away||{},home:T.home||{},details:o&&o.details,total:o&&o.overUnder,mk:o?{sh:mkS(o.pointSpread,"home"),sa:mkS(o.pointSpread,"away"),ov:mkS(o.total,"over"),un:mkS(o.total,"under"),book:o.provider&&o.provider.name}:null,tv:(c.broadcasts||[]).flatMap(b=>b.names||[]).slice(0,2).join(" / "),venue:c.venue&&c.venue.fullName}};
 const pull=async l=>{try{const r=await fetch(API+BASE[l]+"/scoreboard"+(QS[l]||""),{cache:"no-store"});if(!r.ok)return;const j=await r.json();feed[l]=(j.events||[]).map(e=>toGame(e,l))}catch(e){}};
 const loadRec=async()=>{for(const u of REC_URLS){try{const r=await fetch(u+"?t="+Date.now(),{cache:"no-store"});if(r.ok){rec=await r.json();return}}catch(e){}}};
 
@@ -353,17 +360,17 @@ const renderStats=()=>{const g=graded(),W=g.filter(x=>x.status==="W").length,L=g
   $("liveCount").innerHTML=live?`<i></i>${live} live`:"";};
 
 const renderPicks=()=>{const now=Date.now(),gm=new Map(games().map(g=>[g.id,g]));
-  const xs=entries().filter(x=>isOpen(x)&&inLg(x,lg))
+  const xs=entries().filter(x=>isOpen(x)&&inLg(x,lg)&&playNow(x).state!=="pass")
     .sort((a,b)=>(TIER[b.tier]||0)-(TIER[a.tier]||0)||Date.parse(a.date)-Date.parse(b.date)).slice(0,3);
   if(!rec){$("picks").innerHTML=`<div class="card empty" style="grid-column:1/-1">Loading picks…</div>`;return}
   if(!xs.length){$("picks").innerHTML=`<div class="card empty" style="grid-column:1/-1">No open picks${lg==="All"?"":" in "+esc(LN[lg])} right now. New picks appear here once they're logged.</div>`;return}
   $("picks").innerHTML=xs.map((x,i)=>{const g=gm.get(String(x.eventId));const [aw,hm]=String(x.game).split(/\s+@\s+/);
     const A=g?g.away:{abbr:aw},H=g?g.home:{abbr:hm};
     const prob=x.prob!=null?Math.round(x.prob*(x.prob<=1?100:1))+"%":"—";
-    const odds=x.odds!=null?(x.odds>0?"+":"")+x.odds:"—";
+    const pn0=playNow(x),odds=pn0.state!=="none"&&pn0.odds!=null?fmtSp(pn0.odds):x.odds!=null?(x.odds>0?"+":"")+x.odds:"—";
     return`<article class="card pk ${i===0?"best":""}"><div class="pkh"><span class="lgb" style="background:${LC[x.lg]||"#334155"}">${esc(x.lg)}</span><span>${esc(timeOf(x.date))}</span></div>
       <div class="mt"><div class="tm">${tm(A)}${esc(A.abbr||"")}</div><span class="vs">@</span><div class="tm">${tm(H)}${esc(H.abbr||"")}</div></div>
-      <div class="pkl">${esc(x.label)}</div><div class="pkc">Closer pick${x.tier?` · <span class="tier">${esc(x.tier)}</span>`:""}</div>${moveChip(x)?`<div style="text-align:center">${moveChip(x)}</div>`:""}
+      <div class="pkl">${esc(playNow(x).state!=="none"?playNow(x).label:x.label)}</div><div class="pkc">${playNow(x).state!=="none"&&playNow(x).label!==x.label?`Closer logged ${esc(x.label)}`:"Closer pick"}${x.tier?` · <span class="tier">${esc(x.tier)}</span>`:""}</div><div style="text-align:center">${playChip(x)}</div>
       ${x.why?`<div class="why">${esc(x.why)}</div>`:""}
       <div class="pkf"><div><b class="num">${esc(odds)}</b><span>Odds</span></div>${x.prob!=null?`<div><b class="num">${esc(prob)}</b><span>Est. chance</span></div>`:`<div><b class="num">${x.line!=null?esc((x.line>0&&x.kind==="spread"?"+":"")+x.line):"—"}</b><span>Line</span></div>`}</div>${addBtn(x)}</article>`}).join("");};
 
@@ -374,7 +381,7 @@ const renderGames=()=>{const now=Date.now(),pickBy=new Map(entries().filter(x=>x
     return`<tr><td><div class="gm">${lo(g.away)}${esc(g.away.abbr)} <span style="color:var(--dim)">@</span> ${lo(g.home)}${esc(g.home.abbr)}</div></td>
       <td class="mono">${g.state==="in"?`<span class="liv">● ${esc(g.detail)}</span>`:esc(timeOf(g.date))}</td>
       <td class="mono">${esc(g.details||"—")}</td><td class="mono">${g.total!=null?esc(g.total):"—"}</td>
-      <td>${p?`<span class="cp">${esc(p.label)}</span>${g.state==="pre"?addBtn(p,true):`<span class="trk ${track(p).cls}" style="display:block;font-size:11px">${esc(track(p).txt)}</span>`}`:`<span style="color:var(--dim)">—</span>`}</td></tr>`}).join("");};
+      <td>${p?`<span class="cp">${esc(p.label)}</span>${g.state==="pre"?(playNow(p).state==="pass"?`<span class="trk" style="display:block;font-size:11px">Pass at this number</span>`:addBtn(p,true)):`<span class="trk ${track(p).cls}" style="display:block;font-size:11px">${esc(track(p).txt)}</span>`}`:`<span style="color:var(--dim)">—</span>`}</td></tr>`}).join("");};
 
 const renderRecord=()=>{if(!rec){$("recNote").textContent="The record couldn't be loaded right now.";return}
   const g=graded(),W=g.filter(x=>x.status==="W").length,L=g.filter(x=>x.status==="L").length,P=g.filter(x=>x.status==="P").length,p=pct(W,L);
@@ -407,7 +414,9 @@ const addBtn=(x,mini)=>{const on=onSlip(x),lab=on?"On slip":"Add to slip";
              :`<button class="addb ${on?"on":""}" data-slip="${esc(x.id)}" aria-pressed="${on}">${on?"✓ On slip":"+ Add to slip"}</button>`};
 const toggleSlip=id=>{const x=entries().find(e=>String(e.id)===String(id));if(!x)return;let sl=getSlip();const k=skey(x);
   if(sl.some(s=>s.k===k))sl=sl.filter(s=>s.k!==k);
-  else sl.push({k,live:{l:x.lg,t:x.label,s:x.game+(x.odds==null?" · price assumed -110":""),o:x.odds!=null?+x.odds:-110}});
+  else{const pn=playNow(x);if(pn.state==="pass")return;
+    if(pn.state!=="none")sl.push({k,live:{l:x.lg,t:pn.label,s:`${x.game} · ${pn.book} now · Closer logged ${x.label}`,o:pn.odds!=null?pn.odds:-110}});
+    else sl.push({k,live:{l:x.lg,t:x.label,s:x.game+(x.odds==null?" · price assumed -110":"")+(x.kind==="prop"?" · check your book's line":""),o:x.odds!=null?+x.odds:-110}})}
   setSlip(sl);render()};
 const dec=o=>o>0?1+o/100:1+100/-o, amer=d=>d>=2?"+"+Math.round((d-1)*100):"-"+Math.round(100/(d-1));
 const renderSlipBar=()=>{const sl=getSlip().filter(s=>s.live||s.k);const n=sl.length;
@@ -470,14 +479,37 @@ const playCard=x=>{const g=gameOf(x),t=track(x),[aw,hm]=String(x.game).split(/\s
     <div class="mini">${teamMini(g&&g.away,aw)}${teamMini(g&&g.home,hm)}<span class="mono">${sc}</span></div>
     <div class="pcl">${esc(x.label)}</div>
     <div class="trk ${t.cls}">${esc(t.txt)}</div></article>`};
-const pickCard=x=>{const g=gameOf(x);const [aw,hm]=String(x.game).split(/\s+@\s+/);
-  const price=x.odds!=null?(x.odds>0?"+":"")+x.odds:null;
-  return`<article class="card pc"><div class="pch"><span class="lgb" style="background:${LC[x.lg]||"#334155"}">${esc(x.lg)}</span>${g&&g.state==="in"?`<span class="liv">● ${esc(g.detail)}</span>`:""}<span class="t">${esc(timeOf(x.date))}</span></div>
+
+// ---- live play status: is a logged pick still a play at today's number? ----
+// A pick stays locked and is graded at the number it was logged at. What a member can bet changes with the
+// market, so each open spread/total is re-checked against the current number:
+//   same or better -> play at the current number; up to LIMIT points worse -> still a play; beyond -> pass.
+// Football spreads also pass when the move crosses 3 or 7, the margins most games land on.
+const LIMIT=1, KEYS=[3,7,-3,-7];
+const crossesKey=(L,C,lgx)=>{if(!["NFL","CFB"].includes(lgx))return false;const a=-L,b=-C;return KEYS.some(k=>(k>Math.min(a,b))&&(k<=Math.max(a,b)))};
+const playNow=x=>{const g=gameOf(x);if(x.line==null||!g||g.state!=="pre"||!g.mk)return{state:"none"};
+  let cur=null,label="",worseBy=0,limit=null;
+  if(x.kind==="total"){const over=isOver(x);cur=over?g.mk.ov:g.mk.un;if(!cur)return{state:"none"};
+    worseBy=over?cur.line-x.line:x.line-cur.line;limit=over?x.line+LIMIT:x.line-LIMIT;label=`${over?"Over":"Under"} ${cur.line}`}
+  else if(x.kind==="spread"&&x.team){const home=g.home.abbr===x.team,away=g.away.abbr===x.team;if(!home&&!away)return{state:"none"};
+    cur=home?g.mk.sh:g.mk.sa;if(!cur)return{state:"none"};worseBy=x.line-cur.line;limit=x.line-LIMIT;label=`${x.team} ${fmtSp(cur.line)}`}
+  else return{state:"none"};
+  const st=Math.abs(worseBy)<1e-9?"at":worseBy<0?"better":(worseBy<=LIMIT+1e-9&&!(x.kind==="spread"&&crossesKey(x.line,cur.line,x.lg)))?"ok":"pass";
+  return{state:st,line:cur.line,odds:cur.odds,label,limit:x.kind==="spread"?`${x.team} ${fmtSp(limit)}`:`${isOver(x)?"Over":"Under"} ${limit}`,book:g.mk.book||"DraftKings"}};
+const PLAYTXT={at:"At our number",better:"Better than our number",ok:"Still a play",pass:"Pass at this number"};
+const playChip=x=>{const pn=playNow(x);if(pn.state==="none")return x.kind==="prop"?`<span class="chip2">Check your book's line</span>`:"";
+  return`<span class="chip2 ps ${pn.state}" title="Logged at ${esc(x.label)}. Playable to ${esc(pn.limit)}.">${PLAYTXT[pn.state]}</span>`};
+const pickCard=x=>{const g=gameOf(x);const [aw,hm]=String(x.game).split(/\s+@\s+/),pn=playNow(x);
+  const price=pn.state!=="none"&&pn.odds!=null?fmtSp(pn.odds):x.odds!=null?fmtSp(x.odds):null;
+  const head=pn.state==="none"||pn.state==="pass"?x.label:pn.label;
+  const sub=pn.state==="none"?`Logged ${esc(timeOf(x.logged))}`:pn.state==="at"?`Our number · play to ${esc(pn.limit)}`
+    :pn.state==="pass"?`Now ${esc(pn.label)} · our limit was ${esc(pn.limit)}`:`Closer logged ${esc(x.label)} · play to ${esc(pn.limit)}`;
+  return`<article class="card pc ${pn.state==="pass"?"passed":""}"><div class="pch"><span class="lgb" style="background:${LC[x.lg]||"#334155"}">${esc(x.lg)}</span><span class="t">${esc(timeOf(x.date))}</span></div>
     <div class="mini">${teamMini(g&&g.away,aw)}${esc(g?g.away.abbr:aw)} <span style="color:var(--dim)">@</span> ${teamMini(g&&g.home,hm)}${esc(g?g.home.abbr:hm)}</div>
-    <div class="pcl">${esc(x.label)}</div>
-    <div class="meta">${x.tier?`<span class="chip2 ${esc(x.tier)}">${esc(x.tier)}</span>`:""}<span class="chip2">${esc(KIND[x.kind]||x.kind)}</span>${price?`<span class="chip2 mono">${esc(price)}</span>`:""}${moveChip(x)}</div>
+    <div><div class="pcl">${esc(head)}${price?` <span class="pr">${esc(price)}</span>`:""}</div><div class="pcs">${sub}</div></div>
+    <div class="meta">${playChip(x)}${x.tier?`<span class="chip2 ${esc(x.tier)}">${esc(x.tier)}</span>`:""}<span class="chip2">${esc(KIND[x.kind]||x.kind)}</span></div>
     ${x.why?`<details class="more"><summary>Why this pick</summary><p>${esc(x.why)}</p></details>`:""}
-    ${addBtn(x)}</article>`};
+    ${pn.state==="pass"?`<div class="addb dis" aria-disabled="true">Line moved past our limit</div>`:addBtn(x)}</article>`};
 
 const renderPicksView=()=>{
   const kindOk=x=>pkT==="all"||(pkT==="prop"?x.kind==="prop":x.kind!=="prop");
@@ -498,7 +530,7 @@ const gameRow=g=>{const ps=picksFor(g),fin=g.state==="post",aw=+g.away.score,hm=
   const st=g.state==="in"?`<div class="gst in">● LIVE<br>${esc(g.detail)}</div>`:fin?`<div class="gst">FINAL</div>`:`<div class="gst">${esc(timeOf(g.date))}</div>`;
   const line=g.details||g.total!=null?`${esc(g.details||"")}${g.details&&g.total!=null?" · ":""}${g.total!=null?`O/U ${esc(g.total)}`:""}`:"No line";
   return`<article class="card gr" data-game="${esc(g.id)}">${st}<div class="tms">${row(g.away,fin&&aw<hm)}${row(g.home,fin&&hm<aw)}</div>
-    <div class="gside"><span class="ln">${line}</span>${ps.map(p=>g.state==="pre"?`<span class="ourp">Closer: ${esc(p.label)}${addBtn(p,true)}</span>`:`<span class="ourp lk" title="${esc(track(p).txt)}">Closer: ${esc(p.label)} · <span class="trk ${track(p).cls}" style="display:inline">${esc(track(p).txt)}</span></span>`).join("")}</div>
+    <div class="gside"><span class="ln">${line}</span>${ps.map(p=>g.state==="pre"?(playNow(p).state==="pass"?`<span class="ourp lk">Closer: ${esc(p.label)} · pass at this number</span>`:`<span class="ourp">Closer: ${esc(playNow(p).state!=="none"?playNow(p).label:p.label)}${addBtn(p,true)}</span>`):`<span class="ourp lk" title="${esc(track(p).txt)}">Closer: ${esc(p.label)} · <span class="trk ${track(p).cls}" style="display:inline">${esc(track(p).txt)}</span></span>`).join("")}</div>
     <div class="gx"><div><b>Records</b>${esc(g.away.abbr)} ${esc(g.away.rec||"—")} · ${esc(g.home.abbr)} ${esc(g.home.rec||"—")}</div>
       ${g.tv?`<div><b>TV</b>${esc(g.tv)}</div>`:""}${g.venue?`<div><b>Venue</b>${esc(g.venue)}</div>`:""}
       ${[g.away,g.home].map(t=>t.leaders&&t.leaders.length?`<div><b>${esc(t.abbr)} leaders</b>${t.leaders.map(l=>`${esc(l.who)} · ${esc(l.val)} ${esc(l.cat)}`).join("<br>")}</div>`:"").join("")}</div></article>`};
@@ -518,7 +550,7 @@ const renderLiveView=()=>{const opened=new Set([...document.querySelectorAll(".g
 const renderSlipView=()=>{const sl=getSlip().filter(s=>s.live);
   if(!sl.length){$("slipBody").innerHTML=`<div class="card empty">Your slip is empty. Add plays from Picks or Live games.<a href="#picks" class="addb" style="max-width:220px;margin:14px auto 0">Browse picks</a></div>`;return}
   const d=sl.reduce((a,s)=>a*dec(s.live.o),1),odds=sl.length>1?amer(d):((sl[0].live.o>0?"+":"")+sl[0].live.o);
-  $("slipBody").innerHTML=`<div class="sl"><section class="card">${sl.map(s=>`<div class="leg"><span class="lgb" style="background:${LC[s.live.l]||"#334155"}">${esc(s.live.l)}</span><div style="min-width:0"><div class="lt">${esc(s.live.t)}</div><div class="ls">${esc(s.live.s)}</div>${(()=>{const x=entries().find(e=>"r"+e.id===s.k);return x&&startedX(x)?`<div class="warn">Game has started: this number is no longer available</div>`:""})()}</div><span class="lo">${s.live.o>0?"+":""}${esc(s.live.o)}</span><button class="x" data-rm="${esc(s.k)}" aria-label="Remove ${esc(s.live.t)}">×</button></div>`).join("")}</section>
+  $("slipBody").innerHTML=`<div class="sl"><section class="card">${sl.map(s=>`<div class="leg"><span class="lgb" style="background:${LC[s.live.l]||"#334155"}">${esc(s.live.l)}</span><div style="min-width:0"><div class="lt">${esc(s.live.t)}</div><div class="ls">${esc(s.live.s)}</div>${(()=>{const x=entries().find(e=>"r"+e.id===s.k);if(!x)return"";if(startedX(x))return`<div class="warn">Game has started: this number is no longer available</div>`;const pn=playNow(x);if(pn.state==="pass")return`<div class="warn">Line moved past our limit (now ${esc(pn.label)}). Consider removing it.</div>`;if(pn.state!=="none"&&pn.label!==s.live.t)return`<div class="warn">Line has moved: now ${esc(pn.label)}${pn.odds!=null?" "+esc(fmtSp(pn.odds)):""}</div>`;return""})()}</div><span class="lo">${s.live.o>0?"+":""}${esc(s.live.o)}</span><button class="x" data-rm="${esc(s.k)}" aria-label="Remove ${esc(s.live.t)}">×</button></div>`).join("")}</section>
     <section class="card calc"><div class="row3"><div><b class="num">${esc(odds)}</b><span>${sl.length>1?sl.length+"-leg parlay":"Straight bet"}</span></div><div><b class="num" id="payout">$${(stake*d).toFixed(2)}</b><span id="payoutL">Payout on $${stake}</span></div><div><b class="num">${(100/d).toFixed(1)}%</b><span>Needed to break even</span></div></div>
       <div class="stk"><span style="font-weight:700">Stake $</span><input id="amt" type="number" min="1" step="1" value="${stake}" inputmode="decimal" aria-label="Stake in dollars">${[5,10,25,50].map(v=>`<button class="${stake===v?"on":""}" data-st="${v}">$${v}</button>`).join("")}</div>
       <div class="bks">${BOOKS.map(b=>`<a class="bk" href="${b[1]}" target="_blank" rel="noopener">Open ${b[0]}</a>`).join("")}</div>
