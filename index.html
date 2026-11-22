@@ -189,6 +189,15 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;backgroun
 .chip2.ps.at{color:#cfe0ff;border-color:#2b4a9e}.chip2.ps.better{background:#22c55e1f;border-color:#22c55e66;color:var(--pos)}
 .chip2.ps.ok{background:#f5b83d1a;border-color:#f5b83d66;color:var(--warn)}.chip2.ps.pass{background:#f0525d1a;border-color:#f0525d66;color:var(--neg)}
 .pc.passed{opacity:.6}.addb.dis{border-color:var(--line);color:var(--dim);cursor:default}.addb.dis:hover{background:none}
+
+.case .cbody{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+.case .note{margin:0;border-left:2px solid var(--acc);padding-left:8px;color:#c9d4ea}.case .note b{display:block;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+.facts{display:flex;flex-direction:column;gap:6px}
+.fact{font-size:12px;line-height:1.45;color:#c9d4ea;background:#0f1830;border:1px solid var(--line);border-left:3px solid var(--line2);border-radius:0 8px 8px 0;padding:7px 9px}
+.fact.pro{border-left-color:var(--pos)}.fact.con{border-left-color:var(--neg)}.fact b{color:var(--txt)}.fact small{display:block;color:var(--dim);font-size:10px;margin-top:3px}
+.vals{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}.vals i{font-style:normal;font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:700;padding:1px 6px;border-radius:5px}
+.vals i.y{background:#22c55e22;color:var(--pos)}.vals i.n{background:#f0525d1c;color:var(--neg)}
+.facts .src{font-size:10px;color:var(--dim)}
 </style>
 </head>
 <body>
@@ -316,9 +325,10 @@ const tabs=()=>{const all=["All",...LGO];
 document.addEventListener("click",e=>{const t=e.target.closest("[data-l]");if(t){lg=lg===t.dataset.l&&t.dataset.l!=="All"?"All":t.dataset.l;gtab=lg;render()}
   const g=e.target.closest("[data-g]");if(g){gtab=g.dataset.g;render()}});
 
-const mkS=(m,side)=>{const c=m&&m[side]&&m[side].close;if(!c)return null;const line=parseFloat(String(c.line??"").replace(/^[ou]/i,""));const odds=parseInt(c.odds,10);return isFinite(line)?{line,odds:isFinite(odds)?odds:null}:null};
+const num=v=>parseFloat(String(v??"").replace(/^[ou]/i,""));
+const mkS=(m,side)=>{const c=m&&m[side]&&m[side].close;if(!c)return null;const line=num(c.line),odds=parseInt(c.odds,10),op=m[side].open?num(m[side].open.line):NaN;return isFinite(line)?{line,odds:isFinite(odds)?odds:null,open:isFinite(op)?op:null}:null};
 const toGame=(e,l)=>{const c=(e.competitions||[])[0]||{},st=(e.status&&e.status.type)||{},T={};
-  (c.competitors||[]).forEach(t=>{const tm=t.team||{};T[t.homeAway]={abbr:tm.abbreviation,name:tm.shortDisplayName,logo:tm.logo,color:tm.color,score:t.score,rec:t.records&&t.records[0]&&t.records[0].summary,rank:t.curatedRank&&t.curatedRank.current<99?t.curatedRank.current:null,leaders:(t.leaders||[]).map(l=>{const x=(l.leaders||[])[0];return x?{cat:l.shortDisplayName,who:x.athlete&&x.athlete.shortName,val:x.displayValue}:null}).filter(Boolean).slice(0,3)}});
+  (c.competitors||[]).forEach(t=>{const tm=t.team||{};T[t.homeAway]={id:tm.id,abbr:tm.abbreviation,name:tm.shortDisplayName,logo:tm.logo,color:tm.color,score:t.score,rec:t.records&&t.records[0]&&t.records[0].summary,rank:t.curatedRank&&t.curatedRank.current<99?t.curatedRank.current:null,leaders:(t.leaders||[]).map(l=>{const x=(l.leaders||[])[0];return x?{cat:l.shortDisplayName,who:x.athlete&&x.athlete.shortName,val:x.displayValue}:null}).filter(Boolean).slice(0,3)}});
   const o=(c.odds||[])[0];return{id:e.id,lg:l,date:e.date,state:st.state,detail:st.shortDetail,away:T.away||{},home:T.home||{},details:o&&o.details,total:o&&o.overUnder,mk:o?{sh:mkS(o.pointSpread,"home"),sa:mkS(o.pointSpread,"away"),ov:mkS(o.total,"over"),un:mkS(o.total,"under"),book:o.provider&&o.provider.name}:null,tv:(c.broadcasts||[]).flatMap(b=>b.names||[]).slice(0,2).join(" / "),venue:c.venue&&c.venue.fullName}};
 const pull=async l=>{try{const r=await fetch(API+BASE[l]+"/scoreboard"+(QS[l]||""),{cache:"no-store"});if(!r.ok)return;const j=await r.json();feed[l]=(j.events||[]).map(e=>toGame(e,l))}catch(e){}};
 const loadRec=async()=>{for(const u of REC_URLS){try{const r=await fetch(u+"?t="+Date.now(),{cache:"no-store"});if(r.ok){rec=await r.json();return}}catch(e){}}};
@@ -499,6 +509,67 @@ const playNow=x=>{const g=gameOf(x);if(x.line==null||!g||g.state!=="pre"||!g.mk)
 const PLAYTXT={at:"At our number",better:"Better than our number",ok:"Still a play",pass:"Pass at this number"};
 const playChip=x=>{const pn=playNow(x);if(pn.state==="none")return x.kind==="prop"?`<span class="chip2">Check your book's line</span>`:"";
   return`<span class="chip2 ps ${pn.state}" title="Logged at ${esc(x.label)}. Playable to ${esc(pn.limit)}.">${PLAYTXT[pn.state]}</span>`};
+
+// ---- "The case for this pick": the logged note plus real numbers, loaded when opened ----
+// Every number comes from ESPN's public game data (display only), fetched live; nothing is estimated.
+// Each fact is marked green when it supports the pick and red when it doesn't.
+const CASE=new Map(),CASE_OPEN=new Set();
+const jget=async u=>{const r=await fetch(u);if(!r.ok)throw new Error(r.status);return r.json()};
+const memo=new Map(),once=(k,f)=>{if(!memo.has(k))memo.set(k,f().catch(()=>null));return memo.get(k)};
+const seasonFor=(lgx,d)=>{const x=new Date(d||Date.now()),y=x.getUTCFullYear(),m=x.getUTCMonth()+1;return["NBA","CBB","NHL"].includes(lgx)?(m>=8?y+1:y):(m>=3?y:y-1)};
+const STATN={"Rush yards":[["rushingYards"]],"Rec yards":[["receivingYards"]],"Receptions":[["receptions"]],"Pass yards":[["passingYards"]],
+  "Points":[["points"]],"Rebounds":[["totalRebounds","rebounds"]],"Assists":[["assists"]],"Pts + Reb":[["points"],["totalRebounds","rebounds"]],"Pts + Ast":[["points"],["assists"]],"Pts + Reb + Ast":[["points"],["totalRebounds","rebounds"],["assists"]]};
+const caseBox=x=>`<details class="more case" data-case="${esc(x.id)}"${CASE_OPEN.has(String(x.id))?" open":""}><summary>The case for this pick</summary><div class="cbody">${x.why?`<p class="note"><b>Analyst note</b>${esc(x.why)}</p>`:""}<div class="facts">${CASE.get(String(x.id))||`<div class="fact">Loading the numbers…</div>`}</div></div></details>`;
+const fact=(cls,html)=>`<div class="fact ${cls||""}">${html}</div>`;
+const playerLog=async(x,g)=>{
+  const teams=[g.away,g.home].filter(t=>t&&t.id);let ath=null,team=null;
+  for(const t of teams){const ro=await once("ro"+x.lg+t.id,()=>jget(`${API}${BASE[x.lg]}/teams/${t.id}/roster`));if(!ro)continue;
+    const list=Array.isArray(ro.athletes)&&ro.athletes[0]&&ro.athletes[0].items?ro.athletes.flatMap(a=>a.items||[]):(ro.athletes||[]);
+    const a=list.find(a=>String(a.displayName||"").toLowerCase()===String(x.player||"").toLowerCase());if(a){ath=a;team=t;break}}
+  if(!ath)return null;
+  const gl=await once("gl"+ath.id,()=>jget(`https://site.web.api.espn.com/apis/common/v3/sports/${BASE[x.lg]}/athletes/${ath.id}/gamelog?season=${seasonFor(x.lg,x.date)}`));
+  if(!gl||!gl.names)return{ath,team,games:[]};
+  const want=STATN[x.stat];if(!want)return{ath,team,games:[]};
+  const idx=want.map(alts=>alts.map(a=>gl.names.indexOf(a)).find(i=>i>=0));if(idx.some(i=>i==null||i<0))return{ath,team,games:[]};
+  const rows=(gl.seasonTypes||[]).filter(t=>!/preseason/i.test(t.displayName||"")).flatMap(t=>(t.categories||[]).flatMap(c=>c.events||[]));
+  const games=rows.map(r=>{const m=(gl.events||{})[r.eventId]||{};const v=idx.reduce((a,i)=>a+(parseFloat(r.stats[i])||0),0);return{v,date:m.gameDate,opp:m.opponent&&m.opponent.abbreviation}})
+    .filter(r=>r.date).sort((a,b)=>Date.parse(b.date)-Date.parse(a.date));
+  return{ath,team,games}};
+const injuriesOf=(sum,abbr)=>{const t=(sum&&sum.injuries||[]).find(t=>t.team&&t.team.abbreviation===abbr);
+  return(t&&t.injuries||[]).filter(i=>/^(Out|Doubtful)/i.test(i.status||"")).map(i=>({name:i.athlete&&i.athlete.displayName,pos:i.athlete&&i.athlete.position&&i.athlete.position.abbreviation,st:i.status}))};
+const lastFive=(sum,abbr)=>{const t=(sum&&sum.lastFiveGames||[]).find(t=>t.team&&t.team.abbreviation===abbr);
+  return(t&&t.events||[]).map(e=>{const [a,b]=String(e.score||"").split("-").map(v=>parseInt(v,10));if(!isFinite(a)||!isFinite(b))return null;
+    const hi=Math.max(a,b),lo=Math.min(a,b),won=e.gameResult==="W";return{opp:e.opponent&&e.opponent.abbreviation,us:won?hi:lo,them:won?lo:hi,res:e.gameResult,total:a+b,ot:/OT/.test(e.score)}}).filter(Boolean)};
+const r1c=v=>Math.round(v*10)/10;
+const buildCase=async x=>{const g=gameOf(x);if(!g)return fact("","Game data isn't available yet for this matchup.");
+  const sum=await once("sum"+g.id,()=>jget(`${API}${BASE[x.lg]}/summary?event=${g.id}`));const out=[];
+  if(x.kind==="prop"){const pl=await playerLog(x,g);const over=isOver(x);
+    if(!pl||!pl.games.length)out.push(fact("",`No game log found for ${esc(x.player)} this season.`));
+    else{const L=pl.games.slice(0,10),hit=v=>over?v>x.line:v<x.line,h=L.filter(r=>hit(r.v)).length,L5=L.slice(0,5),h5=L5.filter(r=>hit(r.v)).length,
+        avg=r1c(pl.games.reduce((a,r)=>a+r.v,0)/pl.games.length),rate=h/L.length;
+      out.push(fact(rate>=.6?"pro":rate<=.4?"con":"",`<b>${over?"Over":"Under"} ${x.line} hit in ${h} of last ${L.length}</b> (last 5: ${h5} of ${L5.length})<div class="vals">${L.map(r=>`<i class="${hit(r.v)?"y":"n"}" title="vs ${esc(r.opp||"")}">${r1c(r.v)}</i>`).join("")}</div><small>Newest first</small>`));
+      out.push(fact((over?avg>x.line:avg<x.line)?"pro":"con",`Season average <b>${avg}</b> ${esc(String(x.stat).toLowerCase())} over ${pl.games.length} game${pl.games.length>1?"s":""}`));
+      const pos=pl.ath.position&&pl.ath.position.abbreviation,mates=injuriesOf(sum,pl.team.abbr).filter(i=>i.pos&&i.pos===pos&&i.name!==pl.ath.displayName);
+      if(mates.length)out.push(fact("pro",`<b>Bigger role possible:</b> ${mates.slice(0,3).map(i=>`${esc(i.name)} (${esc(i.pos)}) ${esc(i.st)}`).join(", ")}`));}}
+  else{const A=g.away.abbr,H=g.home.abbr,fa=lastFive(sum,A),fh=lastFive(sum,H);
+    if(x.kind==="total"&&x.line!=null){const over=isOver(x);
+      for(const [ab,f] of [[A,fa],[H,fh]])if(f.length){const k=f.filter(r=>over?r.total>x.line:r.total<x.line).length,avg=r1c(f.reduce((a,r)=>a+r.total,0)/f.length);
+        out.push(fact(k>=3?"pro":k<=1?"con":"",`<b>${esc(ab)} games:</b> ${k} of last ${f.length} went ${over?"over":"under"} ${x.line} · avg ${avg} total<div class="vals">${f.map(r=>`<i class="${(over?r.total>x.line:r.total<x.line)?"y":"n"}" title="vs ${esc(r.opp||"")}">${r.total}</i>`).join("")}</div>`))}}
+    if(x.kind==="spread"&&x.team){const opp=x.team===H?A:H;
+      for(const [ab,f] of [[x.team,x.team===H?fh:fa],[opp,x.team===H?fa:fh]])if(f.length){const m=r1c(f.reduce((a,r)=>a+(r.us-r.them),0)/f.length),mine=ab===x.team;
+        out.push(fact(mine?(m+x.line>0?"pro":"con"):(m<0?"pro":""),`<b>${esc(ab)} last ${f.length}:</b> ${f.filter(r=>r.res==="W").length}–${f.filter(r=>r.res!=="W").length}, average margin ${m>0?"+":""}${m}<div class="vals">${f.map(r=>`<i class="${r.res==="W"?"y":"n"}" title="vs ${esc(r.opp||"")}">${r.res} ${r.us}-${r.them}</i>`).join("")}</div>`))}}
+    const side=x.kind==="total"?(isOver(x)?g.mk&&g.mk.ov:g.mk&&g.mk.un):x.kind==="spread"&&g.mk?(x.team===H?g.mk.sh:g.mk.sa):null;
+    if(side&&side.open!=null&&side.line!=null){const d=r1c(side.line-side.open),toward=x.kind==="total"?(isOver(x)?d>0:d<0):d<0;
+      out.push(fact(d===0?"":toward?"pro":"con",d===0?`Line unchanged since it opened at <b>${side.open}</b>`:`<b>Market moved ${toward?"toward":"away from"} this side:</b> opened ${x.kind==="spread"?fmtSp(side.open):side.open}, now ${x.kind==="spread"?fmtSp(side.line):side.line}`))}
+    const inj=[[A,injuriesOf(sum,A)],[H,injuriesOf(sum,H)]].filter(([,l])=>l.length);
+    if(inj.length)out.push(fact("",`<b>Out or doubtful:</b> ${inj.map(([ab,l])=>`${esc(ab)}: ${l.slice(0,4).map(i=>`${esc(i.name)}${i.pos?` (${esc(i.pos)})`:""}`).join(", ")}`).join(" · ")}`))}
+  if(!out.length)out.push(fact("","No recent game data is available for this pick yet."));
+  return out.join("")+`<small class="src">Numbers from ESPN's public game data, loaded just now. Green supports the pick, red cuts against it.</small>`};
+document.addEventListener("toggle",async e=>{const d=e.target;if(!d.matches||!d.matches("details[data-case]"))return;const id=d.dataset.case;
+  if(!d.open){CASE_OPEN.delete(id);return}CASE_OPEN.add(id);if(CASE.has(id))return;
+  const x=entries().find(z=>String(z.id)===id);if(!x)return;
+  let html;try{html=await buildCase(x)}catch(err){html=fact("","The numbers couldn't load right now. Try again in a moment.")}
+  CASE.set(id,html);document.querySelectorAll(`details[data-case="${CSS.escape(id)}"] .facts`).forEach(f=>f.innerHTML=html)},true);
 const pickCard=x=>{const g=gameOf(x);const [aw,hm]=String(x.game).split(/\s+@\s+/),pn=playNow(x);
   const price=pn.state!=="none"&&pn.odds!=null?fmtSp(pn.odds):x.odds!=null?fmtSp(x.odds):null;
   const head=pn.state==="none"||pn.state==="pass"?x.label:pn.label;
@@ -508,7 +579,7 @@ const pickCard=x=>{const g=gameOf(x);const [aw,hm]=String(x.game).split(/\s+@\s+
     <div class="mini">${teamMini(g&&g.away,aw)}${esc(g?g.away.abbr:aw)} <span style="color:var(--dim)">@</span> ${teamMini(g&&g.home,hm)}${esc(g?g.home.abbr:hm)}</div>
     <div><div class="pcl">${esc(head)}${price?` <span class="pr">${esc(price)}</span>`:""}</div><div class="pcs">${sub}</div></div>
     <div class="meta">${playChip(x)}${x.tier?`<span class="chip2 ${esc(x.tier)}">${esc(x.tier)}</span>`:""}<span class="chip2">${esc(KIND[x.kind]||x.kind)}</span></div>
-    ${x.why?`<details class="more"><summary>Why this pick</summary><p>${esc(x.why)}</p></details>`:""}
+    ${caseBox(x)}
     ${pn.state==="pass"?`<div class="addb dis" aria-disabled="true">Line moved past our limit</div>`:addBtn(x)}</article>`};
 
 const renderPicksView=()=>{
