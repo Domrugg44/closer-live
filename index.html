@@ -112,6 +112,16 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;backgroun
  .picks{grid-template-columns:minmax(0,1fr)}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.hero h1{font-size:30px}.tright .hide{display:none}
  .mlogo{display:block!important}}
 .mlogo{display:none;font-weight:900;font-style:italic;font-size:20px;margin-right:4px}.mlogo b{color:var(--acc2)}
+
+.nav .cnt{margin-left:auto;font-size:12px;background:#16295c;color:#9db8ff;border-radius:99px;padding:0 7px}
+.mnav .cnt{position:absolute;top:-4px;right:-8px;font-size:10px;background:var(--acc);color:#fff;border-radius:99px;padding:0 5px}
+.addb{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px;border-radius:10px;border:1px solid var(--acc);color:#9db8ff;font-weight:800;font-size:14px}
+.addb:hover{background:#13255a}.addb.on{background:var(--acc);color:#fff}
+.addm{width:26px;height:26px;border-radius:8px;border:1px solid var(--acc);color:#9db8ff;font-weight:800;line-height:1;margin-left:8px;vertical-align:middle}.addm.on{background:var(--acc);color:#fff}
+.slipbar{position:fixed;left:220px;right:0;bottom:0;z-index:6;background:#0b1222f2;border-top:1px solid var(--acc);display:none}
+.slipbar.on{display:block}.slipbar .in{display:flex;align-items:center;gap:14px;padding:12px 22px}
+.slipbar b{font-size:22px;font-weight:900}.slipbar .go{margin-left:auto;background:var(--acc);color:#fff;border-radius:10px;padding:10px 16px;font-weight:800}
+@media (max-width:820px){.slipbar{left:0;bottom:calc(58px + env(safe-area-inset-bottom))}.main{padding-bottom:150px}}
 </style>
 </head>
 <body>
@@ -121,6 +131,8 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;backgroun
   <a class="nav on" href="./"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Dashboard</a>
   <a class="nav" href="classic.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>Picks</a>
   <a class="nav" href="classic.html#games"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M5 12a7 7 0 0 1 14 0M2 12a10 10 0 0 1 20 0"/></svg>Live games</a>
+  <a class="nav" href="classic.html#props"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Props</a>
+  <a class="nav" href="classic.html#slip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>Slip<span class="cnt" data-slipcount></span></a>
   <a class="nav" href="classic.html#record"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Results</a>
   <a class="nav" href="#models"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M21 7l-9 5-9-5"/></svg>Models</a>
   <div class="sep"></div>
@@ -169,7 +181,7 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;backgroun
 
     <div class="rc">
       <section class="card rec">
-        <div class="rech"><h3>Your record</h3><span class="sel">All graded picks</span></div>
+        <div class="rech"><h3>Your record</h3><span class="sel">Verified picks</span></div>
         <div class="big"><b class="num" id="recWL">—</b><span class="pill neu" id="recPct">—</span></div>
         <div class="fine" id="recNote">Loading the verified record…</div>
       </section>
@@ -192,7 +204,8 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;backgroun
   </div>
 </main>
 </div>
-<nav class="mnav" aria-label="Main navigation"><a class="on" href="./"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Home</a><a href="classic.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>Picks</a><a href="classic.html#games"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M5 12a7 7 0 0 1 14 0"/></svg>Live</a><a href="classic.html#record"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7"/></svg>Results</a></nav>
+<div class="slipbar" id="slipbar"><div class="in"><div><div style="font-size:12px;color:var(--mut)" id="sbLegs"></div><b class="num" id="sbOdds"></b></div><a class="go" href="classic.html#slip">View slip →</a></div></div>
+<nav class="mnav" aria-label="Main navigation"><a class="on" href="./"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Home</a><a href="classic.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>Picks</a><a href="classic.html#games"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M5 12a7 7 0 0 1 14 0"/></svg>Live</a><a href="classic.html#slip" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>Slip<span class="cnt" data-slipcount></span></a><a href="classic.html#record"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7"/></svg>Results</a></nav>
 
 <script>
 const $=id=>document.getElementById(id);
@@ -224,7 +237,8 @@ const games=()=>LGO.flatMap(l=>feed[l]||[]);
 const inLg=(x,f)=>f==="All"||x.lg===f;
 const entries=()=>(rec&&rec.entries)||[];
 // graded picks in game order (by start time), so streaks follow the order games were played
-const graded=()=>entries().filter(x=>["W","L","P"].includes(x.status)).sort((a,b)=>(Date.parse(a.date)||0)-(Date.parse(b.date)||0)||String(a.id).localeCompare(String(b.id)));
+// verified only, same rule as the Results tab: logged before the game started and not provisionally graded
+const graded=()=>entries().filter(x=>["W","L","P"].includes(x.status)&&!x.prov&&!x.loggedAfterStart).sort((a,b)=>(Date.parse(a.date)||0)-(Date.parse(b.date)||0)||String(a.id).localeCompare(String(b.id)));
 // streaks over decided picks (pushes don't break or extend a streak)
 const streaks=g=>{const d=g.filter(x=>x.status!=="P");let best=0,run=0;for(const x of d){run=x.status==="W"?run+1:0;best=Math.max(best,run)}
   let cur=0,t=null;for(let i=d.length-1;i>=0;i--){if(t==null)t=d[i].status;if(d[i].status!==t)break;cur++}return{cur,type:t,best}};
@@ -248,7 +262,7 @@ const renderStats=()=>{const g=graded(),W=g.filter(x=>x.status==="W").length,L=g
   const ico=p=>`<div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${p}</svg></div>`;
   $("stats").innerHTML=[
     ["blue",ico('<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>'),open.length,"Open picks"],
-    ["violet",ico('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>'),rec?`${W}–${L}`:"—","Graded record"],
+    ["violet",ico('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>'),rec?`${W}–${L}`:"—","Verified record"],
     ["green",ico('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>'),rec?(pct(W,L)??"—")+(W+L?"%":""):"—","Win rate"],
     ["red",ico('<circle cx="12" cy="12" r="3"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4M3.5 3.5a12 12 0 0 0 0 17M20.5 3.5a12 12 0 0 1 0 17"/>'),live,"Games live now"],
   ].map(([c,i,v,s])=>`<div class="st ${c}">${i}<div><b class="num">${esc(v)}</b><span>${esc(s)}</span></div></div>`).join("");
@@ -268,7 +282,7 @@ const renderPicks=()=>{const now=Date.now(),gm=new Map(games().map(g=>[g.id,g]))
       <div class="mt"><div class="tm">${tm(A)}${esc(A.abbr||"")}</div><span class="vs">@</span><div class="tm">${tm(H)}${esc(H.abbr||"")}</div></div>
       <div class="pkl">${esc(x.label)}</div><div class="pkc">Closer pick${x.tier?` · <span class="tier">${esc(x.tier)}</span>`:""}</div>
       ${x.why?`<div class="why">${esc(x.why)}</div>`:""}
-      <div class="pkf"><div><b class="num">${esc(odds)}</b><span>Odds</span></div>${x.prob!=null?`<div><b class="num">${esc(prob)}</b><span>Est. chance</span></div>`:`<div><b class="num">${x.line!=null?esc((x.line>0&&x.kind==="spread"?"+":"")+x.line):"—"}</b><span>Line</span></div>`}</div></article>`}).join("");};
+      <div class="pkf"><div><b class="num">${esc(odds)}</b><span>Odds</span></div>${x.prob!=null?`<div><b class="num">${esc(prob)}</b><span>Est. chance</span></div>`:`<div><b class="num">${x.line!=null?esc((x.line>0&&x.kind==="spread"?"+":"")+x.line):"—"}</b><span>Line</span></div>`}</div>${addBtn(x)}</article>`}).join("");};
 
 const renderGames=()=>{const now=Date.now(),pickBy=new Map(entries().filter(x=>x.status==="pending").map(x=>[String(x.eventId),x]));
   const xs=games().filter(g=>inLg(g,gtab)&&g.state!=="post").sort((a,b)=>(a.state==="in"?-1:0)-(b.state==="in"?-1:0)||Date.parse(a.date)-Date.parse(b.date)).slice(0,12);
@@ -277,14 +291,14 @@ const renderGames=()=>{const now=Date.now(),pickBy=new Map(entries().filter(x=>x
     return`<tr><td><div class="gm">${lo(g.away)}${esc(g.away.abbr)} <span style="color:var(--dim)">@</span> ${lo(g.home)}${esc(g.home.abbr)}</div></td>
       <td class="mono">${g.state==="in"?`<span class="liv">● ${esc(g.detail)}</span>`:esc(timeOf(g.date))}</td>
       <td class="mono">${esc(g.details||"—")}</td><td class="mono">${g.total!=null?esc(g.total):"—"}</td>
-      <td>${p?`<span class="cp">${esc(p.label)}</span>`:`<span style="color:var(--dim)">—</span>`}</td></tr>`}).join("");};
+      <td>${p?`<span class="cp">${esc(p.label)}</span>${addBtn(p,true)}`:`<span style="color:var(--dim)">—</span>`}</td></tr>`}).join("");};
 
 const renderRecord=()=>{if(!rec){$("recNote").textContent="The record couldn't be loaded right now.";return}
   const g=graded(),W=g.filter(x=>x.status==="W").length,L=g.filter(x=>x.status==="L").length,P=g.filter(x=>x.status==="P").length,p=pct(W,L);
   $("recWL").textContent=`${W}–${L}${P?`–${P}`:""}`;
   const el=$("recPct");el.textContent=p==null?"No graded picks":p+"% wins";el.className="pill "+(p==null?"neu":p>=52.4?"pos":p<50?"neg":"neu");
   const units=g.filter(x=>x.units!=null);
-  $("recNote").innerHTML=`${W+L+P} graded manual picks, ${entries().filter(x=>x.status==="pending").length} still pending. `+
+  $("recNote").innerHTML=`${W+L+P} verified manual picks, ${entries().filter(x=>x.status==="pending").length} still pending. `+(entries().some(x=>x.loggedAfterStart)?`${entries().filter(x=>x.loggedAfterStart).length} picks logged after their game started are left out, as on the Results tab. `:"")+
     (units.length>=100?"":`Profit and ROI appear after 100 priced, graded picks (${units.length} so far).`)+` Break-even at standard −110 odds is 52.4%.`;
   // chart: cumulative net wins
   const pts=[0];g.forEach(x=>pts.push(pts[pts.length-1]+(x.status==="W"?1:x.status==="L"?-1:0)));
@@ -298,7 +312,29 @@ const renderRecord=()=>{if(!rec){$("recNote").textContent="The record couldn't b
   const streak=(()=>{let s=0,t=null;for(let i=g.length-1;i>=0;i--){const r=g[i].status;if(r==="P")continue;if(t==null)t=r;if(r!==t)break;s++}return t?t+s:"—"})();
   $("kv").innerHTML=`<div><b class="num">${esc(W+L+P)}</b><span>Graded</span></div><div><b class="num">${w10}–${l10}</b><span>Last 10</span></div><div><b class="num">${esc(streak)}</b><span>Streak</span></div>`;};
 
-const render=()=>{tabs();renderStats();renderPicks();renderGames();renderRecord()};
+
+// ---- slip: shared with classic.html (same saved list), so plays added here appear in the Slip tab ----
+const SLIPK="closer-slip";
+const getSlip=()=>{try{return JSON.parse(localStorage.getItem(SLIPK)||"[]")}catch(e){return[]}};
+const setSlip=v=>{try{localStorage.setItem(SLIPK,JSON.stringify(v))}catch(e){}};
+const skey=x=>"r"+x.id;
+const onSlip=x=>getSlip().some(s=>s.k===skey(x));
+const addBtn=(x,mini)=>{const on=onSlip(x),lab=on?"On slip":"Add to slip";
+  return mini?`<button class="addm ${on?"on":""}" data-slip="${esc(x.id)}" aria-pressed="${on}" aria-label="${lab}: ${esc(x.label)}">${on?"✓":"+"}</button>`
+             :`<button class="addb ${on?"on":""}" data-slip="${esc(x.id)}" aria-pressed="${on}">${on?"✓ On slip":"+ Add to slip"}</button>`};
+const toggleSlip=id=>{const x=entries().find(e=>String(e.id)===String(id));if(!x)return;let sl=getSlip();const k=skey(x);
+  if(sl.some(s=>s.k===k))sl=sl.filter(s=>s.k!==k);
+  else sl.push({k,live:{l:x.lg,t:x.label,s:x.game+(x.odds==null?" · price assumed -110":""),o:x.odds!=null?+x.odds:-110}});
+  setSlip(sl);render()};
+const dec=o=>o>0?1+o/100:1+100/-o, amer=d=>d>=2?"+"+Math.round((d-1)*100):"-"+Math.round(100/(d-1));
+const renderSlipBar=()=>{const sl=getSlip().filter(s=>s.live||s.k);const n=sl.length;
+  document.querySelectorAll("[data-slipcount]").forEach(e=>{e.textContent=n||"";e.style.display=n?"":"none"});
+  $("slipbar").classList.toggle("on",n>0);if(!n)return;
+  const legs=sl.filter(s=>s.live);const d=legs.reduce((a,s)=>a*dec(s.live.o),1);
+  $("sbLegs").textContent=n===1?"1 play on your slip":`${n}-leg parlay`;$("sbOdds").textContent=legs.length===n?(n===1?((legs[0].live.o>0?"+":"")+legs[0].live.o):amer(d)):"";};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-slip]");if(b){toggleSlip(b.dataset.slip)}});
+window.addEventListener("storage",e=>{if(e.key===SLIPK)render()});
+const render=()=>{tabs();renderStats();renderPicks();renderGames();renderRecord();renderSlipBar()};
 const tick=()=>{const n=new Date();$("hdate").textContent=n.toLocaleDateString([],{weekday:"short",month:"short",day:"numeric"});$("clock").textContent=n.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})};
 tick();setInterval(tick,30000);render();
 (async()=>{await loadRec();render();await Promise.all(LGO.map(pull));render()})();
