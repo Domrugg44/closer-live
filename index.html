@@ -88,6 +88,9 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;backgroun
 .tbl tbody tr:hover{background:#0e1630}
 .gm{display:flex;align-items:center;gap:8px;font-weight:700}.lg20{width:20px;height:20px;object-fit:contain}
 .cp{color:var(--acc2);font-weight:800}.liv{color:var(--pos);font-weight:800}
+.noln{color:var(--dim);font-size:11px}.tbl td.score{font-weight:800}
+.tbl tr.grp td{padding:8px 14px;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);background:rgba(127,140,170,.06)}
+.tbl tr.grp td span{color:var(--dim);letter-spacing:.04em;text-transform:none}.tbl tbody tr.grp:hover{background:none}
 .twrap{overflow-x:auto}
 /* right column */
 .rc{display:flex;flex-direction:column;gap:18px}
@@ -282,8 +285,8 @@ html,body{font-family:"Space Grotesk",system-ui,sans-serif;background:var(--bg)}
       <div class="sh"><h2>Top picks</h2><a href="#picks">View all picks →</a></div>
       <div class="picks" id="picks"></div>
 
-      <div class="sh"><h2>Upcoming games</h2><div class="ftabs" id="gtabs"></div></div>
-      <section class="card twrap"><table class="tbl"><thead><tr><th>Game</th><th>Time</th><th>Spread</th><th>Total</th><th>Closer pick</th></tr></thead><tbody id="games"><tr><td colspan="5" class="empty">Loading games…</td></tr></tbody></table></section>
+      <div class="sh"><h2>Today's games</h2><div class="ftabs" id="gtabs"></div></div>
+      <section class="card twrap"><table class="tbl"><thead><tr><th>Game</th><th>Score</th><th>Time</th><th>Spread</th><th>Total</th><th>Closer pick</th></tr></thead><tbody id="games"><tr><td colspan="6" class="empty">Loading games…</td></tr></tbody></table></section>
     </div>
 
     <div class="rc">
@@ -398,7 +401,7 @@ const renderStats=()=>{const g=graded(),W=g.filter(x=>x.status==="W").length,L=g
   $("stats").innerHTML=[
     ["blue",ico('<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>'),open.length,"Open picks"],
     ["violet",ico('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>'),rec?`${W}–${L}`:"—","Verified record"],
-    ["green",ico('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>'),rec?(W+L>=100?pct(W,L)+"%":`${W+L}/100`):"—",rec&&W+L>=100?"Win rate":"Picks to win %"],
+    ["green",ico('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>'),rec?(W+L>=100?pct(W,L)+"%":`${W+L} of 100`):"—",rec&&W+L>=100?"Win rate":"Graded · win % shows at 100"],
     ["red",ico('<circle cx="12" cy="12" r="3"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4M3.5 3.5a12 12 0 0 0 0 17M20.5 3.5a12 12 0 0 1 0 17"/>'),live,"Games live now"],
   ].map(([c,i,v,s])=>`<div class="st ${c}">${i}<div><b class="num">${esc(v)}</b><span>${esc(s)}</span></div></div>`).join("");
   renderStreak();
@@ -420,13 +423,21 @@ const renderPicks=()=>{const now=Date.now(),gm=new Map(games().map(g=>[g.id,g]))
       <div class="pkf"><div><b class="num">${esc(odds)}</b><span>Odds</span></div>${x.prob!=null?`<div><b class="num">${esc(prob)}</b><span>Est. chance</span></div>`:`<div><b class="num">${x.line!=null?esc((x.line>0&&x.kind==="spread"?"+":"")+x.line):"—"}</b><span>Line</span></div>`}</div>${addBtn(x)}</article>`}).join("");};
 
 const renderGames=()=>{const now=Date.now(),pickBy=new Map(entries().filter(x=>x.status==="pending").map(x=>[String(x.eventId),x]));
-  const xs=games().filter(g=>inLg(g,gtab)&&g.state!=="post").sort((a,b)=>(a.state==="in"?-1:0)-(b.state==="in"?-1:0)||Date.parse(a.date)-Date.parse(b.date)).slice(0,12);
-  if(!xs.length){$("games").innerHTML=`<tr><td colspan="5" class="empty">${Object.keys(feed).length?"No upcoming games in this league today.":"Loading games…"}</td></tr>`;return}
-  $("games").innerHTML=xs.map(g=>{const p=pickBy.get(String(g.id)),lo=t=>t.logo?`<img class="lg20" src="${esc(t.logo)}" alt="" loading="lazy">`:"";
+  const byTime=(a,b)=>Date.parse(a.date)-Date.parse(b.date),inLeague=games().filter(g=>inLg(g,gtab));
+  const lv=inLeague.filter(g=>g.state==="in").sort(byTime),up=inLeague.filter(g=>g.state==="pre").sort(byTime);
+  // Up to 12 rows; when both groups have games, each gets at least 6 so upcoming games aren't pushed off by live ones.
+  const nl=Math.min(lv.length,up.length?Math.max(6,12-up.length):12),lvS=lv.slice(0,nl),upS=up.slice(0,12-nl);
+  if(!lvS.length&&!upS.length){$("games").innerHTML=`<tr><td colspan="6" class="empty">${Object.keys(feed).length?`No live or upcoming games${gtab==="All"?"":" in this league"} today.`:"Loading games…"}</td></tr>`;return}
+  const off=t=>`<span class="noln">${t}</span>`;
+  const row=g=>{const p=pickBy.get(String(g.id)),lo=t=>t.logo?`<img class="lg20" src="${esc(t.logo)}" alt="" loading="lazy">`:"",isLive=g.state==="in";
+    const hasSc=isLive&&g.away.score!=null&&g.home.score!=null;
     return`<tr><td><div class="gm">${lo(g.away)}${esc(g.away.abbr)} <span style="color:var(--dim)">@</span> ${lo(g.home)}${esc(g.home.abbr)}</div></td>
-      <td class="mono">${g.state==="in"?`<span class="liv">● ${esc(g.detail)}</span>`:esc(timeOf(g.date))}</td>
-      <td class="mono">${esc(g.details||"—")}</td><td class="mono">${g.total!=null?esc(g.total):"—"}</td>
-      <td>${p?`<span class="cp">${esc(p.label)}</span>${g.state==="pre"?(playNow(p).state==="pass"?`<span class="trk" style="display:block;font-size:11px">Pass at this number</span>`:addBtn(p,true)):`<span class="trk ${track(p).cls}" style="display:block;font-size:11px">${esc(track(p).txt)}</span>`}`:`<span style="color:var(--dim)">—</span>`}</td></tr>`}).join("");};
+      <td class="mono score">${hasSc?`${esc(g.away.score)}–${esc(g.home.score)}`:""}</td>
+      <td class="mono">${isLive?`<span class="liv">● ${esc(g.detail)}</span>`:esc(timeOf(g.date))}</td>
+      <td class="mono">${g.details?esc(g.details):off(isLive?"Off":"Not posted")}</td><td class="mono">${g.total!=null?esc(g.total):off(isLive?"Off":"Not posted")}</td>
+      <td>${p?`<span class="cp">${esc(p.label)}</span>${g.state==="pre"?(playNow(p).state==="pass"?`<span class="trk" style="display:block;font-size:11px">Pass at this number</span>`:addBtn(p,true)):`<span class="trk ${track(p).cls}" style="display:block;font-size:11px">${esc(track(p).txt)}</span>`}`:`<span style="color:var(--dim)">—</span>`}</td></tr>`};
+  const grp=(name,all,shown)=>shown.length?`<tr class="grp"><td colspan="6">${name} · ${all.length}${all.length>shown.length?` <span>(showing ${shown.length})</span>`:""}</td></tr>`+shown.map(row).join(""):"";
+  $("games").innerHTML=grp("Live now",lv,lvS)+grp("Upcoming",up,upS);};
 
 const renderRecord=()=>{if(!rec){$("recNote").textContent="The record couldn't be loaded right now.";return}
   const g=graded(),W=g.filter(x=>x.status==="W").length,L=g.filter(x=>x.status==="L").length,P=g.filter(x=>x.status==="P").length,p=pct(W,L);
