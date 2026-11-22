@@ -177,6 +177,12 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;backgroun
 .legal{font-size:11px;color:var(--dim);margin-top:14px}
 .slipbar[data-hide="1"]{display:none!important}
 @media (max-width:820px){.sl,.r2{grid-template-columns:minmax(0,1fr)}.rg{grid-template-columns:repeat(2,minmax(0,1fr))}.gr{grid-template-columns:58px minmax(0,1fr)}.gside{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;justify-content:space-between;align-items:center;text-align:left}.vh h1{font-size:26px}}
+
+.chip2.mv{background:#0f1830;color:#c9d4ea}.chip2.mv.up{background:#22c55e1f;border-color:#22c55e66;color:var(--pos)}.chip2.mv.down{background:#f5b83d1a;border-color:#f5b83d66;color:var(--warn)}
+.inplay{border-style:dashed;opacity:.92}.inplay .pcl{font-size:17px}
+.trk{font-size:12px;font-weight:800;color:var(--mut);background:#0f1830;border-radius:8px;padding:6px 8px}.trk.ok{color:var(--pos);background:#22c55e14}.trk.no{color:var(--neg);background:#f0525d12}
+.ourp.lk{padding:3px 8px;background:#0f1830;color:#c9d4ea;flex-wrap:wrap}.ourp.lk .trk{padding:0;background:none}
+.warn{font-size:11px;font-weight:800;color:var(--warn);margin-top:3px}
 </style>
 </head>
 <body>
@@ -333,7 +339,7 @@ const timeOf=d=>{const x=new Date(d);if(isNaN(x))return"";const t=x.toLocaleTime
 const pct=(w,l)=>w+l?Math.round(w/(w+l)*1000)/10:null;
 
 const renderStats=()=>{const g=graded(),W=g.filter(x=>x.status==="W").length,L=g.filter(x=>x.status==="L").length;
-  const now=Date.now(),open=entries().filter(x=>x.status==="pending"&&inLg(x,lg)&&Date.parse(x.date)>now-6*36e5);
+  const now=Date.now(),open=entries().filter(x=>isOpen(x)&&inLg(x,lg));
   const wk=g.filter(x=>now-Date.parse(x.gradedAt||x.date)<7*864e5),w7=wk.filter(x=>x.status==="W").length,l7=wk.filter(x=>x.status==="L").length;
   const live=games().filter(x=>x.state==="in").length;
   const ico=p=>`<div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${p}</svg></div>`;
@@ -347,7 +353,7 @@ const renderStats=()=>{const g=graded(),W=g.filter(x=>x.status==="W").length,L=g
   $("liveCount").innerHTML=live?`<i></i>${live} live`:"";};
 
 const renderPicks=()=>{const now=Date.now(),gm=new Map(games().map(g=>[g.id,g]));
-  const xs=entries().filter(x=>x.status==="pending"&&inLg(x,lg)&&Date.parse(x.date)>now-6*36e5)
+  const xs=entries().filter(x=>isOpen(x)&&inLg(x,lg))
     .sort((a,b)=>(TIER[b.tier]||0)-(TIER[a.tier]||0)||Date.parse(a.date)-Date.parse(b.date)).slice(0,3);
   if(!rec){$("picks").innerHTML=`<div class="card empty" style="grid-column:1/-1">Loading picks…</div>`;return}
   if(!xs.length){$("picks").innerHTML=`<div class="card empty" style="grid-column:1/-1">No open picks${lg==="All"?"":" in "+esc(LN[lg])} right now. New picks appear here once they're logged.</div>`;return}
@@ -357,7 +363,7 @@ const renderPicks=()=>{const now=Date.now(),gm=new Map(games().map(g=>[g.id,g]))
     const odds=x.odds!=null?(x.odds>0?"+":"")+x.odds:"—";
     return`<article class="card pk ${i===0?"best":""}"><div class="pkh"><span class="lgb" style="background:${LC[x.lg]||"#334155"}">${esc(x.lg)}</span><span>${esc(timeOf(x.date))}</span></div>
       <div class="mt"><div class="tm">${tm(A)}${esc(A.abbr||"")}</div><span class="vs">@</span><div class="tm">${tm(H)}${esc(H.abbr||"")}</div></div>
-      <div class="pkl">${esc(x.label)}</div><div class="pkc">Closer pick${x.tier?` · <span class="tier">${esc(x.tier)}</span>`:""}</div>
+      <div class="pkl">${esc(x.label)}</div><div class="pkc">Closer pick${x.tier?` · <span class="tier">${esc(x.tier)}</span>`:""}</div>${moveChip(x)?`<div style="text-align:center">${moveChip(x)}</div>`:""}
       ${x.why?`<div class="why">${esc(x.why)}</div>`:""}
       <div class="pkf"><div><b class="num">${esc(odds)}</b><span>Odds</span></div>${x.prob!=null?`<div><b class="num">${esc(prob)}</b><span>Est. chance</span></div>`:`<div><b class="num">${x.line!=null?esc((x.line>0&&x.kind==="spread"?"+":"")+x.line):"—"}</b><span>Line</span></div>`}</div>${addBtn(x)}</article>`}).join("");};
 
@@ -368,7 +374,7 @@ const renderGames=()=>{const now=Date.now(),pickBy=new Map(entries().filter(x=>x
     return`<tr><td><div class="gm">${lo(g.away)}${esc(g.away.abbr)} <span style="color:var(--dim)">@</span> ${lo(g.home)}${esc(g.home.abbr)}</div></td>
       <td class="mono">${g.state==="in"?`<span class="liv">● ${esc(g.detail)}</span>`:esc(timeOf(g.date))}</td>
       <td class="mono">${esc(g.details||"—")}</td><td class="mono">${g.total!=null?esc(g.total):"—"}</td>
-      <td>${p?`<span class="cp">${esc(p.label)}</span>${addBtn(p,true)}`:`<span style="color:var(--dim)">—</span>`}</td></tr>`}).join("");};
+      <td>${p?`<span class="cp">${esc(p.label)}</span>${g.state==="pre"?addBtn(p,true):`<span class="trk ${track(p).cls}" style="display:block;font-size:11px">${esc(track(p).txt)}</span>`}`:`<span style="color:var(--dim)">—</span>`}</td></tr>`}).join("");};
 
 const renderRecord=()=>{if(!rec){$("recNote").textContent="The record couldn't be loaded right now.";return}
   const g=graded(),W=g.filter(x=>x.status==="W").length,L=g.filter(x=>x.status==="L").length,P=g.filter(x=>x.status==="P").length,p=pct(W,L);
@@ -426,31 +432,73 @@ const teamMini=(t,abbr)=>t&&t.logo?`<img src="${esc(t.logo)}" alt="" loading="la
 const gameOf=x=>games().find(g=>String(g.id)===String(x.eventId));
 const picksFor=g=>entries().filter(x=>x.status==="pending"&&String(x.eventId)===String(g.id));
 
+
+// ---- open vs in progress: a pick can only be played before its game starts ----
+const startedX=x=>{const g=gameOf(x);if(g)return g.state!=="pre";return Date.parse(x.date)<=Date.now()};
+const isOpen=x=>x.status==="pending"&&!startedX(x);
+const isInPlay=x=>x.status==="pending"&&startedX(x)&&Date.parse(x.date)>Date.now()-12*36e5;
+const isOver=x=>/\bover\b/i.test(x.side||x.label||"");
+const fmtSp=v=>(v>0?"+":"")+v;
+// the market's number now (ESPN, pregame only), from the picked side's point of view
+const nowLine=(x,g)=>{if(!g||g.state!=="pre")return null;
+  if(x.kind==="total"&&g.total!=null)return{v:+g.total,txt:String(g.total)};
+  if(x.kind==="spread"&&g.details&&x.team){const d=String(g.details).trim();
+    if(/^(EVEN|PK|PICK)/i.test(d))return{v:0,txt:`${x.team} PK`};
+    const m=d.match(/^(\S+)\s+([+-]?\d+(?:\.\d+)?)$/);if(!m)return null;
+    if(m[1]!==x.team&&![g.home.abbr,g.away.abbr].includes(m[1]))return null;
+    const v=m[1]===x.team?+m[2]:-(+m[2]);return{v,txt:`${x.team} ${fmtSp(v)}`}}
+  return null};
+const moveChip=x=>{const c=nowLine(x,gameOf(x));if(!c||x.line==null)return"";const d=c.v-x.line;
+  if(Math.abs(d)<1e-9)return`<span class="chip2 mv">Line still ${esc(c.txt)}</span>`;
+  const better=x.kind==="spread"?d>0:(isOver(x)?d<0:d>0);
+  return`<span class="chip2 mv ${better?"up":"down"}" title="Picked at ${esc(x.line)}. The market is now ${esc(c.txt)}.">${better?"Better now":"Moved"}: ${esc(c.txt)}</span>`};
+// how an in-progress pick stands against the number it was logged at
+const track=x=>{const g=gameOf(x);if(!g)return{cls:"",txt:"Game started"};
+  if(g.state==="post")return{cls:"",txt:"Final · grading shortly"};
+  const as=+g.away.score,hs=+g.home.score;if(!isFinite(as)||!isFinite(hs))return{cls:"",txt:"In progress"};
+  if(x.kind==="spread"&&x.team&&x.line!=null&&(g.home.abbr===x.team||g.away.abbr===x.team)){
+    const m=g.home.abbr===x.team?hs-as:as-hs,c=m+x.line;
+    const lead=m===0?"Tied":`${x.team} ${m>0?"up":"down"} ${Math.abs(m)}`;
+    return{cls:c>0?"ok":c<0?"no":"",txt:`${lead} · ${c>0?"covering":c<0?"not covering":"right on"} ${x.team} ${fmtSp(x.line)}`}}
+  if(x.kind==="total"&&x.line!=null){const t=as+hs,over=isOver(x);
+    if(over)return{cls:t>x.line?"ok":"",txt:t>x.line?`Total ${t} · Over ${x.line} has hit`:`Total ${t} · needs ${Math.floor(x.line)+1-t} more for the Over`};
+    return{cls:t<x.line?"ok":"no",txt:t<x.line?`Total ${t} · ${Math.round((x.line-t)*10)/10} under ${x.line} so far`:`Total ${t} · Under ${x.line} has lost`}}
+  return{cls:"",txt:"In progress · player props grade after the final"}};
+const playCard=x=>{const g=gameOf(x),t=track(x),[aw,hm]=String(x.game).split(/\s+@\s+/);
+  const sc=g&&g.state!=="pre"?`${esc(g.away.abbr)} ${esc(g.away.score)} – ${esc(g.home.abbr)} ${esc(g.home.score)}`:esc(x.game);
+  return`<article class="card pc inplay"><div class="pch"><span class="lgb" style="background:${LC[x.lg]||"#334155"}">${esc(x.lg)}</span>${g&&g.state==="in"?`<span class="liv">● ${esc(g.detail)}</span>`:g&&g.state==="post"?`<span>Final</span>`:""}<span class="t">Locked at kickoff</span></div>
+    <div class="mini">${teamMini(g&&g.away,aw)}${teamMini(g&&g.home,hm)}<span class="mono">${sc}</span></div>
+    <div class="pcl">${esc(x.label)}</div>
+    <div class="trk ${t.cls}">${esc(t.txt)}</div></article>`};
 const pickCard=x=>{const g=gameOf(x);const [aw,hm]=String(x.game).split(/\s+@\s+/);
   const price=x.odds!=null?(x.odds>0?"+":"")+x.odds:null;
   return`<article class="card pc"><div class="pch"><span class="lgb" style="background:${LC[x.lg]||"#334155"}">${esc(x.lg)}</span>${g&&g.state==="in"?`<span class="liv">● ${esc(g.detail)}</span>`:""}<span class="t">${esc(timeOf(x.date))}</span></div>
     <div class="mini">${teamMini(g&&g.away,aw)}${esc(g?g.away.abbr:aw)} <span style="color:var(--dim)">@</span> ${teamMini(g&&g.home,hm)}${esc(g?g.home.abbr:hm)}</div>
     <div class="pcl">${esc(x.label)}</div>
-    <div class="meta">${x.tier?`<span class="chip2 ${esc(x.tier)}">${esc(x.tier)}</span>`:""}<span class="chip2">${esc(KIND[x.kind]||x.kind)}</span>${price?`<span class="chip2 mono">${esc(price)}</span>`:""}</div>
+    <div class="meta">${x.tier?`<span class="chip2 ${esc(x.tier)}">${esc(x.tier)}</span>`:""}<span class="chip2">${esc(KIND[x.kind]||x.kind)}</span>${price?`<span class="chip2 mono">${esc(price)}</span>`:""}${moveChip(x)}</div>
     ${x.why?`<details class="more"><summary>Why this pick</summary><p>${esc(x.why)}</p></details>`:""}
     ${addBtn(x)}</article>`};
 
-const renderPicksView=()=>{const now=Date.now();
-  const open=entries().filter(x=>x.status==="pending"&&inLg(x,lg)&&Date.parse(x.date)>now-6*36e5);
+const renderPicksView=()=>{
+  const kindOk=x=>pkT==="all"||(pkT==="prop"?x.kind==="prop":x.kind!=="prop");
+  const open=entries().filter(x=>isOpen(x)&&inLg(x,lg)),play=entries().filter(x=>isInPlay(x)&&inLg(x,lg));
   const n={all:open.length,game:open.filter(x=>x.kind!=="prop").length,prop:open.filter(x=>x.kind==="prop").length};
   $("pkTabs").innerHTML=[["all","All"],["game","Game lines"],["prop","Player props"]].map(([k,t])=>`<button class="${pkT===k?"on":""}" data-pk="${k}">${t}<i>${n[k]}</i></button>`).join("");
-  const xs=open.filter(x=>pkT==="all"||(pkT==="prop"?x.kind==="prop":x.kind!=="prop")).sort((a,b)=>Date.parse(a.date)-Date.parse(b.date)||(TIER[b.tier]||0)-(TIER[a.tier]||0));
-  $("pkSub").textContent=rec?`${open.length} open play${open.length===1?"":"s"}${lg==="All"?"":" in "+LN[lg]}, each logged before its game starts.`:"Loading picks…";
+  $("pkSub").textContent=rec?`${open.length} open play${open.length===1?"":"s"}${lg==="All"?"":" in "+LN[lg]}${play.length?`, ${play.length} in progress`:""}. Open plays haven't started yet.`:"Loading picks…";
   if(!rec){$("pkList").innerHTML=`<div class="card empty">Loading picks…</div>`;return}
-  if(!xs.length){$("pkList").innerHTML=`<div class="card empty">No open ${pkT==="prop"?"player props":pkT==="game"?"game lines":"picks"}${lg==="All"?"":" in "+esc(LN[lg])} right now. New picks show up here as soon as they're logged.</div>`;return}
-  $("pkList").innerHTML=groupBy(xs,x=>dayLabel(x.date)).map(([d,ys])=>`<div class="day">${esc(d)} · ${ys.length}</div><div class="cards">${ys.map(pickCard).join("")}</div>`).join("");};
+  const xs=open.filter(kindOk).sort((a,b)=>Date.parse(a.date)-Date.parse(b.date)||(TIER[b.tier]||0)-(TIER[a.tier]||0));
+  const ys=play.filter(kindOk).sort((a,b)=>Date.parse(a.date)-Date.parse(b.date));
+  const openHtml=xs.length?groupBy(xs,x=>dayLabel(x.date)).map(([d,zs])=>`<div class="day">${esc(d)} · ${zs.length}</div><div class="cards">${zs.map(pickCard).join("")}</div>`).join("")
+    :`<div class="card empty">No open ${pkT==="prop"?"player props":pkT==="game"?"game lines":"picks"}${lg==="All"?"":" in "+esc(LN[lg])} right now. New picks show up here as soon as they're logged.</div>`;
+  const playHtml=ys.length?`<div class="day">In progress · ${ys.length} <span style="text-transform:none;letter-spacing:0;font-weight:600">— locked at kickoff, graded at the number we picked</span></div><div class="cards">${ys.map(playCard).join("")}</div>`:"";
+  $("pkList").innerHTML=openHtml+playHtml;};
 
 const gameRow=g=>{const ps=picksFor(g),fin=g.state==="post",aw=+g.away.score,hm=+g.home.score;
   const row=(t,lose)=>`<div class="trow ${lose?"lose":""}">${t.logo?`<img src="${esc(t.logo)}" alt="" loading="lazy">`:`<span class="ini">${esc((t.abbr||"?").slice(0,3))}</span>`}<span class="nm">${t.rank?`<span class="rk">${t.rank}</span> `:""}${esc(t.name||t.abbr)}</span>${g.state!=="pre"?`<span class="sc">${esc(t.score??"")}</span>`:""}</div>`;
   const st=g.state==="in"?`<div class="gst in">● LIVE<br>${esc(g.detail)}</div>`:fin?`<div class="gst">FINAL</div>`:`<div class="gst">${esc(timeOf(g.date))}</div>`;
   const line=g.details||g.total!=null?`${esc(g.details||"")}${g.details&&g.total!=null?" · ":""}${g.total!=null?`O/U ${esc(g.total)}`:""}`:"No line";
   return`<article class="card gr" data-game="${esc(g.id)}">${st}<div class="tms">${row(g.away,fin&&aw<hm)}${row(g.home,fin&&hm<aw)}</div>
-    <div class="gside"><span class="ln">${line}</span>${ps.map(p=>`<span class="ourp">Closer: ${esc(p.label)}${addBtn(p,true)}</span>`).join("")}</div>
+    <div class="gside"><span class="ln">${line}</span>${ps.map(p=>g.state==="pre"?`<span class="ourp">Closer: ${esc(p.label)}${addBtn(p,true)}</span>`:`<span class="ourp lk" title="${esc(track(p).txt)}">Closer: ${esc(p.label)} · <span class="trk ${track(p).cls}" style="display:inline">${esc(track(p).txt)}</span></span>`).join("")}</div>
     <div class="gx"><div><b>Records</b>${esc(g.away.abbr)} ${esc(g.away.rec||"—")} · ${esc(g.home.abbr)} ${esc(g.home.rec||"—")}</div>
       ${g.tv?`<div><b>TV</b>${esc(g.tv)}</div>`:""}${g.venue?`<div><b>Venue</b>${esc(g.venue)}</div>`:""}
       ${[g.away,g.home].map(t=>t.leaders&&t.leaders.length?`<div><b>${esc(t.abbr)} leaders</b>${t.leaders.map(l=>`${esc(l.who)} · ${esc(l.val)} ${esc(l.cat)}`).join("<br>")}</div>`:"").join("")}</div></article>`};
@@ -470,7 +518,7 @@ const renderLiveView=()=>{const opened=new Set([...document.querySelectorAll(".g
 const renderSlipView=()=>{const sl=getSlip().filter(s=>s.live);
   if(!sl.length){$("slipBody").innerHTML=`<div class="card empty">Your slip is empty. Add plays from Picks or Live games.<a href="#picks" class="addb" style="max-width:220px;margin:14px auto 0">Browse picks</a></div>`;return}
   const d=sl.reduce((a,s)=>a*dec(s.live.o),1),odds=sl.length>1?amer(d):((sl[0].live.o>0?"+":"")+sl[0].live.o);
-  $("slipBody").innerHTML=`<div class="sl"><section class="card">${sl.map(s=>`<div class="leg"><span class="lgb" style="background:${LC[s.live.l]||"#334155"}">${esc(s.live.l)}</span><div style="min-width:0"><div class="lt">${esc(s.live.t)}</div><div class="ls">${esc(s.live.s)}</div></div><span class="lo">${s.live.o>0?"+":""}${esc(s.live.o)}</span><button class="x" data-rm="${esc(s.k)}" aria-label="Remove ${esc(s.live.t)}">×</button></div>`).join("")}</section>
+  $("slipBody").innerHTML=`<div class="sl"><section class="card">${sl.map(s=>`<div class="leg"><span class="lgb" style="background:${LC[s.live.l]||"#334155"}">${esc(s.live.l)}</span><div style="min-width:0"><div class="lt">${esc(s.live.t)}</div><div class="ls">${esc(s.live.s)}</div>${(()=>{const x=entries().find(e=>"r"+e.id===s.k);return x&&startedX(x)?`<div class="warn">Game has started: this number is no longer available</div>`:""})()}</div><span class="lo">${s.live.o>0?"+":""}${esc(s.live.o)}</span><button class="x" data-rm="${esc(s.k)}" aria-label="Remove ${esc(s.live.t)}">×</button></div>`).join("")}</section>
     <section class="card calc"><div class="row3"><div><b class="num">${esc(odds)}</b><span>${sl.length>1?sl.length+"-leg parlay":"Straight bet"}</span></div><div><b class="num" id="payout">$${(stake*d).toFixed(2)}</b><span id="payoutL">Payout on $${stake}</span></div><div><b class="num">${(100/d).toFixed(1)}%</b><span>Needed to break even</span></div></div>
       <div class="stk"><span style="font-weight:700">Stake $</span><input id="amt" type="number" min="1" step="1" value="${stake}" inputmode="decimal" aria-label="Stake in dollars">${[5,10,25,50].map(v=>`<button class="${stake===v?"on":""}" data-st="${v}">$${v}</button>`).join("")}</div>
       <div class="bks">${BOOKS.map(b=>`<a class="bk" href="${b[1]}" target="_blank" rel="noopener">Open ${b[0]}</a>`).join("")}</div>
