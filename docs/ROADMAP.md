@@ -64,6 +64,40 @@ factor groups and their size, never raw model parameters.
 - Licensed data (The Odds API, about $30/month) before paid memberships.
 - Hosting and accounts plan before any paid launch.
 
+## Sports coverage plan (CEO goal, recorded 2026-11-22)
+
+Closer will cover every major sport, not just the NBA. Each sport gets its **own model**, and each one must
+pass the same steps as the NBA model before its picks count: history download → exam on games it has never
+seen → live test on real games → Validated. Until then, a sport can only appear as Experimental.
+**Sports seasons set the pace:** a live test needs games being played.
+
+| Sport | Season (live-test window) | Kind of model | Status | Earliest realistic live test |
+|---|---|---|---|---|
+| **NBA** | Oct – Jun | Team ratings | **M4 exam 2026-11-23** | Now (Nov 2026 – Jan 2027) |
+| **College basketball** | Nov – early Apr | Team ratings (360+ teams, lots of mismatches) | Planned | This winter (Jan – Mar 2027) |
+| **NHL** | Oct – Jun | Team ratings, low scoring (goals) | Planned | This winter / spring 2027 |
+| **Soccer** (EPL first, then MLS, Champions League) | EPL Aug – May; MLS Feb – Dec | Goals model; three outcomes (win/draw/loss) | Planned | Spring 2027 (EPL) |
+| **UFC / MMA** | Year-round, about 40 events | Fighter ratings (individual) | Planned | Any time |
+| **Tennis** | Year-round (Jan – Nov) | Player ratings by surface (individual) | Planned | Any time |
+| **NFL** | Sep – Feb | Team ratings; few games (17 a team), so it needs more seasons of history | Planned | 2027 season (Sep 2027) |
+| **College football** | Late Aug – Jan | Team ratings, huge talent gaps | Planned | 2027 season (Aug 2027) |
+| *MLB (suggested)* | Late Mar – Oct | Team ratings + starting pitcher | To decide | Spring 2027 |
+| *WNBA (suggested)* | May – Oct | Team ratings | To decide | Summer 2027 |
+| *Golf (suggested)* | Jan – Aug (+ fall) | Player ratings across a whole field (harder) | To decide | 2027 |
+| *Boxing (suggested)* | Year-round, fewer big fights | Fighter ratings | To decide | Any time |
+| *Motorsports: F1 / NASCAR (suggested)* | F1 Mar – Dec; NASCAR Feb – Nov | Driver ratings across a field (harder) | To decide | 2027 |
+| *Esports (suggested)* | Year-round | Team ratings | To decide, low priority | Any time |
+
+**Notes for when we add sports:**
+- **Data licensing is checked per sport before building.** Some popular free datasets (for example some tennis
+  and UFC collections) are for non-commercial use only and can't be used in a paid product. Odds for all of
+  these sports are available from The Odds API (paid plans).
+- **Individual sports** (UFC, tennis, boxing, golf) rate the athlete, not a team. Soccer has draws, so it uses a
+  different kind of model than basketball or football.
+- **Suggested order, by when each season allows a live test:** NBA (now) → college basketball and NHL (this
+  winter) → soccer, UFC and tennis (any time) → MLB and WNBA (2027 summer) → NFL and college football (2027 fall)
+  → golf, boxing, motorsports, esports (later).
+
 ## Automated prediction lifecycle (requirement added 2026-11-21)
 
 Pregame predictions are **never changed**. Game information updates continuously, but the prediction made
