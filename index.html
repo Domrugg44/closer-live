@@ -80,7 +80,8 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;backgroun
 .tier{font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;background:#16295c;color:var(--acc2)}
 .empty{padding:22px;color:var(--mut);font-size:14px;text-align:center}
 /* table */
-.ftabs{display:flex;gap:6px}.ftab{padding:5px 10px;border-radius:8px;font-size:12px;font-weight:700;color:var(--mut);border:1px solid var(--line)}.ftab.on{background:#fff;color:#060a13;border-color:#fff}
+.ftabs{display:flex;gap:6px;max-width:100%;overflow-x:auto;scrollbar-width:none}.ftabs::-webkit-scrollbar{display:none}.ftab{flex:none}
+.sh{flex-wrap:wrap;gap:8px}.ftab{padding:5px 10px;border-radius:8px;font-size:12px;font-weight:700;color:var(--mut);border:1px solid var(--line)}.ftab.on{background:#fff;color:#060a13;border-color:#fff}
 .tbl{width:100%;border-collapse:collapse;font-size:13px}
 .tbl th{text-align:left;color:var(--dim);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:10px 14px;border-bottom:1px solid var(--line)}
 .tbl td{padding:11px 14px;border-bottom:1px solid var(--line);white-space:nowrap}.tbl tr:last-child td{border-bottom:0}
@@ -122,22 +123,75 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;backgroun
 .slipbar.on{display:block}.slipbar .in{display:flex;align-items:center;gap:14px;padding:12px 22px}
 .slipbar b{font-size:22px;font-weight:900}.slipbar .go{margin-left:auto;background:var(--acc);color:#fff;border-radius:10px;padding:10px 16px;font-weight:800}
 @media (max-width:820px){.slipbar{left:0;bottom:calc(58px + env(safe-area-inset-bottom))}.main{padding-bottom:150px}}
+
+.view{display:none}.view.on{display:block}
+.vh{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:4px 0 16px}
+.vh h1{margin:0;font-size:30px;font-weight:900;letter-spacing:-.6px}.vh p{margin:4px 0 0;color:var(--mut);font-size:14px}
+.seg2{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px;max-width:100%;overflow-x:auto}
+.seg2 button{padding:7px 14px;border-radius:9px;font-weight:700;font-size:13px;color:var(--mut);white-space:nowrap}.seg2 button.on{background:#fff;color:#060a13}
+.seg2 button i{font-style:normal;opacity:.65;margin-left:5px}
+.day{margin:20px 0 10px;font-size:12px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.08em}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.pc{padding:14px;display:flex;flex-direction:column;gap:10px}
+.pch{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mut);font-weight:700}.pch .t{margin-left:auto}
+.mini{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#c9d4ea}.mini img{width:20px;height:20px;object-fit:contain}
+.ini{width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;font-size:8px;font-weight:900;color:#fff;background:#334155;flex:none}
+.pcl{font-size:20px;font-weight:900;letter-spacing:-.3px;line-height:1.15}
+.meta{display:flex;gap:6px;flex-wrap:wrap}
+.chip2{font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;background:#0f1830;border:1px solid var(--line);color:var(--mut)}
+.chip2.Strong{background:#2f6bff;border-color:#2f6bff;color:#fff}.chip2.Solid{background:#16295c;border-color:#2b4a9e;color:#cfe0ff}.chip2.Lean{color:#9db8ff}
+.more{font-size:12px;color:#aebbd6;line-height:1.45}.more summary{cursor:pointer;color:var(--acc2);font-weight:700;list-style:none}.more summary::-webkit-details-marker{display:none}
+.more p{margin:6px 0 0;border-left:2px solid var(--line2);padding-left:8px}
+.gl2{display:flex;flex-direction:column;gap:8px}
+.gr{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px 14px;cursor:pointer}
+.gr:hover{border-color:var(--line2)}
+.gst{font-size:12px;font-weight:800;color:var(--mut);line-height:1.3}.gst.in{color:var(--pos)}
+.tms{display:flex;flex-direction:column;gap:6px;min-width:0}.trow{display:flex;align-items:center;gap:8px;font-weight:700;min-width:0}
+.trow img{width:22px;height:22px;object-fit:contain;flex:none}.trow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.trow .rk{font-size:11px;color:var(--dim)}
+.trow .sc{margin-left:auto;font-family:"JetBrains Mono",monospace;font-weight:700;font-size:16px}.trow.lose{color:var(--mut)}
+.gside{text-align:right;font-size:12px;color:var(--mut);display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.gside .ln{font-family:"JetBrains Mono",monospace;color:#c9d4ea}
+.ourp{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:800;color:#9db8ff;background:#13255a;border-radius:8px;padding:3px 4px 3px 8px}
+.gx{grid-column:1/-1;border-top:1px solid var(--line);padding-top:10px;display:none;gap:18px;flex-wrap:wrap;font-size:13px;color:#c9d4ea}
+.gr.open .gx{display:flex}.gx div{min-width:140px}.gx b{display:block;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.sl{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;align-items:start}
+.leg{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}.leg:last-child{border-bottom:0}
+.leg .lt{font-weight:800}.leg .ls{font-size:12px;color:var(--mut)}.leg .lo{margin-left:auto;font-family:"JetBrains Mono",monospace;font-weight:700}
+.x{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);color:var(--mut);font-size:16px;flex:none}
+.calc{padding:16px;display:flex;flex-direction:column;gap:14px}
+.calc .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}.calc .row3 b{display:block;font-size:20px;font-weight:900}.calc .row3 span{font-size:11px;color:var(--mut)}
+.stk{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.stk input{width:90px;background:#0f1830;border:1px solid var(--line2);border-radius:9px;color:var(--txt);padding:8px 10px;font:700 15px Inter}
+.stk button{padding:7px 11px;border-radius:9px;border:1px solid var(--line);font-weight:700;font-size:13px;color:var(--mut)}.stk button.on{border-color:var(--acc);color:#fff;background:#13255a}
+.bks{display:grid;grid-template-columns:1fr 1fr;gap:8px}.bk{text-align:center;padding:10px;border-radius:10px;border:1px solid var(--line2);font-weight:800;font-size:13px}.bk:first-child{background:var(--acc);border-color:var(--acc)}
+.rg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.rt{padding:14px}.rt span{font-size:12px;color:var(--mut)}.rt b{display:block;font-size:26px;font-weight:900;margin-top:2px}.rt small{display:block;font-size:11px;color:var(--dim);margin-top:2px}
+.bar100{height:6px;background:#16295c;border-radius:99px;margin-top:8px;overflow:hidden}.bar100 i{display:block;height:100%;background:var(--acc)}
+.r2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:12px}
+.bd{padding:14px}.bd h3{margin:0 0 8px;font-size:14px;font-weight:800}.bdr{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}.bdr:last-child{border-bottom:0}.bdr b{font-family:"JetBrains Mono",monospace}
+.hist .hr{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line);font-size:13px}.hist .hr:last-child{border-bottom:0}
+.res{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font-weight:900;font-size:12px;flex:none}
+.res.W{background:#22c55e26;color:var(--pos)}.res.L{background:#f0525d22;color:var(--neg)}.res.P{background:#8d9bb822;color:var(--mut)}
+.hr .hl{font-weight:800}.hr .hs{color:var(--mut);font-size:12px}.hr .fs{margin-left:auto;font-family:"JetBrains Mono",monospace;color:var(--mut);font-size:12px;text-align:right;white-space:nowrap}
+.integ{font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;background:#0f1830;border:1px solid var(--line);color:var(--mut)}.integ.ok{color:var(--pos);border-color:#22c55e55;background:#22c55e14}.integ.bad{color:var(--neg);border-color:#f0525d55}
+.fold{margin-top:16px;font-size:13px;color:var(--mut)}.fold summary{cursor:pointer;font-weight:700;color:#c9d4ea;padding:12px 14px}.fold .in{padding:0 14px 14px;line-height:1.55}
+.legal{font-size:11px;color:var(--dim);margin-top:14px}
+.slipbar[data-hide="1"]{display:none!important}
+@media (max-width:820px){.sl,.r2{grid-template-columns:minmax(0,1fr)}.rg{grid-template-columns:repeat(2,minmax(0,1fr))}.gr{grid-template-columns:58px minmax(0,1fr)}.gside{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;justify-content:space-between;align-items:center;text-align:left}.vh h1{font-size:26px}}
 </style>
 </head>
 <body>
 <div class="app">
 <aside class="side" aria-label="Main navigation">
   <div class="logo">CLOSER<b>//</b></div>
-  <a class="nav on" href="./"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Dashboard</a>
-  <a class="nav" href="classic.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>Picks</a>
-  <a class="nav" href="classic.html#games"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M5 12a7 7 0 0 1 14 0M2 12a10 10 0 0 1 20 0"/></svg>Live games</a>
-  <a class="nav" href="classic.html#props"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Props</a>
-  <a class="nav" href="classic.html#slip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>Slip<span class="cnt" data-slipcount></span></a>
-  <a class="nav" href="classic.html#record"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Results</a>
+  <a class="nav" data-nav="dash" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Dashboard</a>
+  <a class="nav" data-nav="picks" href="#picks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>Picks</a>
+  <a class="nav" data-nav="live" href="#live"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M5 12a7 7 0 0 1 14 0M2 12a10 10 0 0 1 20 0"/></svg>Live games</a>
+  <a class="nav" data-nav="slip" href="#slip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>Slip<span class="cnt" data-slipcount></span></a>
+  <a class="nav" data-nav="results" href="#results"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Results</a>
   <a class="nav" href="#models"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M21 7l-9 5-9-5"/></svg>Models</a>
   <div class="sep"></div>
   <div id="sideLgs"></div>
-  <div class="sfoot"><b>Every pick is logged</b>Picks are fingerprinted before tip-off and graded from final scores. Nothing is edited after the fact.</div>
+  <div class="sfoot"><b>Every pick is logged</b>Picks are fingerprinted before tip-off and graded from final scores. Nothing is edited after the fact.<a href="classic.html" style="display:block;margin-top:8px;color:var(--acc2);font-weight:700">Classic view →</a></div>
 </aside>
 
 <main class="main">
@@ -147,6 +201,7 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;backgroun
     <div class="tright"><span class="livep hide" id="liveCount"></span><span id="clock" class="mono"></span></div>
   </div>
 
+  <section class="view on" id="v-dash">
   <div class="grid">
     <div>
       <section class="card hero">
@@ -172,7 +227,7 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;backgroun
         <div class="streak" id="streak" aria-label="Win streak"></div>
       </section>
 
-      <div class="sh"><h2>Top picks</h2><a href="classic.html">View all picks →</a></div>
+      <div class="sh"><h2>Top picks</h2><a href="#picks">View all picks →</a></div>
       <div class="picks" id="picks"></div>
 
       <div class="sh"><h2>Upcoming games</h2><div class="ftabs" id="gtabs"></div></div>
@@ -202,10 +257,32 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;backgroun
       </section>
     </div>
   </div>
+  </section>
+
+  <section class="view" id="v-picks">
+    <div class="vh"><div><h1>Picks</h1><p id="pkSub">Every open play, logged before the game starts.</p></div><div class="seg2" id="pkTabs"></div></div>
+    <div id="pkList"></div>
+  </section>
+
+  <section class="view" id="v-live">
+    <div class="vh"><div><h1>Live games</h1><p>Scores and lines, refreshed every 30 seconds. Tap a game for more.</p></div><div class="seg2" id="lvTabs"></div></div>
+    <div id="lvList"></div>
+  </section>
+
+  <section class="view" id="v-slip">
+    <div class="vh"><div><h1>Slip</h1><p>Stack plays, set a stake, and see the payout.</p></div></div>
+    <div id="slipBody"></div>
+  </section>
+
+  <section class="view" id="v-results">
+    <div class="vh"><div><h1>Results</h1><p>Verified picks only: logged before the game started, graded from final scores.</p></div><span class="integ" id="integ">Checking the log…</span></div>
+    <div id="rsBody"></div>
+  </section>
 </main>
+
 </div>
-<div class="slipbar" id="slipbar"><div class="in"><div><div style="font-size:12px;color:var(--mut)" id="sbLegs"></div><b class="num" id="sbOdds"></b></div><a class="go" href="classic.html#slip">View slip →</a></div></div>
-<nav class="mnav" aria-label="Main navigation"><a class="on" href="./"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Home</a><a href="classic.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>Picks</a><a href="classic.html#games"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M5 12a7 7 0 0 1 14 0"/></svg>Live</a><a href="classic.html#slip" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>Slip<span class="cnt" data-slipcount></span></a><a href="classic.html#record"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7"/></svg>Results</a></nav>
+<div class="slipbar" id="slipbar"><div class="in"><div><div style="font-size:12px;color:var(--mut)" id="sbLegs"></div><b class="num" id="sbOdds"></b></div><a class="go" href="#slip">View slip →</a></div></div>
+<nav class="mnav" aria-label="Main navigation"><a data-nav="dash" href="#" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Home</a><a data-nav="picks" href="#picks" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>Picks</a><a data-nav="live" href="#live" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M5 12a7 7 0 0 1 14 0M2 12a10 10 0 0 1 20 0"/></svg>Live</a><a data-nav="slip" href="#slip" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>Slip<span class="cnt" data-slipcount></span></a><a data-nav="results" href="#results" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Results</a></nav>
 
 <script>
 const $=id=>document.getElementById(id);
@@ -218,7 +295,7 @@ const BASE={NFL:"football/nfl",CFB:"football/college-football",NBA:"basketball/n
 const QS={CFB:"?groups=80&limit=200",CBB:"?groups=50&limit=300"};
 const REC_URLS=["https://raw.githubusercontent.com/Domrugg44/closer-live/main/data/record.json","data/record.json"];
 let lg="All",gtab="All",feed={},rec=null;
-const TIER={Best:3,Strong:2,Lean:1};
+const TIER={Strong:3,Solid:2,Lean:1};
 
 const tabs=()=>{const all=["All",...LGO];
   $("tabs").innerHTML=all.map(l=>`<button class="tab ${l===lg?"on":""}" data-l="${l}">${l==="All"?"All sports":esc(LN[l])}</button>`).join("");
@@ -228,8 +305,8 @@ document.addEventListener("click",e=>{const t=e.target.closest("[data-l]");if(t)
   const g=e.target.closest("[data-g]");if(g){gtab=g.dataset.g;render()}});
 
 const toGame=(e,l)=>{const c=(e.competitions||[])[0]||{},st=(e.status&&e.status.type)||{},T={};
-  (c.competitors||[]).forEach(t=>{const tm=t.team||{};T[t.homeAway]={abbr:tm.abbreviation,name:tm.shortDisplayName,logo:tm.logo,color:tm.color,score:t.score,rank:t.curatedRank&&t.curatedRank.current<99?t.curatedRank.current:null}});
-  const o=(c.odds||[])[0];return{id:e.id,lg:l,date:e.date,state:st.state,detail:st.shortDetail,away:T.away||{},home:T.home||{},details:o&&o.details,total:o&&o.overUnder}};
+  (c.competitors||[]).forEach(t=>{const tm=t.team||{};T[t.homeAway]={abbr:tm.abbreviation,name:tm.shortDisplayName,logo:tm.logo,color:tm.color,score:t.score,rec:t.records&&t.records[0]&&t.records[0].summary,rank:t.curatedRank&&t.curatedRank.current<99?t.curatedRank.current:null,leaders:(t.leaders||[]).map(l=>{const x=(l.leaders||[])[0];return x?{cat:l.shortDisplayName,who:x.athlete&&x.athlete.shortName,val:x.displayValue}:null}).filter(Boolean).slice(0,3)}});
+  const o=(c.odds||[])[0];return{id:e.id,lg:l,date:e.date,state:st.state,detail:st.shortDetail,away:T.away||{},home:T.home||{},details:o&&o.details,total:o&&o.overUnder,tv:(c.broadcasts||[]).flatMap(b=>b.names||[]).slice(0,2).join(" / "),venue:c.venue&&c.venue.fullName}};
 const pull=async l=>{try{const r=await fetch(API+BASE[l]+"/scoreboard"+(QS[l]||""),{cache:"no-store"});if(!r.ok)return;const j=await r.json();feed[l]=(j.events||[]).map(e=>toGame(e,l))}catch(e){}};
 const loadRec=async()=>{for(const u of REC_URLS){try{const r=await fetch(u+"?t="+Date.now(),{cache:"no-store"});if(r.ok){rec=await r.json();return}}catch(e){}}};
 
@@ -263,7 +340,7 @@ const renderStats=()=>{const g=graded(),W=g.filter(x=>x.status==="W").length,L=g
   $("stats").innerHTML=[
     ["blue",ico('<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>'),open.length,"Open picks"],
     ["violet",ico('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>'),rec?`${W}–${L}`:"—","Verified record"],
-    ["green",ico('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>'),rec?(pct(W,L)??"—")+(W+L?"%":""):"—","Win rate"],
+    ["green",ico('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>'),rec?(W+L>=100?pct(W,L)+"%":`${W+L}/100`):"—",rec&&W+L>=100?"Win rate":"Picks to win %"],
     ["red",ico('<circle cx="12" cy="12" r="3"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4M3.5 3.5a12 12 0 0 0 0 17M20.5 3.5a12 12 0 0 1 0 17"/>'),live,"Games live now"],
   ].map(([c,i,v,s])=>`<div class="st ${c}">${i}<div><b class="num">${esc(v)}</b><span>${esc(s)}</span></div></div>`).join("");
   renderStreak();
@@ -296,10 +373,10 @@ const renderGames=()=>{const now=Date.now(),pickBy=new Map(entries().filter(x=>x
 const renderRecord=()=>{if(!rec){$("recNote").textContent="The record couldn't be loaded right now.";return}
   const g=graded(),W=g.filter(x=>x.status==="W").length,L=g.filter(x=>x.status==="L").length,P=g.filter(x=>x.status==="P").length,p=pct(W,L);
   $("recWL").textContent=`${W}–${L}${P?`–${P}`:""}`;
-  const el=$("recPct");el.textContent=p==null?"No graded picks":p+"% wins";el.className="pill "+(p==null?"neu":p>=52.4?"pos":p<50?"neg":"neu");
+  const el=$("recPct");const sk=streaks(g);if(W+L>=100){el.textContent=p+"% wins";el.className="pill "+(p>=52.4?"pos":p<50?"neg":"neu")}else{el.textContent=sk.type?`${sk.type}${sk.cur} streak`:"No graded picks";el.className="pill "+(sk.type==="W"?"pos":sk.type==="L"?"neg":"neu")}
   const units=g.filter(x=>x.units!=null);
   $("recNote").innerHTML=`${W+L+P} verified manual picks, ${entries().filter(x=>x.status==="pending").length} still pending. `+(entries().some(x=>x.loggedAfterStart)?`${entries().filter(x=>x.loggedAfterStart).length} picks logged after their game started are left out, as on the Results tab. `:"")+
-    (units.length>=100?"":`Profit and ROI appear after 100 priced, graded picks (${units.length} so far).`)+` Break-even at standard −110 odds is 52.4%.`;
+    (units.length>=100?"":`Profit and ROI appear after 100 priced, graded picks (${units.length} so far).`)+` Win % appears at 100 verified picks.`;
   // chart: cumulative net wins
   const pts=[0];g.forEach(x=>pts.push(pts[pts.length-1]+(x.status==="W"?1:x.status==="L"?-1:0)));
   const svg=$("chart");if(pts.length<3){svg.innerHTML=`<text x="150" y="80" text-anchor="middle" fill="#5d6b88" font-size="12">Not enough graded picks yet</text>`}
@@ -334,9 +411,123 @@ const renderSlipBar=()=>{const sl=getSlip().filter(s=>s.live||s.k);const n=sl.le
   $("sbLegs").textContent=n===1?"1 play on your slip":`${n}-leg parlay`;$("sbOdds").textContent=legs.length===n?(n===1?((legs[0].live.o>0?"+":"")+legs[0].live.o):amer(d)):"";};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-slip]");if(b){toggleSlip(b.dataset.slip)}});
 window.addEventListener("storage",e=>{if(e.key===SLIPK)render()});
-const render=()=>{tabs();renderStats();renderPicks();renderGames();renderRecord();renderSlipBar()};
+
+// ================= views: Picks, Live games, Slip, Results =================
+let view="dash",pkT="all",lvT=null,stake=10,integ={state:"checking"};
+try{stake=+(localStorage.getItem("closer-stake")||10)||10}catch(e){}
+const BOOKS=[["DraftKings","https://sportsbook.draftkings.com"],["FanDuel","https://sportsbook.fanduel.com"],["BetMGM","https://sports.betmgm.com"],["Caesars","https://www.caesars.com/sportsbook-and-casino"]];
+const KIND={spread:"Spread",total:"Total",prop:"Player prop",moneyline:"Moneyline"};
+const KINDS={spread:"Spreads",total:"Totals",prop:"Player props",moneyline:"Moneylines"};
+const MIN_RATE=100; // same rule as the original Results tab: win % appears once 100 verified picks are graded
+const dayLabel=d=>{const x=new Date(d);if(isNaN(x))return"Undated";const t=new Date();t.setHours(0,0,0,0);const y=new Date(x);y.setHours(0,0,0,0);const n=Math.round((y-t)/864e5);
+  return n===0?"Today":n===1?"Tomorrow":n===-1?"Yesterday":x.toLocaleDateString([],{weekday:"long",month:"short",day:"numeric"})};
+const groupBy=(xs,f)=>{const m=new Map();xs.forEach(x=>{const k=f(x);if(!m.has(k))m.set(k,[]);m.get(k).push(x)});return[...m]};
+const teamMini=(t,abbr)=>t&&t.logo?`<img src="${esc(t.logo)}" alt="" loading="lazy">`:`<span class="ini">${esc((abbr||"?").slice(0,3))}</span>`;
+const gameOf=x=>games().find(g=>String(g.id)===String(x.eventId));
+const picksFor=g=>entries().filter(x=>x.status==="pending"&&String(x.eventId)===String(g.id));
+
+const pickCard=x=>{const g=gameOf(x);const [aw,hm]=String(x.game).split(/\s+@\s+/);
+  const price=x.odds!=null?(x.odds>0?"+":"")+x.odds:null;
+  return`<article class="card pc"><div class="pch"><span class="lgb" style="background:${LC[x.lg]||"#334155"}">${esc(x.lg)}</span>${g&&g.state==="in"?`<span class="liv">● ${esc(g.detail)}</span>`:""}<span class="t">${esc(timeOf(x.date))}</span></div>
+    <div class="mini">${teamMini(g&&g.away,aw)}${esc(g?g.away.abbr:aw)} <span style="color:var(--dim)">@</span> ${teamMini(g&&g.home,hm)}${esc(g?g.home.abbr:hm)}</div>
+    <div class="pcl">${esc(x.label)}</div>
+    <div class="meta">${x.tier?`<span class="chip2 ${esc(x.tier)}">${esc(x.tier)}</span>`:""}<span class="chip2">${esc(KIND[x.kind]||x.kind)}</span>${price?`<span class="chip2 mono">${esc(price)}</span>`:""}</div>
+    ${x.why?`<details class="more"><summary>Why this pick</summary><p>${esc(x.why)}</p></details>`:""}
+    ${addBtn(x)}</article>`};
+
+const renderPicksView=()=>{const now=Date.now();
+  const open=entries().filter(x=>x.status==="pending"&&inLg(x,lg)&&Date.parse(x.date)>now-6*36e5);
+  const n={all:open.length,game:open.filter(x=>x.kind!=="prop").length,prop:open.filter(x=>x.kind==="prop").length};
+  $("pkTabs").innerHTML=[["all","All"],["game","Game lines"],["prop","Player props"]].map(([k,t])=>`<button class="${pkT===k?"on":""}" data-pk="${k}">${t}<i>${n[k]}</i></button>`).join("");
+  const xs=open.filter(x=>pkT==="all"||(pkT==="prop"?x.kind==="prop":x.kind!=="prop")).sort((a,b)=>Date.parse(a.date)-Date.parse(b.date)||(TIER[b.tier]||0)-(TIER[a.tier]||0));
+  $("pkSub").textContent=rec?`${open.length} open play${open.length===1?"":"s"}${lg==="All"?"":" in "+LN[lg]}, each logged before its game starts.`:"Loading picks…";
+  if(!rec){$("pkList").innerHTML=`<div class="card empty">Loading picks…</div>`;return}
+  if(!xs.length){$("pkList").innerHTML=`<div class="card empty">No open ${pkT==="prop"?"player props":pkT==="game"?"game lines":"picks"}${lg==="All"?"":" in "+esc(LN[lg])} right now. New picks show up here as soon as they're logged.</div>`;return}
+  $("pkList").innerHTML=groupBy(xs,x=>dayLabel(x.date)).map(([d,ys])=>`<div class="day">${esc(d)} · ${ys.length}</div><div class="cards">${ys.map(pickCard).join("")}</div>`).join("");};
+
+const gameRow=g=>{const ps=picksFor(g),fin=g.state==="post",aw=+g.away.score,hm=+g.home.score;
+  const row=(t,lose)=>`<div class="trow ${lose?"lose":""}">${t.logo?`<img src="${esc(t.logo)}" alt="" loading="lazy">`:`<span class="ini">${esc((t.abbr||"?").slice(0,3))}</span>`}<span class="nm">${t.rank?`<span class="rk">${t.rank}</span> `:""}${esc(t.name||t.abbr)}</span>${g.state!=="pre"?`<span class="sc">${esc(t.score??"")}</span>`:""}</div>`;
+  const st=g.state==="in"?`<div class="gst in">● LIVE<br>${esc(g.detail)}</div>`:fin?`<div class="gst">FINAL</div>`:`<div class="gst">${esc(timeOf(g.date))}</div>`;
+  const line=g.details||g.total!=null?`${esc(g.details||"")}${g.details&&g.total!=null?" · ":""}${g.total!=null?`O/U ${esc(g.total)}`:""}`:"No line";
+  return`<article class="card gr" data-game="${esc(g.id)}">${st}<div class="tms">${row(g.away,fin&&aw<hm)}${row(g.home,fin&&hm<aw)}</div>
+    <div class="gside"><span class="ln">${line}</span>${ps.map(p=>`<span class="ourp">Closer: ${esc(p.label)}${addBtn(p,true)}</span>`).join("")}</div>
+    <div class="gx"><div><b>Records</b>${esc(g.away.abbr)} ${esc(g.away.rec||"—")} · ${esc(g.home.abbr)} ${esc(g.home.rec||"—")}</div>
+      ${g.tv?`<div><b>TV</b>${esc(g.tv)}</div>`:""}${g.venue?`<div><b>Venue</b>${esc(g.venue)}</div>`:""}
+      ${[g.away,g.home].map(t=>t.leaders&&t.leaders.length?`<div><b>${esc(t.abbr)} leaders</b>${t.leaders.map(l=>`${esc(l.who)} · ${esc(l.val)} ${esc(l.cat)}`).join("<br>")}</div>`:"").join("")}</div></article>`};
+
+const renderLiveView=()=>{const opened=new Set([...document.querySelectorAll(".gr.open")].map(x=>x.dataset.game));
+  const all=games().filter(g=>inLg(g,lg));
+  const n={in:all.filter(g=>g.state==="in").length,pre:all.filter(g=>g.state==="pre").length,post:all.filter(g=>g.state==="post").length};
+  if(!lvT&&Object.keys(feed).length)lvT=n.in?"in":"pre";
+  const cur=lvT||"in";
+  $("lvTabs").innerHTML=[["in","Live now"],["pre","Upcoming"],["post","Final"]].map(([k,t])=>`<button class="${cur===k?"on":""}" data-lv="${k}">${t}<i>${n[k]}</i></button>`).join("");
+  if(!Object.keys(feed).length){$("lvList").innerHTML=`<div class="card empty">Loading games…</div>`;return}
+  const xs=all.filter(g=>g.state===cur).sort((a,b)=>(picksFor(b).length>0)-(picksFor(a).length>0)||Date.parse(a.date)-Date.parse(b.date));
+  $("lvList").innerHTML=xs.length?`<div class="gl2">${xs.map(gameRow).join("")}</div><p class="legal">Games with a Closer pick are listed first. Scores and lines come from ESPN's public feed and are shown for display.</p>`
+    :`<div class="card empty">No ${cur==="in"?"games live":cur==="pre"?"upcoming games":"finished games"}${lg==="All"?"":" in "+esc(LN[lg])} right now.</div>`;
+  document.querySelectorAll(".gr").forEach(r=>{if(opened.has(r.dataset.game))r.classList.add("open")});};
+
+const renderSlipView=()=>{const sl=getSlip().filter(s=>s.live);
+  if(!sl.length){$("slipBody").innerHTML=`<div class="card empty">Your slip is empty. Add plays from Picks or Live games.<a href="#picks" class="addb" style="max-width:220px;margin:14px auto 0">Browse picks</a></div>`;return}
+  const d=sl.reduce((a,s)=>a*dec(s.live.o),1),odds=sl.length>1?amer(d):((sl[0].live.o>0?"+":"")+sl[0].live.o);
+  $("slipBody").innerHTML=`<div class="sl"><section class="card">${sl.map(s=>`<div class="leg"><span class="lgb" style="background:${LC[s.live.l]||"#334155"}">${esc(s.live.l)}</span><div style="min-width:0"><div class="lt">${esc(s.live.t)}</div><div class="ls">${esc(s.live.s)}</div></div><span class="lo">${s.live.o>0?"+":""}${esc(s.live.o)}</span><button class="x" data-rm="${esc(s.k)}" aria-label="Remove ${esc(s.live.t)}">×</button></div>`).join("")}</section>
+    <section class="card calc"><div class="row3"><div><b class="num">${esc(odds)}</b><span>${sl.length>1?sl.length+"-leg parlay":"Straight bet"}</span></div><div><b class="num" id="payout">$${(stake*d).toFixed(2)}</b><span id="payoutL">Payout on $${stake}</span></div><div><b class="num">${(100/d).toFixed(1)}%</b><span>Needed to break even</span></div></div>
+      <div class="stk"><span style="font-weight:700">Stake $</span><input id="amt" type="number" min="1" step="1" value="${stake}" inputmode="decimal" aria-label="Stake in dollars">${[5,10,25,50].map(v=>`<button class="${stake===v?"on":""}" data-st="${v}">$${v}</button>`).join("")}</div>
+      <div class="bks">${BOOKS.map(b=>`<a class="bk" href="${b[1]}" target="_blank" rel="noopener">Open ${b[0]}</a>`).join("")}</div>
+      <button class="x" style="width:auto;padding:8px 12px" id="clr">Clear slip</button>
+      <p class="fine" style="margin:0">Plays without a recorded price use −110. Legs from the same game can be related, and books limit same-game parlays. 21+ and in a legal state only. Gambling problem? Call 1-800-GAMBLER.</p></section></div>`;};
+
+const SEP="\u001f",LOCKED=["id","logged","pickTime","source","lg","game","eventId","date","kind","label","team","side","player","stat","line","odds","prob","tier","why","loggedAfterStart"];
+const canonV=v=>v==null?"":typeof v==="boolean"?(v?"true":"false"):String(v);
+const sha256=async s=>[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+const verifyChain=async es=>{let prev="";for(const e of es){const h=await sha256(prev+SEP+LOCKED.map(k=>canonV(e[k])).join(SEP));if(h!==e.hash)return{state:"bad",id:e.id};prev=e.hash}return{state:"ok",n:es.length}};
+let integFor=null;
+const checkIntegrity=()=>{if(!rec||integFor===rec)return;integFor=rec;
+  if(rec.schema!==2||!(window.crypto&&crypto.subtle)){integ={state:"legacy"};return}
+  integ={state:"checking"};verifyChain(rec.entries).then(v=>{integ=v;if(view==="results")renderIntegrity()},()=>{integ={state:"legacy"}})};
+const renderIntegrity=()=>{const el=$("integ");el.className="integ "+(integ.state==="ok"?"ok":integ.state==="bad"?"bad":"");
+  el.textContent=integ.state==="ok"?`✓ Log verified · ${integ.n} picks match their fingerprints`:integ.state==="bad"?`✗ Log check failed at ${integ.id}`:integ.state==="legacy"?"Log check unavailable in this browser":"Checking the log…"};
+
+const renderResultsView=()=>{checkIntegrity();renderIntegrity();if(!rec){$("rsBody").innerHTML=`<div class="card empty">Loading results…</div>`;return}
+  const g=graded().filter(x=>inLg(x,lg)),W=g.filter(x=>x.status==="W").length,L=g.filter(x=>x.status==="L").length,P=g.filter(x=>x.status==="P").length,s=streaks(g);
+  const tally=xs=>{const w=xs.filter(x=>x.status==="W").length,l=xs.filter(x=>x.status==="L").length,p=xs.filter(x=>x.status==="P").length;return`${w}–${l}${p?`–${p}`:""}`};
+  const late=entries().filter(x=>x.loggedAfterStart&&inLg(x,lg));
+  const rate=W+L>=MIN_RATE?`<b class="num">${pct(W,L)}%</b><small>${W+L} decided picks</small>`
+    :`<b class="num">${W+L}<span style="font-size:15px;color:var(--mut)"> / ${MIN_RATE}</span></b><small>Win % shows at ${MIN_RATE} verified picks</small><div class="bar100"><i style="width:${Math.min(100,(W+L)/MIN_RATE*100)}%"></i></div>`;
+  const bdl=(key,names)=>groupBy(g,key).sort((a,b)=>b[1].length-a[1].length).map(([k,ys])=>`<div class="bdr"><span>${esc(names[k]||k)}</span><b>${tally(ys)}</b></div>`).join("")||`<div class="bdr"><span>No graded picks yet</span></div>`;
+  const hist=groupBy([...g].reverse(),x=>dayLabel(x.date)).map(([d,ys])=>`<div class="day">${esc(d)} · ${tally(ys)}</div><section class="card hist">${ys.map(x=>{const f=x.final;
+      return`<div class="hr"><span class="res ${x.status}">${x.status}</span><div style="min-width:0"><div class="hl">${esc(x.label)}</div><div class="hs">${esc(x.lg)} · ${esc(x.game)}</div></div><span class="fs">${f?`${esc(f.away)} ${esc(f.as)}<br>${esc(f.home)} ${esc(f.hs)}`:""}</span></div>`}).join("")}</section>`).join("");
+  $("rsBody").innerHTML=`<div class="rg">
+      <div class="card rt"><span>Verified record</span><b class="num">${tally(g)}</b><small>Wins–losses${P?"–pushes":""}</small></div>
+      <div class="card rt"><span>Win rate</span>${rate}</div>
+      <div class="card rt"><span>Current streak</span><b class="num" style="color:${s.type==="W"?"var(--pos)":s.type==="L"?"var(--neg)":"inherit"}">${s.type?s.type+s.cur:"—"}</b><small>Best win streak: W${s.best}</small></div>
+      <div class="card rt"><span>Still pending</span><b class="num">${entries().filter(x=>x.status==="pending"&&inLg(x,lg)).length}</b><small>Graded after the final score</small></div></div>
+    <div class="r2"><section class="card bd"><h3>By league</h3>${bdl(x=>x.lg,LN)}</section><section class="card bd"><h3>By bet type</h3>${bdl(x=>x.kind,KINDS)}</section></div>
+    ${hist||`<div class="card empty" style="margin-top:12px">No graded picks${lg==="All"?"":" in "+esc(LN[lg])} yet.</div>`}
+    <details class="card fold"><summary>How grading works</summary><div class="in">Each pick is written to a permanent log with a fingerprint that chains to the one before it, so any later edit would be detected, and your browser re-checks the whole log on this page. Picks are graded automatically from final scores. A pick only counts if it was logged before its game started${late.length?`; ${late.length} pick${late.length>1?"s were":" was"} logged after the start and ${late.length>1?"are":"is"} left out`:""}. Win % appears once ${MIN_RATE} picks are graded, so a short hot or cold run can't pass for skill.</div></details>`;};
+
+const VIEWS=["dash","picks","live","slip","results"];
+const setView=v=>{view=VIEWS.includes(v)?v:"dash";
+  document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on",s.id==="v-"+view));
+  document.querySelectorAll("[data-nav]").forEach(a=>a.classList.toggle("on",a.dataset.nav===view));
+  $("slipbar").dataset.hide=view==="slip"?"1":"";renderView()};
+const renderView=()=>{if(view==="picks")renderPicksView();else if(view==="live")renderLiveView();else if(view==="slip")renderSlipView();else if(view==="results")renderResultsView()};
+const route=()=>{const h=location.hash.slice(1);if(h==="models"){setView("dash");setTimeout(()=>$("models").scrollIntoView({behavior:"smooth"}),50);return}
+  setView(h||"dash");window.scrollTo({top:0})};
+window.addEventListener("hashchange",route);
+document.addEventListener("click",e=>{const t=e.target;
+  const pk=t.closest("[data-pk]");if(pk){pkT=pk.dataset.pk;renderView()}
+  const lv=t.closest("[data-lv]");if(lv){lvT=lv.dataset.lv;renderView()}
+  const st=t.closest("[data-st]");if(st){stake=+st.dataset.st;try{localStorage.setItem("closer-stake",stake)}catch(_){}renderView()}
+  const rm=t.closest("[data-rm]");if(rm){setSlip(getSlip().filter(s=>s.k!==rm.dataset.rm));render()}
+  if(t.id==="clr"){setSlip([]);render()}
+  const gr=t.closest(".gr");if(gr&&!t.closest("button"))gr.classList.toggle("open")});
+document.addEventListener("input",e=>{if(e.target.id!=="amt")return;const v=Math.max(1,Math.round(+e.target.value||0));stake=v;try{localStorage.setItem("closer-stake",v)}catch(_){}
+  const sl=getSlip().filter(s=>s.live),d=sl.reduce((a,s)=>a*dec(s.live.o),1);if($("payout")){$("payout").textContent="$"+(v*d).toFixed(2);$("payoutL").textContent="Payout on $"+v}
+  document.querySelectorAll("[data-st]").forEach(b=>b.classList.toggle("on",+b.dataset.st===v))});
+const render=()=>{tabs();renderStats();renderPicks();renderGames();renderRecord();renderSlipBar();renderView()};
 const tick=()=>{const n=new Date();$("hdate").textContent=n.toLocaleDateString([],{weekday:"short",month:"short",day:"numeric"});$("clock").textContent=n.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})};
-tick();setInterval(tick,30000);render();
+tick();setInterval(tick,30000);route();render();
 (async()=>{await loadRec();render();await Promise.all(LGO.map(pull));render()})();
 setInterval(async()=>{await Promise.all(LGO.map(pull));render()},30000);
 setInterval(async()=>{await loadRec();render()},300000);
