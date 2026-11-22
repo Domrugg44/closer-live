@@ -87,3 +87,11 @@ Cloudflare's free plan documents a limit of **50 database queries per request or
 - The 12 quality checks run as one batched read and one batched write.
 - A full 30-minute collector cycle now uses about **19 queries** (measured locally with `COUNT_QUERIES=1`). It was 52–76 before batching.
 - The model pipeline caches finished seasons' schedule context locally (`closer-models/data/cache/`), so tuning never re-reads it from the database.
+
+## ESPN feed: known risk, decision recorded 2026-11-21
+The website reads live scores, schedules, current DraftKings lines and prices, and team logos from ESPN's public, unofficial feed. Nobody has licensed it to us, and it can change or be blocked without notice.
+- **Used for:** display, and since 2026-11-21 the current line on open picks and the number added to the slip.
+- **Never used for:** grading, the model, or the pick record. Those use licensed sources only (balldontlie and The Odds API, through the collector).
+- **CEO decision:** stay at $0 for now and accept this risk.
+- **Upgrade path:** The Odds API 20K plan ($30/month at the time of writing) covers lines, prices and scores for all five sports, served through the Cloudflare collector so the key stays private. Team logos become team-color badges. balldontlie per-sport plans would add stats, leaders and injuries.
+- **Before paid memberships launch,** revisit this decision.
