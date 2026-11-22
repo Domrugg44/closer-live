@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-22T19:25:18Z",
+    "updatedAt":  "2026-11-22T21:15:09Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -114,19 +114,24 @@
                         "why":  "Closer Engine (experimental): 3 of 3 signals on the Under 47.5. Recent form: 7 of the teams\u0027 last 10 games went under 47.5. Season form: scoring averages project 46.4. Market: opened 49.5, now 47.5.",
                         "loggedAfterStart":  false,
                         "hash":  "8ae25b7fbd478a439b00225d940f7468461798105b2e04a63da785a9be6ae2f8",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "TB",
+                                      "as":  21,
+                                      "home":  "DET",
+                                      "hs":  31
+                                  },
+                        "actual":  52,
+                        "diff":  -4.5,
+                        "units":  -1,
                         "close":  {
                                       "spread":  -3.5,
                                       "total":  48.5,
                                       "details":  "DET -3.5"
                                   },
-                        "clv":  null,
+                        "clv":  -1.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-22T21:15:08Z"
                     },
                     {
                         "id":  "E0004",
