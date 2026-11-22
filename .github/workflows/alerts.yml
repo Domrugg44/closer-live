@@ -44,7 +44,7 @@ jobs:
           open=$(gh issue list --repo "$REPO" --label closer-alert --state open --json number --jq '.[0].number // empty')
           if [ -n "$open" ] && [ "${TEST_ALERT:-false}" != "true" ]; then
             last=$(gh issue view "$open" --repo "$REPO" --json body,createdAt,comments --jq '([{body,createdAt}] + [.comments[] | {body,createdAt}]) | last | "\(.createdAt) \(.body)"')
-            last_at=$(echo "$last" | cut -d' ' -f1); last_fp=$(echo "$last" | grep -o 'fp:[0-9a-f]*' | cut -d: -f2 || true)
+            last_at=$(echo "$last" | head -1 | cut -d' ' -f1); last_fp=$(echo "$last" | grep -o 'fp:[0-9a-f]*' | cut -d: -f2 || true)
             age_h=$(( ( $(date -u +%s) - $(date -u -d "$last_at" +%s) ) / 3600 ))
             if [ "$last_fp" = "$fp" ] && [ "$age_h" -lt 6 ]; then
               echo "Same alert already sent ${age_h}h ago; not repeating yet." >> "$GITHUB_STEP_SUMMARY"; exit 0
