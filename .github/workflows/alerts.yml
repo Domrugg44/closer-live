@@ -1,10 +1,12 @@
 name: Budget and health alerts
 
-# Reads the collector's public /budget page once a day. If it reports any alert, opens (or comments on)
+# Reads the collector's public /budget page every hour. If it reports any alert, opens (or comments on)
 # a GitHub issue labeled closer-alert, and GitHub emails the repository owner. See docs/FINANCE.md.
+# To avoid an email every hour during one outage: a new kind of alert is sent right away; the same
+# alert (ignoring changing counts) is repeated at most every 6 hours.
 on:
   schedule:
-    - cron: "0 14 * * *"
+    - cron: "7 * * * *"
   workflow_dispatch:
     inputs:
       test_alert:
@@ -36,7 +38,17 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           if [ -z "$alerts" ]; then echo "No alerts." >> "$GITHUB_STEP_SUMMARY"; exit 0; fi
           gh label create closer-alert --repo "$REPO" --color D93F0B --description "Budget or health alert" 2>/dev/null || true
-          body=$(printf "**Closer alert** (%s UTC)\n\n%s\n\nStatus page: https://closer-data.closer-data.workers.dev/budget\n" "$(date -u +'%Y-%m-%d %H:%M')" "$(echo "$alerts" | sed 's/^/- /')")
+          # fingerprint of the alert text with numbers removed, so "2 runs failed" and "3 runs failed" count as the same alert
+          fp=$(echo "$alerts" | tr -d '0-9' | sha256sum | cut -c1-16)
+          body=$(printf "**Closer alert** (%s UTC)\n\n%s\n\nStatus page: https://closer-data.closer-data.workers.dev/budget\n<!-- fp:%s -->\n" "$(date -u +'%Y-%m-%d %H:%M')" "$(echo "$alerts" | sed 's/^/- /')" "$fp")
           open=$(gh issue list --repo "$REPO" --label closer-alert --state open --json number --jq '.[0].number // empty')
+          if [ -n "$open" ] && [ "${TEST_ALERT:-false}" != "true" ]; then
+            last=$(gh issue view "$open" --repo "$REPO" --json body,createdAt,comments --jq '([{body,createdAt}] + [.comments[] | {body,createdAt}]) | last | "\(.createdAt) \(.body)"')
+            last_at=$(echo "$last" | cut -d' ' -f1); last_fp=$(echo "$last" | grep -o 'fp:[0-9a-f]*' | cut -d: -f2 || true)
+            age_h=$(( ( $(date -u +%s) - $(date -u -d "$last_at" +%s) ) / 3600 ))
+            if [ "$last_fp" = "$fp" ] && [ "$age_h" -lt 6 ]; then
+              echo "Same alert already sent ${age_h}h ago; not repeating yet." >> "$GITHUB_STEP_SUMMARY"; exit 0
+            fi
+          fi
           if [ -n "$open" ]; then gh issue comment "$open" --repo "$REPO" --body "$body"
           else gh issue create --repo "$REPO" --title "Closer alert: needs attention" --label closer-alert --body "$body" --assignee "${{ github.repository_owner }}"; fi
