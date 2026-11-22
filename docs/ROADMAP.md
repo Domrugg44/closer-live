@@ -1,5 +1,19 @@
 # Closer roadmap
 
+*Last updated 2026-11-22.*
+
+**Phases** are the big stages of the project. **Milestones** (M1, M2, …) are the steps inside the current phase.
+
+## All phases at a glance
+
+| Phase | What it is | Status |
+|---|---|---|
+| 1 | The website: live scores, picks, pick tracking | ✅ Done |
+| 2 | Data foundation: cloud collector saving games, scores and odds (Cloudflare) | ✅ Done |
+| **3** | **Prediction intelligence:** a real model, explained predictions, honest grading | ⏳ **Current** |
+| 4 | The product: the website on Closer's own predictions, licensed data, hosting ready for paying members | Not started (part of the website built early, see below) |
+| 5+ | Injury and lineup data, more sports and bet types, then AI agents | Later |
+
 ## Phase 3: prediction intelligence (approved 2026-11-21, budget **$0**)
 
 **Centerpiece:** the explainable prediction record. Every prediction states *why* (an exact breakdown
@@ -9,14 +23,17 @@ confidence ranges and "not enough history yet" below 30 cases).
 
 | # | Milestone | Status |
 |---|---|---|
-| M1 | Data validation and freshness safeguards (11 automated checks, `/quality` page, alerts, live-prediction guard) | ✅ done 2026-11-21 |
-| M2 | Historical dataset 2021–2026 (free backfill) + free derived context: rest, back-to-backs, travel | ✅ built 2026-11-21; backfill finishing (about 18 h) |
-| M3 | Explainable prediction record + settlement states (win/loss/push/void, pending review) | ✅ done 2026-11-21 |
-| M4 | Baseline model v1: transparent rating model, tuned on 2021–2023, holdout 2024–2025 | built and rehearsed 2026-11-21; tuning runs once 2021–2023 history finishes loading |
-| M5 | "Similar predictions" track record, computed by QC | |
-| M6 | Market comparison, closing line value, QC value gate; licensed score cross-check (The Odds API scores, within the free plan) | |
-| M7 | Automated daily pipeline (GitHub Actions in the private repo, free) + active/completed prediction APIs | |
-| M9 | Sport-neutral foundations (adapters, generic markets), with NBA as the reference; no other sports built | woven through |
+| M1 | Data validation and freshness safeguards (12 automated checks, `/quality` page, hourly alerts, live-prediction guard) | ✅ Done 2026-11-21 |
+| M2 | Historical dataset 2021–2026 (free backfill) + rest, back-to-back and travel context | ⏳ Built; download ~80% done. Paused 2026-11-22 by the database read-limit outage (fixed); resumes after the 7 PM ET reset, finishes overnight |
+| M3 | Explainable prediction record + settlement (win/loss/push/void, pending review) | ✅ Done 2026-11-21 |
+| **M4** | **NBA model v1** (closer-elo): transparent team ratings + home court, rest, travel; tuned on 2021–2023, scored once on 2024–2025 | ⏳ Built and rehearsed. **Exam 2026-11-23** once the history finishes; if it passes and the CEO approves, live testing (300 games, about 6–7 weeks) |
+| M5 | "Similar predictions" track record on each pick, computed by QC | ❌ Not built |
+| M6 | Market comparison: closing line value, QC value gate | ❌ Not built |
+| M7 | Automatic daily model picks + active/completed prediction feeds | ❌ Not built (the Experimental engine is a stopgap) |
+| M9 | Sport-neutral foundations, with NBA as the reference | Woven through |
+
+**Next steps, in order:** finish the history (overnight) → M4 exam (2026-11-23) → build M7 → M5 → M6.
+Phase 4 can start once those are built; it doesn't need to wait for the 6–7 week live test.
 
 **Changes to stay at $0:**
 - No paid historical odds backfill. The value gate uses forward predictions, which are priced free.
@@ -25,6 +42,27 @@ confidence ranges and "not enough history yet" below 30 cases).
 
 **Decisions recorded:** tune on 2021–2023, score once on the 2024–2025 holdout. Public explanations show
 factor groups and their size, never raw model parameters.
+
+## Done early (website work originally planned for Phase 4), 2026-11-21 to 2026-11-22
+
+- New app: Dashboard, Picks, Live games, Slip and Results, in the Instrument style. The main link opens it.
+- Picks: open vs in progress (locked at kickoff); each open pick re-checked against the current line (at our number / better / still a play / pass); the slip uses the number you can get now.
+- "The case for this pick": real numbers (form, line movement, injuries, player game logs), green when they support the pick, red when they don't.
+- **Fresh 0–0 record (2026-11-21):** the 55 unchecked starter picks were archived (`data/archive/`), and every new Closer pick must pass a data check (`tools/add-pick.ps1`).
+- **Closer Engine (Experimental):** automatic picks every 3 hours from three simple checks, clearly labeled and tracked in their own record.
+- Plain-language guides: what "Experimental" means, and what every color and label means.
+
+## What's left for Phase 4
+
+1. Show the **model's** picks on the site (needs M4 to pass, plus M7).
+2. **Replace ESPN with licensed data** before charging members (about $30/month; CEO chose $0 for now, see docs/DATA.md).
+3. **Hosting and member accounts** for a paid product (the site is on free, public GitHub Pages today).
+
+## Open decisions for the CEO
+
+- Approve the NBA model for live testing, if it passes its exam.
+- Licensed data (The Odds API, about $30/month) before paid memberships.
+- Hosting and accounts plan before any paid launch.
 
 ## Automated prediction lifecycle (requirement added 2026-11-21)
 
@@ -42,7 +80,7 @@ their own models, timestamps and validation.
 | Void predictions on postponed or canceled games; handle reschedules (store the start time each prediction was made for) | M3 | ✅ |
 | Generate predictions automatically for each upcoming slate, before tip-off | M7 | planned |
 | Public "active predictions" and "completed / daily record" data | M7 | planned |
-| Website: active picks refresh automatically; finished picks move to the daily record and history | **Phase 4** (website) | planned |
+| Website: active picks refresh automatically; finished picks move to the daily record and history | app (done early); model picks need M7 | ✅ for site picks |
 | Time zones: store UTC, display local | existing | ✅ |
 
 ## Later phases
