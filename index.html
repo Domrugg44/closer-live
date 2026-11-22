@@ -331,7 +331,11 @@ const toGame=(e,l)=>{const c=(e.competitions||[])[0]||{},st=(e.status&&e.status.
   (c.competitors||[]).forEach(t=>{const tm=t.team||{};T[t.homeAway]={id:tm.id,abbr:tm.abbreviation,name:tm.shortDisplayName,logo:tm.logo,color:tm.color,score:t.score,rec:t.records&&t.records[0]&&t.records[0].summary,rank:t.curatedRank&&t.curatedRank.current<99?t.curatedRank.current:null,leaders:(t.leaders||[]).map(l=>{const x=(l.leaders||[])[0];return x?{cat:l.shortDisplayName,who:x.athlete&&x.athlete.shortName,val:x.displayValue}:null}).filter(Boolean).slice(0,3)}});
   const o=(c.odds||[])[0];return{id:e.id,lg:l,date:e.date,state:st.state,detail:st.shortDetail,away:T.away||{},home:T.home||{},details:o&&o.details,total:o&&o.overUnder,mk:o?{sh:mkS(o.pointSpread,"home"),sa:mkS(o.pointSpread,"away"),ov:mkS(o.total,"over"),un:mkS(o.total,"under"),book:o.provider&&o.provider.name}:null,tv:(c.broadcasts||[]).flatMap(b=>b.names||[]).slice(0,2).join(" / "),venue:c.venue&&c.venue.fullName}};
 const pull=async l=>{try{const r=await fetch(API+BASE[l]+"/scoreboard"+(QS[l]||""),{cache:"no-store"});if(!r.ok)return;const j=await r.json();feed[l]=(j.events||[]).map(e=>toGame(e,l))}catch(e){}};
-const loadRec=async()=>{for(const u of REC_URLS){try{const r=await fetch(u+"?t="+Date.now(),{cache:"no-store"});if(r.ok){rec=await r.json();return}}catch(e){}}};
+// load both copies (GitHub's file server and the site's own); each can be a few minutes stale after an update,
+// so use whichever was updated most recently
+const loadRec=async()=>{const got=(await Promise.all(REC_URLS.map(u=>fetch(u+"?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null))))
+  .filter(j=>j&&Array.isArray(j.entries));if(!got.length)return;
+  got.sort((a,b)=>(Date.parse(b.updatedAt)||0)-(Date.parse(a.updatedAt)||0));rec=got[0]};
 
 const games=()=>LGO.flatMap(l=>feed[l]||[]);
 const inLg=(x,f)=>f==="All"||x.lg===f;
