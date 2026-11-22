@@ -1,0 +1,11 @@
+{
+  "name": "closer-site-tests",
+  "private": true,
+  "description": "Automatic checks that the Closer website works: pages load, picks and badges show, the slip adds up, phones don't scroll sideways.",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0"
+  }
+}

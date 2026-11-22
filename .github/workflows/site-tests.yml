@@ -1,0 +1,48 @@
+name: Site tests
+
+# Opens the Closer website in a real browser (desktop and phone sizes) and checks what a visitor should
+# always be able to do: every page loads with no errors and fits the screen, picks show who made them,
+# badges and the guide explain themselves, the slip adds up, and the record matches the pick log.
+#   - on every change to the site: tests the files in that change (served locally), before relying on the deploy
+#   - every morning: tests the live site
+on:
+  push:
+    branches: [main]
+    paths: ["index.html", "classic.html", "dashboard.html", "site-tests/**", ".github/workflows/site-tests.yml"]
+  schedule:
+    - cron: "30 12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright (pinned in site-tests/package-lock.json)
+        working-directory: site-tests
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Serve this change's files locally
+        if: github.event_name == 'push'
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 &
+          sleep 2
+          echo "SITE_URL=http://127.0.0.1:8080/" >> "$GITHUB_ENV"
+      - name: Run the site tests
+        working-directory: site-tests
+        run: npx playwright test
+      - name: Keep failure details
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failures
+          path: site-tests/test-results
+          retention-days: 7
