@@ -13,7 +13,7 @@ export const CHECKS = [
     q: (now) => [`SELECT g.id, g.start_time, g.status, h.abbr || ' vs ' || a.abbr AS teams FROM games g
         JOIN teams h ON h.id = g.home_team_id JOIN teams a ON a.id = g.away_team_id
         LEFT JOIN game_results r ON r.game_id = g.id
-        WHERE g.start_time < ? AND g.start_time > ? AND r.game_id IS NULL
+        WHERE g.league = 'NBA' AND g.start_time < ? AND g.start_time > ? AND r.game_id IS NULL
           AND COALESCE(g.status,'') NOT IN ('postponed','canceled','abandoned') LIMIT 200`, iso(now - 5 * H), iso(now - 7 * 24 * H)],
   },
   {
@@ -30,9 +30,11 @@ export const CHECKS = [
   },
   {
     name: "score_implausible", severity: "fail",
-    description: "Final scores that can't be right for the NBA (a tie, or a team under 50 or over 200 points)",
-    q: () => [`SELECT r.game_id, r.home_score, r.away_score FROM game_results r JOIN games g ON g.id = r.game_id WHERE g.league = 'NBA'
-        AND (r.home_score = r.away_score OR r.home_score < 50 OR r.away_score < 50 OR r.home_score > 200 OR r.away_score > 200) LIMIT 200`],
+    description: "Final scores from the last 7 days that can't be right for the NBA (a tie, or a team under 50 or over 200 points)",
+    // recent games only (through the games_by_start index); older scores were checked when they arrived
+    q: (now) => [`SELECT r.game_id, r.home_score, r.away_score FROM games g JOIN game_results r ON r.game_id = g.id
+        WHERE g.league = 'NBA' AND g.start_time > ?
+        AND (r.home_score = r.away_score OR r.home_score < 50 OR r.away_score < 50 OR r.home_score > 200 OR r.away_score > 200) LIMIT 200`, iso(now - 7 * 24 * H)],
   },
   {
     name: "duplicate_games", severity: "fail",
@@ -73,13 +75,13 @@ export const CHECKS = [
     q: (now) => [`SELECT MAX(started_at) AS last_ok FROM ingestion_runs WHERE job = 'games' AND ok = 1 HAVING MAX(started_at) IS NULL OR MAX(started_at) < ?`, iso(now - 75 * MIN)],
   },
   {
-    name: "history_incomplete", severity: "warn",
+    name: "history_incomplete", severity: "warn", nightly: true,
     description: "Backfilled NBA seasons with fewer than 1,230 final scores (a full regular season)",
     q: () => [`SELECT b.season, (SELECT COUNT(*) FROM games g JOIN game_results r ON r.game_id = g.id WHERE g.season = b.season AND g.postseason = 0) AS regular_season_results
         FROM backfill_queue b WHERE b.done = 1 AND (SELECT COUNT(*) FROM games g JOIN game_results r ON r.game_id = g.id WHERE g.season = b.season AND g.postseason = 0) < 1230`],
   },
   {
-    name: "season_schedule_gap", severity: "warn",
+    name: "season_schedule_gap", severity: "warn", nightly: true,
     description: "Teams whose first stored game of the latest season is more than 14 days after that season's first stored game (missing early-season schedule makes rest/travel context wrong)",
     q: () => [`WITH s AS (SELECT MAX(season) AS season FROM games WHERE league = 'NBA'),
         first_any AS (SELECT MIN(start_time) AS t FROM games, s WHERE games.season = s.season),
@@ -102,16 +104,20 @@ export const CHECKS = [
   },
 ];
 
-export async function runQualityChecks(env, startRun, endRun) {
+// Checks marked nightly scan whole seasons, so they run once a night (they track slow-moving things);
+// the 30-minute runs skip them and their last result stays in place. Keeps daily reads well under the
+// free plan's limit as history grows (see migrations/0007 and the 2026-11-22/23 notes in docs/DATA.md).
+export async function runQualityChecks(env, startRun, endRun, nightly = false) {
+  const RUN = CHECKS.filter((c) => nightly || !c.nightly);
   const now = Date.now(), at = iso(now);
   const runId = await startRun(env, "quality");
   let failing = 0, warning = 0;
   try {
     // previous statuses in one read, and every status write in one batch (free-plan query limit per run)
     const prevStatus = new Map((await env.DB.prepare("SELECT check_name, status FROM data_quality").all()).results.map((r) => [r.check_name, r.status]));
-    const found = await env.DB.batch(CHECKS.map((c) => { const [sql, ...args] = c.q(now); return env.DB.prepare(sql).bind(...args); }));
+    const found = await env.DB.batch(RUN.map((c) => { const [sql, ...args] = c.q(now); return env.DB.prepare(sql).bind(...args); }));
     const writes = [];
-    for (const [i, c] of CHECKS.entries()) {
+    for (const [i, c] of RUN.entries()) {
       const rows = found[i].results || [];
       const status = rows.length ? c.severity : "pass";
       if (status === "fail") failing++;
@@ -128,7 +134,7 @@ export async function runQualityChecks(env, startRun, endRun) {
           .bind(c.name, prev ?? null, status, rows.length, sample, at));
     }
     await env.DB.batch(writes);
-    await endRun(env, runId, { ok: true, note: `${CHECKS.length} checks: ${failing} failing, ${warning} warning` });
+    await endRun(env, runId, { ok: true, note: `${RUN.length} checks${nightly ? " (nightly, all)" : ""}: ${failing} failing, ${warning} warning` });
   } catch (e) {
     await endRun(env, runId, { ok: false, note: String(e.message || e).slice(0, 250) });
   }

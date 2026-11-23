@@ -142,7 +142,7 @@ async function runCron(cron, env) {
     // nightly: re-read the last three days so late final scores are captured, then grade predictions
     await syncGames(env, [etDate(-3), etDate(-2), etDate(-1)]);
     await gradePredictions(env, startRun, endRun);
-    await runQualityChecks(env, startRun, endRun);
+    await runQualityChecks(env, startRun, endRun, true); // nightly: every check, including the season-wide ones
     return;
   }
   // every 30 minutes: refresh yesterday, today and tomorrow, grade finished predictions,
