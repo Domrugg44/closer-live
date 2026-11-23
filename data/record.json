@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-23T04:19:02Z",
+    "updatedAt":  "2026-11-23T05:12:17Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -83,19 +83,24 @@
                         "why":  "Closer Engine (experimental): 3 of 3 signals on MIN +3. Recent form (last 5): projects MIN by -1.2. Season form: projects MIN by -1.9. Market: opened MIN +3.5, now +3.",
                         "loggedAfterStart":  false,
                         "hash":  "7fcab9521658eb2fa51e3a394d7c1b9430d6739ffddd7e2f8c5bc20569b89597",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "MIN",
+                                      "as":  10,
+                                      "home":  "SF",
+                                      "hs":  35
+                                  },
+                        "actual":  -25,
+                        "diff":  -22,
+                        "units":  -1,
                         "close":  {
                                       "spread":  -4.5,
                                       "total":  44.5,
                                       "details":  "SF -4.5"
                                   },
-                        "clv":  null,
+                        "clv":  -1.5,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-23T05:12:17Z"
                     },
                     {
                         "id":  "E0003",
@@ -247,7 +252,11 @@
                         "actual":  null,
                         "diff":  null,
                         "units":  null,
-                        "close":  null,
+                        "close":  {
+                                      "spread":  8.5,
+                                      "total":  239.5,
+                                      "details":  "CLE -8.5"
+                                  },
                         "clv":  null,
                         "note":  null,
                         "gradedAt":  null
@@ -279,7 +288,11 @@
                         "actual":  null,
                         "diff":  null,
                         "units":  null,
-                        "close":  null,
+                        "close":  {
+                                      "spread":  -10.5,
+                                      "total":  223.5,
+                                      "details":  "TOR -10.5"
+                                  },
                         "clv":  null,
                         "note":  null,
                         "gradedAt":  null
@@ -311,7 +324,11 @@
                         "actual":  null,
                         "diff":  null,
                         "units":  null,
-                        "close":  null,
+                        "close":  {
+                                      "spread":  -12.5,
+                                      "total":  225.5,
+                                      "details":  "HOU -12.5"
+                                  },
                         "clv":  null,
                         "note":  null,
                         "gradedAt":  null
