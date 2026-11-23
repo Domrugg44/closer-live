@@ -93,7 +93,8 @@ function Get-PickCase {
     if (-not $pickHome -and $awayC.team.abbreviation -ne $Team) { return @{ Pass = $false; Summary = "Team '$Team' isn't in this game ($($awayC.team.abbreviation) @ $($homeC.team.abbreviation))" } }
     $avgM = { param($f) ($f | ForEach-Object { $_.us - $_.them } | Measure-Object -Average).Average }
     $mt = & $avgM $(if ($pickHome) { $fh } else { $fa }); $mo = & $avgM $(if ($pickHome) { $fa } else { $fh })
-    $proj = ($mt - $mo) / 2
+    # expected margin = difference of the two teams' average margins (not halved; corrected 2026-11-23)
+    $proj = ($mt - $mo)
     return @{ Pass = ($proj + $Line -gt 0); Summary = "Last-5 average margins: $Team $([Math]::Round($mt,1)), opponent $([Math]::Round($mo,1)); projected $Team by $([Math]::Round($proj,1)) vs line $Line" }
   }
   return @{ Pass = $false; Summary = "No data check is set up for '$Kind' picks" }

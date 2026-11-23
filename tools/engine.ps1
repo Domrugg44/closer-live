@@ -101,7 +101,10 @@ foreach ($g in $games) {
   # ---- spread (from the home side's view; positive = home covers) ----
   $recent = (Avg ($h5 | ForEach-Object { $_.us - $_.them })) - (Avg ($a5 | ForEach-Object { $_.us - $_.them }))
   $season = (Avg ($fh | ForEach-Object { $_.us - $_.them })) - (Avg ($fa | ForEach-Object { $_.us - $_.them }))
-  $p1 = $recent / 2; $p2 = $season / 2 + $he
+  # Team A's margin minus team B's margin is the expected margin between them (A beats the average team by 6,
+  # B loses to it by 4, so A beats B by about 10). An earlier version halved this, which shrank every favorite and
+  # tilted spread picks toward underdogs; corrected 2026-11-23.
+  $p1 = $recent; $p2 = $season + $he
   $c1 = $p1 + $g.spH; $c2 = $p2 + $g.spH
   $sig = @([Math]::Sign([Math]::Round($c1, 2)), [Math]::Sign([Math]::Round($c2, 2)))
   $mv = $null; if ($null -ne $g.spHo) { $mv = $g.spH - $g.spHo }   # negative = home became more favored
