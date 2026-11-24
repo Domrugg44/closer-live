@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-24T05:54:22Z",
+    "updatedAt":  "2026-11-24T10:20:29Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -435,6 +435,38 @@
                         "clv":  -4.0,
                         "note":  null,
                         "gradedAt":  "2026-11-24T05:54:22Z"
+                    },
+                    {
+                        "id":  "E0011",
+                        "logged":  "2026-11-24T10:20:29Z",
+                        "pickTime":  "2026-11-24T10:20:29Z",
+                        "source":  "experimental",
+                        "lg":  "NBA",
+                        "game":  "DAL @ DEN",
+                        "eventId":  "401909316",
+                        "date":  "2026-11-25T03:00Z",
+                        "kind":  "total",
+                        "label":  "Under 233.5",
+                        "team":  null,
+                        "side":  "Under",
+                        "player":  null,
+                        "stat":  null,
+                        "line":  233.5,
+                        "odds":  -111,
+                        "prob":  null,
+                        "tier":  null,
+                        "why":  "Closer Engine (experimental): 3 of 3 signals on the Under 233.5. Recent form: 7 of the teams\u0027 last 10 games went under 233.5. Season form: scoring averages project 228.5. Market: opened 236.5, now 233.5.",
+                        "loggedAfterStart":  false,
+                        "hash":  "8511536501f40a870ac9ec972bf0a8bc3957a8011605a6196c2f94945c7d808a",
+                        "status":  "pending",
+                        "final":  null,
+                        "actual":  null,
+                        "diff":  null,
+                        "units":  null,
+                        "close":  null,
+                        "clv":  null,
+                        "note":  null,
+                        "gradedAt":  null
                     }
                 ]
 }
