@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-24T03:23:36Z",
+    "updatedAt":  "2026-11-24T04:33:45Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -253,19 +253,24 @@
                         "why":  "Closer Engine (experimental): 3 of 3 signals on CHI +8.5. Recent form (last 5): projects CHI by +0.5. Season form: projects CHI by -3.1 after CHI\u0027s home edge. Market: opened CHI +9.5, now +8.5.",
                         "loggedAfterStart":  false,
                         "hash":  "828850979d80845d75506c834fb664a0a654ad95bc2ecd6f563555218ca4177d",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "CLE",
+                                      "as":  108,
+                                      "home":  "CHI",
+                                      "hs":  122
+                                  },
+                        "actual":  14,
+                        "diff":  22.5,
+                        "units":  0.93,
                         "close":  {
                                       "spread":  8.5,
                                       "total":  240.5,
                                       "details":  "CLE -8.5"
                                   },
-                        "clv":  null,
+                        "clv":  0.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-24T04:33:45Z"
                     },
                     {
                         "id":  "E0007",
@@ -330,19 +335,24 @@
                         "why":  "Closer Engine (experimental): 3 of 3 signals on LAC +12.5. Recent form (last 5): projects LAC by -6.1. Season form: projects LAC by -9.1 after HOU\u0027s home edge. Market: opened LAC +13.5, now +12.5.",
                         "loggedAfterStart":  false,
                         "hash":  "219f861a798eb57b03f33d56aaebbdd20ab83c642cb0fcb402b0643b9c429114",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "LAC",
+                                      "as":  104,
+                                      "home":  "HOU",
+                                      "hs":  116
+                                  },
+                        "actual":  -12,
+                        "diff":  0.5,
+                        "units":  0.93,
                         "close":  {
                                       "spread":  -13.5,
                                       "total":  223.5,
                                       "details":  "HOU -13.5"
                                   },
-                        "clv":  null,
+                        "clv":  -1.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-24T04:33:45Z"
                     },
                     {
                         "id":  "E0009",
@@ -366,19 +376,24 @@
                         "why":  "Closer Engine (experimental): 3 of 3 signals on CIN -6. Recent form (last 5): projects CIN by +13.2. Season form: projects CIN by +10.9 after WSH\u0027s home edge. Market: opened CIN -1.5, now -6.",
                         "loggedAfterStart":  false,
                         "hash":  "5fd5e87bf38d408cb070f728e14c0eb1c1091abd689bd85cdb1feaf1bc2a2944",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "CIN",
+                                      "as":  20,
+                                      "home":  "WSH",
+                                      "hs":  22
+                                  },
+                        "actual":  -2,
+                        "diff":  -8,
+                        "units":  -1,
                         "close":  {
                                       "spread":  6.5,
                                       "total":  54.5,
                                       "details":  "CIN -6.5"
                                   },
-                        "clv":  null,
+                        "clv":  0.5,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-24T04:33:45Z"
                     },
                     {
                         "id":  "E0010",
