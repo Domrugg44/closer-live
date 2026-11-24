@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-24T04:33:45Z",
+    "updatedAt":  "2026-11-24T05:54:22Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -417,19 +417,24 @@
                         "why":  "Closer Engine (experimental): 3 of 3 signals on SA -12.5. Recent form (last 5): projects SA by +25.2. Season form: projects SA by +22.3 after SAC\u0027s home edge. Market: opened SA -10.5, now -12.5.",
                         "loggedAfterStart":  false,
                         "hash":  "1ada740c4ad1705bf8311fc96456a2a445b198d0e80199d358f1487a3001575f",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "SA",
+                                      "as":  123,
+                                      "home":  "SAC",
+                                      "hs":  107
+                                  },
+                        "actual":  16,
+                        "diff":  3.5,
+                        "units":  0.92,
                         "close":  {
                                       "spread":  8.5,
                                       "total":  223.5,
                                       "details":  "SA -8.5"
                                   },
-                        "clv":  null,
+                        "clv":  -4.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-24T05:54:22Z"
                     }
                 ]
 }
