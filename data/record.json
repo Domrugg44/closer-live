@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-25T18:44:35Z",
+    "updatedAt":  "2026-11-26T03:29:31Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -506,7 +506,7 @@
                         "units":  null,
                         "close":  {
                                       "spread":  -8.5,
-                                      "total":  47.5,
+                                      "total":  48.5,
                                       "details":  "DAL -8.5"
                                   },
                         "clv":  null,
@@ -571,19 +571,24 @@
                         "why":  "Closer Engine (experimental): 3 of 3 signals on MEM -7.5. Recent form (last 5): projects MEM by +19. Season form: projects MEM by +17.7 after MEM\u0027s home edge. Market: opened MEM -6.5, now -7.5.",
                         "loggedAfterStart":  false,
                         "hash":  "ff5681d205a0616c14f76952631866458b6de9f420ce6004cd24420a10f933bb",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "LAC",
+                                      "as":  97,
+                                      "home":  "MEM",
+                                      "hs":  115
+                                  },
+                        "actual":  18,
+                        "diff":  10.5,
+                        "units":  0.93,
                         "close":  {
                                       "spread":  -7.5,
                                       "total":  227.5,
                                       "details":  "MEM -7.5"
                                   },
-                        "clv":  null,
+                        "clv":  0.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-26T03:29:31Z"
                     }
                 ]
 }
