@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-27T19:53:07Z",
+    "updatedAt":  "2026-11-27T20:49:48Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -622,19 +622,24 @@
                         "why":  "Closer Engine (experimental): 3 of 3 signals on TLSA +1.5. Recent form (last 5): projects TLSA by +19.2. Season form: projects TLSA by +5.5 after UTSA\u0027s home edge. Market: opened TLSA +2.5, now +1.5.",
                         "loggedAfterStart":  false,
                         "hash":  "1a6c37fd9f762184df34623f5454f63e8dcb365bc91a8e6b99b0366ebe077b18",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "TLSA",
+                                      "as":  22,
+                                      "home":  "UTSA",
+                                      "hs":  28
+                                  },
+                        "actual":  -6,
+                        "diff":  -4.5,
+                        "units":  -1,
                         "close":  {
                                       "spread":  1.5,
                                       "total":  56.5,
                                       "details":  "TLSA -1.5"
                                   },
-                        "clv":  null,
+                        "clv":  3.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-27T20:49:47Z"
                     },
                     {
                         "id":  "E0016",
@@ -881,7 +886,7 @@
                         "units":  null,
                         "close":  {
                                       "spread":  -11.5,
-                                      "total":  40.5,
+                                      "total":  41.5,
                                       "details":  "FIU -11.5"
                                   },
                         "clv":  null,
@@ -988,9 +993,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -9.5,
+                                      "spread":  -8.5,
                                       "total":  223.5,
-                                      "details":  "BOS -9.5"
+                                      "details":  "BOS -8.5"
                                   },
                         "clv":  null,
                         "note":  null,
