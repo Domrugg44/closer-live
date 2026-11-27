@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-27T07:33:49Z",
+    "updatedAt":  "2026-11-27T07:52:48Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -700,9 +700,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -26.5,
+                                      "spread":  -25.5,
                                       "total":  66.5,
-                                      "details":  "UTAH -26.5"
+                                      "details":  "UTAH -25.5"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -735,7 +735,11 @@
                         "actual":  null,
                         "diff":  null,
                         "units":  null,
-                        "close":  null,
+                        "close":  {
+                                      "spread":  3.0,
+                                      "total":  53.5,
+                                      "details":  "LOU -3"
+                                  },
                         "clv":  null,
                         "note":  null,
                         "gradedAt":  null
@@ -767,7 +771,11 @@
                         "actual":  null,
                         "diff":  null,
                         "units":  null,
-                        "close":  null,
+                        "close":  {
+                                      "spread":  3.5,
+                                      "total":  53.5,
+                                      "details":  "KENN -3.5"
+                                  },
                         "clv":  null,
                         "note":  null,
                         "gradedAt":  null
@@ -799,7 +807,11 @@
                         "actual":  null,
                         "diff":  null,
                         "units":  null,
-                        "close":  null,
+                        "close":  {
+                                      "spread":  18.5,
+                                      "total":  52.5,
+                                      "details":  "LIB -18.5"
+                                  },
                         "clv":  null,
                         "note":  null,
                         "gradedAt":  null
@@ -831,7 +843,11 @@
                         "actual":  null,
                         "diff":  null,
                         "units":  null,
-                        "close":  null,
+                        "close":  {
+                                      "spread":  -1.5,
+                                      "total":  57.5,
+                                      "details":  "ECU -1.5"
+                                  },
                         "clv":  null,
                         "note":  null,
                         "gradedAt":  null
@@ -863,7 +879,11 @@
                         "actual":  null,
                         "diff":  null,
                         "units":  null,
-                        "close":  null,
+                        "close":  {
+                                      "spread":  -11.5,
+                                      "total":  40.5,
+                                      "details":  "FIU -11.5"
+                                  },
                         "clv":  null,
                         "note":  null,
                         "gradedAt":  null
@@ -895,7 +915,11 @@
                         "actual":  null,
                         "diff":  null,
                         "units":  null,
-                        "close":  null,
+                        "close":  {
+                                      "spread":  -2.5,
+                                      "total":  50.5,
+                                      "details":  "NU -2.5"
+                                  },
                         "clv":  null,
                         "note":  null,
                         "gradedAt":  null
