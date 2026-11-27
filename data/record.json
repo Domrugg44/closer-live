@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-27T13:28:35Z",
+    "updatedAt":  "2026-11-27T13:49:51Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -700,9 +700,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -25.5,
-                                      "total":  66.5,
-                                      "details":  "UTAH -25.5"
+                                      "spread":  -26.5,
+                                      "total":  65.5,
+                                      "details":  "UTAH -26.5"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -1059,7 +1059,11 @@
                         "actual":  null,
                         "diff":  null,
                         "units":  null,
-                        "close":  null,
+                        "close":  {
+                                      "spread":  13.5,
+                                      "total":  43.5,
+                                      "details":  "TENN -13.5"
+                                  },
                         "clv":  null,
                         "note":  null,
                         "gradedAt":  null
@@ -1091,7 +1095,11 @@
                         "actual":  null,
                         "diff":  null,
                         "units":  null,
-                        "close":  null,
+                        "close":  {
+                                      "spread":  9.5,
+                                      "total":  47.5,
+                                      "details":  "PITT -9.5"
+                                  },
                         "clv":  null,
                         "note":  null,
                         "gradedAt":  null
@@ -1123,7 +1131,11 @@
                         "actual":  null,
                         "diff":  null,
                         "units":  null,
-                        "close":  null,
+                        "close":  {
+                                      "spread":  -13.5,
+                                      "total":  50.5,
+                                      "details":  "ORE -13.5"
+                                  },
                         "clv":  null,
                         "note":  null,
                         "gradedAt":  null
