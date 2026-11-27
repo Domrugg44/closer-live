@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-27T03:53:46Z",
+    "updatedAt":  "2026-11-27T04:58:53Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -540,19 +540,24 @@
                         "why":  "Closer Engine (experimental): 3 of 3 signals on TCU +14. Recent form (last 5): projects TCU by -9. Season form: projects TCU by -11.1 after TTU\u0027s home edge. Market: opened TCU +16.5, now +14.",
                         "loggedAfterStart":  false,
                         "hash":  "acabb52b7cae09bdee954e8c52a0fc47cff7e9b1cff9b7db58d62a53dbb91cc6",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "TCU",
+                                      "as":  27,
+                                      "home":  "TTU",
+                                      "hs":  48
+                                  },
+                        "actual":  -21,
+                        "diff":  -7,
+                        "units":  -1,
                         "close":  {
                                       "spread":  -14.0,
                                       "total":  46.5,
                                       "details":  "TTU -14"
                                   },
-                        "clv":  null,
+                        "clv":  0.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-27T04:58:53Z"
                     },
                     {
                         "id":  "E0014",
@@ -659,9 +664,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -8.5,
+                                      "spread":  -9.5,
                                       "total":  37.5,
-                                      "details":  "WIS -8.5"
+                                      "details":  "WIS -9.5"
                                   },
                         "clv":  null,
                         "note":  null,
