@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-27T01:00:33Z",
+    "updatedAt":  "2026-11-27T02:33:44Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -499,19 +499,24 @@
                         "why":  "Closer Engine (experimental): 3 of 3 signals on DAL -8.5. Recent form (last 5): projects DAL by +16.6. Season form: projects DAL by +10.8 after DAL\u0027s home edge. Market: opened DAL -1.5, now -8.5.",
                         "loggedAfterStart":  false,
                         "hash":  "51aa5c938d679a4e38dfdd24ce134c6ce519ddae867d893553ddb8d7f2c343b2",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "PHI",
+                                      "as":  39,
+                                      "home":  "DAL",
+                                      "hs":  38
+                                  },
+                        "actual":  -1,
+                        "diff":  -9.5,
+                        "units":  -1,
                         "close":  {
                                       "spread":  -8.5,
                                       "total":  49.5,
                                       "details":  "DAL -8.5"
                                   },
-                        "clv":  null,
+                        "clv":  0.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-27T02:33:44Z"
                     },
                     {
                         "id":  "E0013",
@@ -690,9 +695,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -26.5,
+                                      "spread":  -25.5,
                                       "total":  66.5,
-                                      "details":  "UTAH -26.5"
+                                      "details":  "UTAH -25.5"
                                   },
                         "clv":  null,
                         "note":  null,
