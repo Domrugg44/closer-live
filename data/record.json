@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-27T21:49:47Z",
+    "updatedAt":  "2026-11-27T22:50:32Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -705,9 +705,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -24.5,
+                                      "spread":  -25.5,
                                       "total":  65.5,
-                                      "details":  "UTAH -24.5"
+                                      "details":  "UTAH -25.5"
                                   },
                         "clv":  null,
                         "note":  null,
@@ -921,9 +921,9 @@
                         "diff":  null,
                         "units":  null,
                         "close":  {
-                                      "spread":  -2.5,
+                                      "spread":  -3.0,
                                       "total":  50.5,
-                                      "details":  "NU -2.5"
+                                      "details":  "NU -3"
                                   },
                         "clv":  null,
                         "note":  null,
