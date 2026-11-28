@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-28T03:24:41Z",
+    "updatedAt":  "2026-11-28T04:29:49Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -663,19 +663,24 @@
                         "why":  "Closer Engine (experimental): 3 of 3 signals on WIS -8.5. Recent form (last 5): projects WIS by +16. Season form: projects WIS by +11.9 after WIS\u0027s home edge. Market: opened WIS -6, now -8.5.",
                         "loggedAfterStart":  false,
                         "hash":  "f35e1594053708d02d016c7bd24ac4bbe11f44223705f161fcf2b8bd9ff8096d",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "W",
+                        "final":  {
+                                      "away":  "MINN",
+                                      "as":  5,
+                                      "home":  "WIS",
+                                      "hs":  28
+                                  },
+                        "actual":  23,
+                        "diff":  14.5,
+                        "units":  0.95,
                         "close":  {
                                       "spread":  -9.5,
                                       "total":  37.5,
                                       "details":  "WIS -9.5"
                                   },
-                        "clv":  null,
+                        "clv":  1.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-28T04:29:48Z"
                     },
                     {
                         "id":  "E0017",
