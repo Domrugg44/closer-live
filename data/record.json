@@ -1,6 +1,6 @@
 {
     "schema":  2,
-    "updatedAt":  "2026-11-28T05:30:32Z",
+    "updatedAt":  "2026-11-28T06:59:06Z",
     "about":  {
                   "purpose":  "Append-only log of every Closer prediction. Locked fields never change after logging; only result fields are filled in when the game ends.",
                   "integrity":  "Each entry\u0027s hash covers its locked fields plus the previous entry\u0027s hash (SHA-256 chain). tools/verify-log.ps1 and the website both recompute it; GitHub runs the check on every change.",
@@ -704,19 +704,24 @@
                         "why":  "Closer Engine (experimental): 3 of 3 signals on the Under 66.5. Recent form: 6 of the teams\u0027 last 10 games went under 66.5. Season form: scoring averages project 62.8. Market: opened 68.5, now 66.5.",
                         "loggedAfterStart":  false,
                         "hash":  "3dcf208d070203513c206d974682c6a44abf0afa01978fb221a5ef03770551c4",
-                        "status":  "pending",
-                        "final":  null,
-                        "actual":  null,
-                        "diff":  null,
-                        "units":  null,
+                        "status":  "L",
+                        "final":  {
+                                      "away":  "WVU",
+                                      "as":  28,
+                                      "home":  "UTAH",
+                                      "hs":  52
+                                  },
+                        "actual":  80,
+                        "diff":  -13.5,
+                        "units":  -1,
                         "close":  {
                                       "spread":  -25.5,
                                       "total":  65.5,
                                       "details":  "UTAH -25.5"
                                   },
-                        "clv":  null,
+                        "clv":  1.0,
                         "note":  null,
-                        "gradedAt":  null
+                        "gradedAt":  "2026-11-28T06:59:05Z"
                     },
                     {
                         "id":  "E0018",
@@ -1184,7 +1189,7 @@
                         "units":  null,
                         "close":  {
                                       "spread":  16.5,
-                                      "total":  54.5,
+                                      "total":  53.5,
                                       "details":  "NAVY -16.5"
                                   },
                         "clv":  null,
